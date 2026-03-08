@@ -2,13 +2,13 @@
  * secrets service — secret storage/retrieval using Drizzle ORM against the
  * `company_secrets` table.
  *
- * Encryption strategy: values are stored as base64-encoded strings in the
- * `encryptedValue` column. Real AES-256-GCM encryption can be layered in later
- * by swapping encode/decode helpers without changing any function signatures.
+ * Encryption strategy: values are encrypted with AES-256-GCM using a key
+ * derived from the JWT secret via scrypt before being stored in the
+ * `encryptedValue` column.
  *
  * Public interface mirrors the original SecretEntry shape. The `value` field
- * is the decoded (plaintext) value returned by getSecret; setSecret accepts
- * the plaintext and stores it encoded.
+ * is the decrypted (plaintext) value returned by getSecret; setSecret accepts
+ * the plaintext and stores it encrypted.
  *
  * setSecret performs an upsert: insert or update on (companyId, key) conflict,
  * incrementing the version counter on update.
@@ -17,6 +17,8 @@ import { getDb } from "../db.js";
 import { eq, and, asc } from "drizzle-orm";
 import { companySecrets as secretsTable } from "@seaclip/db";
 import { notFound } from "../errors.js";
+import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "node:crypto";
+import { getConfig } from "../config.js";
 
 export interface SecretEntry {
   id: string;
@@ -30,15 +32,41 @@ export interface SecretEntry {
 }
 
 // ---------------------------------------------------------------------------
-// Encoding helpers (base64 — swap for real encryption when ready)
+// AES-256-GCM encryption helpers
 // ---------------------------------------------------------------------------
 
-function encode(plaintext: string): string {
-  return Buffer.from(plaintext, "utf8").toString("base64");
+const ALGORITHM = "aes-256-gcm";
+const KEY_LEN = 32;
+
+function deriveKey(masterSecret: string): Buffer {
+  return scryptSync(masterSecret, "seaclip-secrets-salt", KEY_LEN);
 }
 
-function decode(encoded: string): string {
-  return Buffer.from(encoded, "base64").toString("utf8");
+function encrypt(plaintext: string): string {
+  const config = getConfig();
+  const key = deriveKey(config.jwtSecret);
+  const iv = randomBytes(12);
+  const cipher = createCipheriv(ALGORITHM, key, iv);
+  const encrypted = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  // Format: iv.encrypted.authTag (all base64)
+  return `${iv.toString("base64")}.${encrypted.toString("base64")}.${authTag.toString("base64")}`;
+}
+
+function decrypt(stored: string): string {
+  const config = getConfig();
+  const key = deriveKey(config.jwtSecret);
+  const parts = stored.split(".");
+  if (parts.length !== 3) {
+    throw new Error("Malformed encrypted secret");
+  }
+  const [ivB64, encB64, tagB64] = parts;
+  const iv = Buffer.from(ivB64, "base64");
+  const encrypted = Buffer.from(encB64, "base64");
+  const authTag = Buffer.from(tagB64, "base64");
+  const decipher = createDecipheriv(ALGORITHM, key, iv);
+  decipher.setAuthTag(authTag);
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString("utf8");
 }
 
 // ---------------------------------------------------------------------------
@@ -73,7 +101,7 @@ export async function setSecret(
   value: string,
 ): Promise<void> {
   const db = getDb();
-  const encoded = encode(value);
+  const encoded = encrypt(value);
 
   // Check for existing row
   const [existing] = await db
@@ -119,7 +147,7 @@ export async function getSecret(
     throw notFound(`Secret "${key}" not found for company "${companyId}"`);
   }
 
-  return decode(row.encryptedValue);
+  return decrypt(row.encryptedValue);
 }
 
 /**

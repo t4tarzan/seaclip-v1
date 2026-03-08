@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS agents (
   reports_to           UUID,
   capabilities         TEXT,
   adapter_type         TEXT NOT NULL DEFAULT 'process',
+  environment          TEXT NOT NULL DEFAULT 'local',
   adapter_config       JSONB NOT NULL DEFAULT '{}',
   runtime_config       JSONB NOT NULL DEFAULT '{}',
   budget_monthly_cents INT  NOT NULL DEFAULT 0,
@@ -78,6 +79,7 @@ CREATE TABLE IF NOT EXISTS projects (
   color       TEXT,
   status      TEXT NOT NULL DEFAULT 'active',
   archived    BOOLEAN NOT NULL DEFAULT false,
+  metadata    JSONB NOT NULL DEFAULT '{}',
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -90,6 +92,7 @@ CREATE TABLE IF NOT EXISTS goals (
   description TEXT,
   parent_id   UUID,
   status      TEXT NOT NULL DEFAULT 'active',
+  metadata    JSONB NOT NULL DEFAULT '{}',
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );

@@ -4,6 +4,7 @@ import { agentZeroAdapter } from "./agent-zero/index.js";
 import { telegramBridgeAdapter } from "./telegram-bridge/index.js";
 import { processAdapter } from "./process/index.js";
 import { httpAdapter } from "./http/index.js";
+import { claudeCodeAdapter } from "./claude-code/index.js";
 import type { ServerAdapterModule } from "./types.js";
 import { notFound } from "../errors.js";
 
@@ -14,6 +15,7 @@ const adaptersByType = new Map<string, ServerAdapterModule>([
   ["telegram_bridge", telegramBridgeAdapter],
   ["process", processAdapter],
   ["http", httpAdapter],
+  ["claude_code", claudeCodeAdapter],
 ]);
 
 export function getServerAdapter(type: string): ServerAdapterModule {

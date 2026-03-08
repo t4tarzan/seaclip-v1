@@ -5,7 +5,10 @@ import type { Agent, HeartbeatRun } from "../lib/types";
 export function useAgents(companyId: string | undefined) {
   return useQuery({
     queryKey: ["agents", companyId],
-    queryFn: () => api.get<Agent[]>(`/companies/${companyId}/agents`),
+    queryFn: async () => {
+      const res = await api.get<{ data: Agent[] }>(`/companies/${companyId}/agents`);
+      return res.data;
+    },
     enabled: !!companyId,
     refetchInterval: 10_000,
   });
@@ -23,7 +26,10 @@ export function useAgent(companyId: string | undefined, id: string | undefined) 
 export function useAgentRuns(companyId: string | undefined, agentId: string | undefined) {
   return useQuery({
     queryKey: ["agent-runs", companyId, agentId],
-    queryFn: () => api.get<HeartbeatRun[]>(`/companies/${companyId}/agents/${agentId}/runs`),
+    queryFn: async () => {
+      const res = await api.get<{ data: HeartbeatRun[] }>(`/companies/${companyId}/agents/${agentId}/runs`);
+      return res.data;
+    },
     enabled: !!companyId && !!agentId,
     refetchInterval: 5_000,
   });

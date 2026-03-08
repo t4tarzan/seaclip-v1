@@ -165,7 +165,7 @@ function MeshCanvas({
             overflow="visible"
             className="cursor-pointer"
           >
-            <div xmlns="http://www.w3.org/1999/xhtml">
+            <div>
               <DeviceNode
                 device={device}
                 isSelected={selectedId === device.id}
@@ -185,7 +185,7 @@ function MeshCanvas({
           height={144}
           overflow="visible"
         >
-          <div xmlns="http://www.w3.org/1999/xhtml">
+          <div>
             <DeviceNode
               device={hub}
               isHub

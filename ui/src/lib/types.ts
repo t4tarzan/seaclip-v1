@@ -133,12 +133,13 @@ export interface MeshConnection {
 }
 
 export interface DashboardData {
-  agentCounts: { total: number; idle: number; running: number; error: number; offline: number };
-  activeIssues: number;
-  monthlySpendCents: number;
-  edgeDevicesOnline: number;
+  agentCounts: Record<string, number>;
+  issueCounts: Record<string, number>;
+  costs: { last30DaysTotalUsd: number; todayTotalUsd: number };
+  edgeDeviceCount: number;
+  onlineDeviceCount: number;
   recentActivity: ActivityEvent[];
-  edgeMiniMap: { id: string; name: string; status: DeviceStatus }[];
+  generatedAt: string;
 }
 
 export interface CostData {

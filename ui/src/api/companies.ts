@@ -5,7 +5,10 @@ import type { Company } from "../lib/types";
 export function useCompanies() {
   return useQuery({
     queryKey: ["companies"],
-    queryFn: () => api.get<Company[]>("/companies"),
+    queryFn: async () => {
+      const res = await api.get<{ data: Company[] }>("/companies");
+      return res.data;
+    },
     staleTime: 60_000,
   });
 }

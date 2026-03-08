@@ -39,7 +39,7 @@ router.post(
         String(req.params.id),
         {
           ...req.body,
-          resolvedById: req.body.resolvedById ?? (req as any).user?.id,
+          resolvedById: req.body.resolvedById ?? req.user?.id,
         },
       );
       await publishLiveEvent(String(req.params.companyId), {

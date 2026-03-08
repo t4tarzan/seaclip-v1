@@ -6,16 +6,8 @@ import { useDashboard } from "../api/dashboard";
 import { MetricCard } from "../components/MetricCard";
 import { ActivityRow } from "../components/ActivityRow";
 import { StatusBadge } from "../components/StatusBadge";
-import { SkeletonCard, SkeletonTable } from "../components/ui/skeleton";
+import { SkeletonCard } from "../components/ui/skeleton";
 import { formatCents } from "../lib/utils";
-import type { DeviceStatus } from "../lib/types";
-import { cn } from "../lib/utils";
-
-const STATUS_DOT: Record<DeviceStatus, string> = {
-  online: "bg-[#22c55e]",
-  offline: "bg-[#6b7280]",
-  degraded: "bg-[#eab308]",
-};
 
 function AgentStatusChart({
   counts,
@@ -74,9 +66,18 @@ export default function Dashboard() {
     );
   }
 
-  const agentCounts = data?.agentCounts ?? {
-    total: 0, idle: 0, running: 0, error: 0, offline: 0,
+  const raw = data?.agentCounts ?? {} as Record<string, number>;
+  const agentCounts = {
+    total: raw.total ?? 0,
+    idle: raw.idle ?? 0,
+    running: raw.active ?? raw.running ?? 0,
+    error: raw.error ?? 0,
+    offline: raw.terminated ?? raw.offline ?? 0,
   };
+
+  const activeIssues = (data?.issueCounts?.in_progress ?? 0) + (data?.issueCounts?.open ?? 0);
+  const monthlySpendCents = Math.round((data?.costs?.last30DaysTotalUsd ?? 0) * 100);
+  const edgeDevicesOnline = data?.onlineDeviceCount ?? 0;
 
   return (
     <div className="p-6 flex flex-col gap-6 animate-fade-in">
@@ -92,7 +93,7 @@ export default function Dashboard() {
         />
         <MetricCard
           label="Active Issues"
-          value={data?.activeIssues ?? 0}
+          value={activeIssues}
           description="Issues in progress or review"
           icon={<CircleDot />}
           accent="warning"
@@ -100,7 +101,7 @@ export default function Dashboard() {
         />
         <MetricCard
           label="Monthly Spend"
-          value={formatCents(data?.monthlySpendCents ?? 0)}
+          value={formatCents(monthlySpendCents)}
           description="Current billing period"
           icon={<DollarSign />}
           accent="success"
@@ -108,7 +109,7 @@ export default function Dashboard() {
         />
         <MetricCard
           label="Edge Devices Online"
-          value={data?.edgeDevicesOnline ?? 0}
+          value={edgeDevicesOnline}
           description="Devices in edge mesh"
           icon={<Network />}
           accent="info"
@@ -177,14 +178,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Edge Mesh Mini-Map */}
+      {/* Edge Mesh Summary */}
       <div className="bg-[#1f2937] border border-[#374151] rounded-xl p-4">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-[13px] font-semibold text-[#f9fafb]">Edge Mesh</h3>
             <p className="text-[11px] text-[#6b7280] mt-0.5">
-              {data?.edgeMiniMap.filter((d) => d.status === "online").length ?? 0} online ·{" "}
-              {data?.edgeMiniMap.filter((d) => d.status === "offline").length ?? 0} offline
+              {edgeDevicesOnline} online · {(data?.edgeDeviceCount ?? 0) - edgeDevicesOnline} offline
             </p>
           </div>
           <button
@@ -195,39 +195,33 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {!data?.edgeMiniMap || data.edgeMiniMap.length === 0 ? (
+        {(data?.edgeDeviceCount ?? 0) === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Network size={28} className="text-[#374151] mb-3" />
             <p className="text-[12px] text-[#6b7280]">No edge devices registered</p>
           </div>
         ) : (
-          <div className="flex flex-wrap gap-3">
-            {data.edgeMiniMap.map((device) => (
-              <div
-                key={device.id}
-                className="flex items-center gap-2 bg-[#111827] rounded-lg px-3 py-2 cursor-pointer hover:bg-[#263244] transition-colors"
-                onClick={() => navigate("/edge-mesh")}
-                title={`${device.name} — ${device.status}`}
-              >
-                <div className="relative">
-                  <div
-                    className={cn(
-                      "w-2.5 h-2.5 rounded-full flex-shrink-0",
-                      STATUS_DOT[device.status as DeviceStatus]
-                    )}
-                  />
-                  {device.status === "online" && (
-                    <span
-                      className={cn(
-                        "absolute inset-0 rounded-full animate-ping opacity-60",
-                        STATUS_DOT[device.status]
-                      )}
-                    />
-                  )}
-                </div>
-                <span className="text-[11px] text-[#d1d5db] font-medium">{device.name}</span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-[#111827] rounded-lg px-4 py-3">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#22c55e] relative">
+                <span className="absolute inset-0 rounded-full animate-ping opacity-60 bg-[#22c55e]" />
               </div>
-            ))}
+              <span className="text-[13px] font-bold text-[#f9fafb]">{edgeDevicesOnline}</span>
+              <span className="text-[11px] text-[#9ca3af]">online</span>
+            </div>
+            <div className="flex items-center gap-2 bg-[#111827] rounded-lg px-4 py-3">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#6b7280]" />
+              <span className="text-[13px] font-bold text-[#f9fafb]">
+                {(data?.edgeDeviceCount ?? 0) - edgeDevicesOnline}
+              </span>
+              <span className="text-[11px] text-[#9ca3af]">offline</span>
+            </div>
+            <button
+              onClick={() => navigate("/edge-mesh")}
+              className="ml-auto text-[12px] text-[#20808D] hover:text-[#06b6d4] bg-[#111827] rounded-lg px-4 py-3 transition-colors"
+            >
+              View all devices →
+            </button>
           </div>
         )}
       </div>

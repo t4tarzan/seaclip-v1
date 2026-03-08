@@ -5,7 +5,10 @@ import type { EdgeDevice, EdgeMesh } from "../lib/types";
 export function useEdgeDevices(companyId: string | undefined) {
   return useQuery({
     queryKey: ["edge-devices", companyId],
-    queryFn: () => api.get<EdgeDevice[]>(`/companies/${companyId}/edge-devices`),
+    queryFn: async () => {
+      const res = await api.get<{ data: EdgeDevice[] }>(`/companies/${companyId}/edge-devices`);
+      return res.data;
+    },
     enabled: !!companyId,
     refetchInterval: 5_000,
   });

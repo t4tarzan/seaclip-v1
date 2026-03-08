@@ -15,6 +15,7 @@ import Costs from "./pages/Costs";
 import Approvals from "./pages/Approvals";
 import Activity from "./pages/Activity";
 import Settings from "./pages/Settings";
+import SpokeView from "./pages/SpokeView";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +37,9 @@ export default function App() {
         <ThemeProvider>
           <CompanyProvider>
             <Routes>
+              {/* Spoke view — standalone thin-client page (no sidebar/layout) */}
+              <Route path="spoke/:deviceId" element={<SpokeView />} />
+
               <Route element={<Layout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="agents" element={<Agents />} />

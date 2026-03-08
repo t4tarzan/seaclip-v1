@@ -1,10 +1,11 @@
 /**
  * projects service — CRUD using Drizzle ORM against the `projects` table.
  *
- * DB schema: id, companyId, name, description, color, status, archived, createdAt, updatedAt.
- * Public Project interface adds: startDate, endDate, metadata (not in schema).
- * Extra fields are packed into the description column using a JSON sentinel, same
- * pattern as goals.ts.
+ * DB schema: id, companyId, name, description, color, status, archived, metadata (JSONB),
+ * createdAt, updatedAt.
+ *
+ * Extra fields (startDate, endDate, user metadata) are stored in the JSONB `metadata` column.
+ * Plain text description is stored in the `description` column directly.
  */
 import { getDb } from "../db.js";
 import { eq, and, asc } from "drizzle-orm";
@@ -36,51 +37,38 @@ export interface CreateProjectInput {
 }
 
 // ---------------------------------------------------------------------------
-// Serialization helpers — pack extra fields into the description column
+// Metadata helpers — pack/unpack extended fields into the JSONB metadata column
 // ---------------------------------------------------------------------------
 
-const META_PREFIX = "__PROJECT_META__:";
-const META_SUFFIX = ":__END__";
-
-interface ProjectMeta {
-  description?: string;
+interface ProjectMetadata {
   startDate?: string;
   endDate?: string;
-  metadata: Record<string, unknown>;
+  extra: Record<string, unknown>;
 }
 
-function packDescription(project: {
-  description?: string;
+function buildMetadata(input: {
   startDate?: string;
   endDate?: string;
   metadata: Record<string, unknown>;
-}): string | null {
-  const meta: ProjectMeta = {
-    description: project.description,
-    startDate: project.startDate,
-    endDate: project.endDate,
-    metadata: project.metadata,
+}): ProjectMetadata {
+  return {
+    startDate: input.startDate,
+    endDate: input.endDate,
+    extra: input.metadata,
   };
-  // Only pack if there's something beyond plain description
-  const hasExtras = meta.startDate || meta.endDate || Object.keys(meta.metadata).length > 0;
-  if (!hasExtras && meta.description !== undefined) {
-    // Can store plain if no extras — but use packed format for consistency
-  }
-  return `${META_PREFIX}${JSON.stringify(meta)}${META_SUFFIX}`;
 }
 
-function unpackDescription(raw: string | null | undefined): ProjectMeta {
-  if (raw && raw.startsWith(META_PREFIX) && raw.endsWith(META_SUFFIX)) {
-    try {
-      const jsonStr = raw.slice(META_PREFIX.length, raw.length - META_SUFFIX.length);
-      return JSON.parse(jsonStr) as ProjectMeta;
-    } catch {
-      // fall through to default
-    }
+function parseMetadata(raw: unknown): ProjectMetadata {
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    const obj = raw as Record<string, unknown>;
+    return {
+      startDate: (obj.startDate as string) ?? undefined,
+      endDate: (obj.endDate as string) ?? undefined,
+      extra: (obj.extra as Record<string, unknown>) ?? {},
+    };
   }
   return {
-    description: raw ?? undefined,
-    metadata: {},
+    extra: {},
   };
 }
 
@@ -91,17 +79,17 @@ function unpackDescription(raw: string | null | undefined): ProjectMeta {
 type ProjectRow = typeof projectsTable.$inferSelect;
 
 function rowToProject(row: ProjectRow): Project {
-  const meta = unpackDescription(row.description);
+  const meta = parseMetadata((row as any).metadata);
   return {
     id: row.id,
     companyId: row.companyId,
     name: row.name,
-    description: meta.description,
+    description: row.description ?? undefined,
     status: (row.status as Project["status"]) ?? "active",
     startDate: meta.startDate,
     endDate: meta.endDate,
     color: row.color ?? undefined,
-    metadata: meta.metadata ?? {},
+    metadata: meta.extra ?? {},
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -127,8 +115,7 @@ export async function createProject(
 ): Promise<Project> {
   const db = getDb();
 
-  const descriptionPacked = packDescription({
-    description: input.description,
+  const metadata = buildMetadata({
     startDate: input.startDate,
     endDate: input.endDate,
     metadata: input.metadata ?? {},
@@ -139,11 +126,12 @@ export async function createProject(
     .values({
       companyId,
       name: input.name,
-      description: descriptionPacked,
+      description: input.description ?? null,
       color: input.color ?? null,
       status: input.status ?? "active",
       archived: false,
-    })
+      metadata,
+    } as any)
     .returning();
 
   return rowToProject(row);
@@ -173,7 +161,6 @@ export async function updateProject(
   const current = await getProject(companyId, id);
 
   const merged = {
-    description: input.description !== undefined ? input.description : current.description,
     startDate: input.startDate !== undefined ? input.startDate : current.startDate,
     endDate: input.endDate !== undefined ? input.endDate : current.endDate,
     metadata: input.metadata !== undefined
@@ -181,17 +168,18 @@ export async function updateProject(
       : current.metadata,
   };
 
-  const descriptionPacked = packDescription(merged);
+  const metadata = buildMetadata(merged);
 
   const [row] = await db
     .update(projectsTable)
     .set({
       name: input.name !== undefined ? input.name : current.name,
-      description: descriptionPacked,
+      description: input.description !== undefined ? (input.description ?? null) : (current.description ?? null),
       color: input.color !== undefined ? (input.color ?? null) : (current.color ?? null),
       status: input.status !== undefined ? input.status : current.status,
+      metadata,
       updatedAt: new Date(),
-    })
+    } as any)
     .where(and(eq(projectsTable.id, id), eq(projectsTable.companyId, companyId)))
     .returning();
 

@@ -18,6 +18,7 @@ import { dashboardRouter } from "./routes/dashboard.js";
 import { activityRouter } from "./routes/activity.js";
 import { edgeDevicesRouter } from "./routes/edge-devices.js";
 import { hubFederationRouter } from "./routes/hub-federation.js";
+import { spokeRouter } from "./routes/spoke.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -63,6 +64,9 @@ export function createApp(): express.Express {
 
   // Federation routes
   app.use("/api/federation", hubFederationRouter);
+
+  // Spoke (thin-client) routes — no auth required (device-level endpoints)
+  app.use("/api/spoke", spokeRouter);
 
   // ─── Static UI (optional) ─────────────────────────────────────────────────
   if (config.serveUi) {

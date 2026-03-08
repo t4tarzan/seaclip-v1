@@ -98,7 +98,7 @@ router.post("/:companyId/issues/:id/checkout", requireAuth, async (req, res, nex
     const issue = await issuesService.checkoutIssue(
       String(req.params.companyId),
       String(req.params.id),
-      agentId ?? (req as any).user?.id ?? "unknown",
+      agentId ?? req.user?.id ?? "unknown",
     );
     await publishLiveEvent(String(req.params.companyId), {
       type: "issue.checked_out",
@@ -121,7 +121,7 @@ router.post(
       const comment = await issuesService.addComment(
         String(req.params.companyId),
         String(req.params.id),
-        { ...req.body, authorId: req.body.authorId ?? (req as any).user?.id },
+        { ...req.body, authorId: req.body.authorId ?? req.user?.id },
       );
       await publishLiveEvent(String(req.params.companyId), {
         type: "issue.comment_added",

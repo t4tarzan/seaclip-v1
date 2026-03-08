@@ -25,6 +25,7 @@ export const agents = pgTable(
     reportsTo: uuid("reports_to"),
     capabilities: text("capabilities"),
     adapterType: text("adapter_type").notNull().default("process"),
+    environment: text("environment").notNull().default("local"),
     adapterConfig: jsonb("adapter_config").notNull().default({}),
     runtimeConfig: jsonb("runtime_config").notNull().default({}),
     budgetMonthlyCents: integer("budget_monthly_cents").notNull().default(0),

@@ -41,9 +41,18 @@ function getActionIcon(action: string): React.ElementType {
 }
 
 export function ActivityRow({ event, compact = false }: ActivityRowProps) {
+  // Normalize server fields to UI fields (server sends eventType/summary/occurredAt)
+  const raw = event as any;
+  const action = event.action ?? raw.eventType ?? "";
+  const actorName = event.actorName ?? raw.actorId?.slice(0, 8) ?? "system";
+  const entityName = event.entityName ?? raw.summary ?? "";
+  const entityType = event.entityType ?? raw.entityType ?? "";
+  const createdAt = event.createdAt ?? raw.occurredAt ?? new Date().toISOString();
+  const detail = event.detail ?? raw.summary;
+
   const ActorIcon = actorIcons[event.actorType] ?? User;
-  const ActionIcon = getActionIcon(event.action);
-  const actionColor = getActionColor(event.action);
+  const ActionIcon = getActionIcon(action);
+  const actionColor = getActionColor(action);
 
   if (compact) {
     return (
@@ -53,17 +62,17 @@ export function ActivityRow({ event, compact = false }: ActivityRowProps) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[11px] text-[#d1d5db] leading-relaxed">
-            <span className="font-medium text-[#f9fafb]">{event.actorName}</span>{" "}
-            <span className={cn("font-medium", actionColor)}>{event.action}</span>{" "}
-            <span className="text-[#9ca3af]">{event.entityType}</span>{" "}
-            <span className="font-medium text-[#f9fafb] truncate">{event.entityName}</span>
+            <span className="font-medium text-[#f9fafb]">{actorName}</span>{" "}
+            <span className={cn("font-medium", actionColor)}>{action}</span>{" "}
+            <span className="text-[#9ca3af]">{entityType}</span>{" "}
+            <span className="font-medium text-[#f9fafb] truncate">{entityName}</span>
           </p>
-          {event.detail && (
-            <p className="text-[10px] text-[#6b7280] truncate mt-0.5">{event.detail}</p>
+          {detail && (
+            <p className="text-[10px] text-[#6b7280] truncate mt-0.5">{detail}</p>
           )}
         </div>
         <span className="text-[10px] text-[#6b7280] flex-shrink-0 mt-0.5">
-          {timeAgo(event.createdAt)}
+          {timeAgo(createdAt)}
         </span>
       </div>
     );
@@ -73,7 +82,7 @@ export function ActivityRow({ event, compact = false }: ActivityRowProps) {
     <tr className="group hover:bg-[#1a2132] transition-colors">
       <td className="px-3 py-2.5 whitespace-nowrap">
         <span className="text-[11px] text-[#9ca3af] font-mono">
-          {new Date(event.createdAt).toLocaleTimeString("en-US", {
+          {new Date(createdAt).toLocaleTimeString("en-US", {
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
@@ -81,7 +90,7 @@ export function ActivityRow({ event, compact = false }: ActivityRowProps) {
         </span>
         <br />
         <span className="text-[10px] text-[#6b7280]">
-          {new Date(event.createdAt).toLocaleDateString("en-US", {
+          {new Date(createdAt).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
           })}
@@ -93,7 +102,7 @@ export function ActivityRow({ event, compact = false }: ActivityRowProps) {
             <ActorIcon size={11} className="text-[#9ca3af]" />
           </div>
           <div>
-            <p className="text-[12px] font-medium text-[#f9fafb]">{event.actorName}</p>
+            <p className="text-[12px] font-medium text-[#f9fafb]">{actorName}</p>
             <p className="text-[10px] text-[#6b7280] capitalize">{event.actorType}</p>
           </div>
         </div>
@@ -102,16 +111,16 @@ export function ActivityRow({ event, compact = false }: ActivityRowProps) {
         <div className="flex items-center gap-1.5">
           <ActionIcon size={11} className={actionColor} />
           <span className={cn("text-[12px] font-medium capitalize", actionColor)}>
-            {event.action}
+            {action}
           </span>
         </div>
       </td>
       <td className="px-3 py-2.5">
-        <p className="text-[12px] text-[#f9fafb] capitalize">{event.entityType}</p>
-        <p className="text-[10px] text-[#9ca3af]">{event.entityName}</p>
+        <p className="text-[12px] text-[#f9fafb] capitalize">{entityType}</p>
+        <p className="text-[10px] text-[#9ca3af]">{entityName}</p>
       </td>
       <td className="px-3 py-2.5 max-w-[280px]">
-        <p className="text-[11px] text-[#6b7280] truncate">{event.detail ?? "—"}</p>
+        <p className="text-[11px] text-[#6b7280] truncate">{detail ?? "—"}</p>
       </td>
     </tr>
   );

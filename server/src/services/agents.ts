@@ -21,11 +21,14 @@ import { notFound, conflict } from "../errors.js";
 
 export type AgentStatus = "active" | "paused" | "error" | "terminated" | "idle";
 
+export type AgentEnvironment = "cloud" | "local";
+
 export interface Agent {
   id: string;
   companyId: string;
   name: string;
   adapterType: string;
+  environment: AgentEnvironment;
   adapterConfig: Record<string, unknown>;
   model?: string;
   systemPrompt?: string;
@@ -47,6 +50,7 @@ export interface Agent {
 export interface CreateAgentInput {
   name: string;
   adapterType: string;
+  environment?: AgentEnvironment;
   adapterConfig?: Record<string, unknown>;
   model?: string;
   systemPrompt?: string;
@@ -115,6 +119,7 @@ function rowToAgent(row: DbRow): Agent {
     companyId: row.companyId,
     name: row.name,
     adapterType: row.adapterType,
+    environment: ((row as any).environment ?? "local") as AgentEnvironment,
     adapterConfig: safeAdapterConfig(row),
     model: rc.model,
     systemPrompt: rc.systemPrompt,
@@ -200,6 +205,7 @@ export async function createAgent(
       companyId,
       name: input.name,
       adapterType: input.adapterType,
+      environment: input.environment ?? "local",
       adapterConfig: (input.adapterConfig ?? {}) as Record<string, unknown>,
       runtimeConfig: rc as Record<string, unknown>,
       metadata: (input.metadata ?? {}) as Record<string, unknown>,
@@ -289,6 +295,7 @@ export async function updateAgent(
     } as Record<string, unknown>;
   }
   if (input.status !== undefined) updateValues.status = input.status;
+  if ((input as any).environment !== undefined) (updateValues as any).environment = (input as any).environment;
 
   const [updated] = await db
     .update(agentsTable)

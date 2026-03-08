@@ -5,7 +5,10 @@ import type { Approval } from "../lib/types";
 export function useApprovals(companyId: string | undefined) {
   return useQuery({
     queryKey: ["approvals", companyId],
-    queryFn: () => api.get<Approval[]>(`/companies/${companyId}/approvals`),
+    queryFn: async () => {
+      const res = await api.get<{ data: Approval[] }>(`/companies/${companyId}/approvals`);
+      return res.data;
+    },
     enabled: !!companyId,
     refetchInterval: 15_000,
   });
@@ -14,7 +17,10 @@ export function useApprovals(companyId: string | undefined) {
 export function usePendingApprovals(companyId: string | undefined) {
   return useQuery({
     queryKey: ["approvals", companyId, "pending"],
-    queryFn: () => api.get<Approval[]>(`/companies/${companyId}/approvals?status=pending`),
+    queryFn: async () => {
+      const res = await api.get<{ data: Approval[] }>(`/companies/${companyId}/approvals?status=pending`);
+      return res.data;
+    },
     enabled: !!companyId,
     refetchInterval: 10_000,
   });

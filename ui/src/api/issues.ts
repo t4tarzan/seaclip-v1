@@ -17,8 +17,10 @@ function buildIssueParams(filters?: IssueFilters): string {
 export function useIssues(companyId: string | undefined, filters?: IssueFilters) {
   return useQuery({
     queryKey: ["issues", companyId, filters],
-    queryFn: () =>
-      api.get<Issue[]>(`/companies/${companyId}/issues${buildIssueParams(filters)}`),
+    queryFn: async () => {
+      const res = await api.get<{ data: Issue[] }>(`/companies/${companyId}/issues${buildIssueParams(filters)}`);
+      return res.data;
+    },
     enabled: !!companyId,
     staleTime: 10_000,
   });
@@ -35,8 +37,10 @@ export function useIssue(companyId: string | undefined, id: string | undefined) 
 export function useIssueComments(companyId: string | undefined, issueId: string | undefined) {
   return useQuery({
     queryKey: ["issue-comments", companyId, issueId],
-    queryFn: () =>
-      api.get<IssueComment[]>(`/companies/${companyId}/issues/${issueId}/comments`),
+    queryFn: async () => {
+      const res = await api.get<{ data: IssueComment[] }>(`/companies/${companyId}/issues/${issueId}/comments`);
+      return Array.isArray(res) ? res : (res.data ?? []);
+    },
     enabled: !!companyId && !!issueId,
   });
 }

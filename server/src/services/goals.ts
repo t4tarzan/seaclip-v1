@@ -1,17 +1,13 @@
 /**
  * goals service — CRUD using Drizzle ORM against the `goals` table.
  *
- * The DB schema has: id, companyId, title, description, parentId, status, createdAt, updatedAt.
+ * The DB schema has: id, companyId, title, description, parentId, status, metadata (JSONB),
+ * createdAt, updatedAt.
+ *
  * The public Goal interface preserves all fields from the in-memory version, with extra fields
  * (targetDate, projectId, parentGoalId, metricType, metricTarget, metricCurrent, metadata)
- * stored/retrieved via the description JSON field or defaulted, keeping full backward compat.
- *
- * Strategy: store extra fields in a JSON-encoded description prefix so they survive round-trips.
- * Format of `description` column: if it starts with "\x00META:", the rest up to "\x00END\x00"
- * is JSON metadata and what follows is the human description. Otherwise treat as plain description.
- *
- * Simpler approach used here: store extended fields in the `description` column as a JSON blob
- * prefixed with a sentinel, falling back gracefully.
+ * stored in the JSONB `metadata` column. Plain text description is stored in the `description`
+ * column directly.
  */
 import { getDb } from "../db.js";
 import { eq, and, asc } from "drizzle-orm";
@@ -49,25 +45,20 @@ export interface CreateGoalInput {
 }
 
 // ---------------------------------------------------------------------------
-// Serialization helpers — pack extra fields into the description column
+// Metadata helpers — pack/unpack extended fields into the JSONB metadata column
 // ---------------------------------------------------------------------------
 
-const META_PREFIX = "__GOAL_META__:";
-const META_SUFFIX = ":__END__";
-
-interface GoalMeta {
-  description?: string;
+interface GoalMetadata {
   targetDate?: string;
   projectId?: string;
   parentGoalId?: string;
   metricType: "boolean" | "numeric" | "percentage";
   metricTarget?: number;
   metricCurrent: number;
-  metadata: Record<string, unknown>;
+  extra: Record<string, unknown>;
 }
 
-function packDescription(goal: {
-  description?: string;
+function buildMetadata(input: {
   targetDate?: string;
   projectId?: string;
   parentGoalId?: string;
@@ -75,34 +66,35 @@ function packDescription(goal: {
   metricTarget?: number;
   metricCurrent: number;
   metadata: Record<string, unknown>;
-}): string {
-  const meta: GoalMeta = {
-    description: goal.description,
-    targetDate: goal.targetDate,
-    projectId: goal.projectId,
-    parentGoalId: goal.parentGoalId,
-    metricType: goal.metricType,
-    metricTarget: goal.metricTarget,
-    metricCurrent: goal.metricCurrent,
-    metadata: goal.metadata,
+}): GoalMetadata {
+  return {
+    targetDate: input.targetDate,
+    projectId: input.projectId,
+    parentGoalId: input.parentGoalId,
+    metricType: input.metricType,
+    metricTarget: input.metricTarget,
+    metricCurrent: input.metricCurrent,
+    extra: input.metadata,
   };
-  return `${META_PREFIX}${JSON.stringify(meta)}${META_SUFFIX}`;
 }
 
-function unpackDescription(raw: string | null | undefined): GoalMeta {
-  if (raw && raw.startsWith(META_PREFIX) && raw.endsWith(META_SUFFIX)) {
-    try {
-      const jsonStr = raw.slice(META_PREFIX.length, raw.length - META_SUFFIX.length);
-      return JSON.parse(jsonStr) as GoalMeta;
-    } catch {
-      // fall through to default
-    }
+function parseMetadata(raw: unknown): GoalMetadata {
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    const obj = raw as Record<string, unknown>;
+    return {
+      targetDate: (obj.targetDate as string) ?? undefined,
+      projectId: (obj.projectId as string) ?? undefined,
+      parentGoalId: (obj.parentGoalId as string) ?? undefined,
+      metricType: (obj.metricType as GoalMetadata["metricType"]) ?? "boolean",
+      metricTarget: (obj.metricTarget as number) ?? undefined,
+      metricCurrent: (obj.metricCurrent as number) ?? 0,
+      extra: (obj.extra as Record<string, unknown>) ?? {},
+    };
   }
   return {
-    description: raw ?? undefined,
     metricType: "boolean",
     metricCurrent: 0,
-    metadata: {},
+    extra: {},
   };
 }
 
@@ -113,12 +105,12 @@ function unpackDescription(raw: string | null | undefined): GoalMeta {
 type GoalRow = typeof goalsTable.$inferSelect;
 
 function rowToGoal(row: GoalRow): Goal {
-  const meta = unpackDescription(row.description);
+  const meta = parseMetadata((row as any).metadata);
   return {
     id: row.id,
     companyId: row.companyId,
     title: row.title,
-    description: meta.description,
+    description: row.description ?? undefined,
     status: (row.status as Goal["status"]) ?? "draft",
     targetDate: meta.targetDate,
     projectId: meta.projectId,
@@ -126,7 +118,7 @@ function rowToGoal(row: GoalRow): Goal {
     metricType: meta.metricType ?? "boolean",
     metricTarget: meta.metricTarget,
     metricCurrent: meta.metricCurrent ?? 0,
-    metadata: meta.metadata ?? {},
+    metadata: meta.extra ?? {},
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -152,8 +144,7 @@ export async function createGoal(
 ): Promise<Goal> {
   const db = getDb();
 
-  const descriptionPacked = packDescription({
-    description: input.description,
+  const metadata = buildMetadata({
     targetDate: input.targetDate,
     projectId: input.projectId,
     parentGoalId: input.parentGoalId,
@@ -168,10 +159,11 @@ export async function createGoal(
     .values({
       companyId,
       title: input.title,
-      description: descriptionPacked,
+      description: input.description ?? null,
       parentId: input.parentGoalId ?? null,
       status: input.status ?? "draft",
-    })
+      metadata,
+    } as any)
     .returning();
 
   return rowToGoal(row);
@@ -201,7 +193,6 @@ export async function updateGoal(
   const current = await getGoal(companyId, id);
 
   const merged = {
-    description: input.description !== undefined ? input.description : current.description,
     targetDate: input.targetDate !== undefined ? input.targetDate : current.targetDate,
     projectId: input.projectId !== undefined ? input.projectId : current.projectId,
     parentGoalId: input.parentGoalId !== undefined ? input.parentGoalId : current.parentGoalId,
@@ -213,17 +204,18 @@ export async function updateGoal(
       : current.metadata,
   };
 
-  const descriptionPacked = packDescription(merged);
+  const metadata = buildMetadata(merged);
 
   const [row] = await db
     .update(goalsTable)
     .set({
       title: input.title !== undefined ? input.title : current.title,
-      description: descriptionPacked,
+      description: input.description !== undefined ? (input.description ?? null) : (current.description ?? null),
       parentId: merged.parentGoalId ?? null,
       status: input.status !== undefined ? input.status : current.status,
+      metadata,
       updatedAt: new Date(),
-    })
+    } as any)
     .where(and(eq(goalsTable.id, id), eq(goalsTable.companyId, companyId)))
     .returning();
 

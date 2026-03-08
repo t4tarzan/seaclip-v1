@@ -10,6 +10,7 @@ const router = Router({ mergeParams: true });
 const CreateAgentSchema = z.object({
   name: z.string().min(1).max(255),
   adapterType: z.string().min(1),
+  environment: z.enum(["cloud", "local"]).default("local"),
   adapterConfig: z.record(z.unknown()).default({}),
   model: z.string().optional(),
   systemPrompt: z.string().optional(),
@@ -84,7 +85,7 @@ router.post("/:companyId/agents/:id/invoke", requireAuth, async (req, res, next)
   try {
     const agent = await agentsService.getAgent(String(req.params.companyId), String(req.params.id));
     const runResult = await heartbeatService.invokeAgent(agent, {
-      triggeredBy: (req as any).user?.id ?? "manual",
+      triggeredBy: req.user?.id ?? "manual",
       manual: true,
       context: req.body ?? {},
     });

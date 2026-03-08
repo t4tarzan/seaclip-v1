@@ -10,3 +10,4 @@ export { dashboardRouter } from "./dashboard.js";
 export { activityRouter } from "./activity.js";
 export { edgeDevicesRouter } from "./edge-devices.js";
 export { hubFederationRouter } from "./hub-federation.js";
+export { spokeRouter } from "./spoke.js";
