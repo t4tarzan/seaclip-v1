@@ -25,7 +25,7 @@ interface WsClient {
 export function createLiveEventsWsServer(httpServer: Server): WebSocketServer {
   const logger = getLogger();
 
-  const wss = new WebSocketServer({ server: httpServer, noServer: true });
+  const wss = new WebSocketServer({ noServer: true });
 
   // Handle HTTP upgrade manually so we can parse the path and authenticate
   httpServer.on("upgrade", (request: IncomingMessage, socket, head) => {

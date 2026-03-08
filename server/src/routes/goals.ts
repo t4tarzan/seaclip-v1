@@ -22,7 +22,7 @@ const UpdateGoalSchema = CreateGoalSchema.partial();
 
 router.get("/:companyId/goals", requireAuth, async (req, res, next) => {
   try {
-    const goals = await goalsService.listGoals(req.params.companyId);
+    const goals = await goalsService.listGoals(String(req.params.companyId));
     res.json({ data: goals, count: goals.length });
   } catch (err) {
     next(err);
@@ -31,7 +31,7 @@ router.get("/:companyId/goals", requireAuth, async (req, res, next) => {
 
 router.post("/:companyId/goals", requireAuth, validate(CreateGoalSchema), async (req, res, next) => {
   try {
-    const goal = await goalsService.createGoal(req.params.companyId, req.body);
+    const goal = await goalsService.createGoal(String(req.params.companyId), req.body);
     res.status(201).json(goal);
   } catch (err) {
     next(err);
@@ -40,7 +40,7 @@ router.post("/:companyId/goals", requireAuth, validate(CreateGoalSchema), async 
 
 router.get("/:companyId/goals/:id", requireAuth, async (req, res, next) => {
   try {
-    const goal = await goalsService.getGoal(req.params.companyId, req.params.id);
+    const goal = await goalsService.getGoal(String(req.params.companyId), String(req.params.id));
     res.json(goal);
   } catch (err) {
     next(err);
@@ -49,7 +49,7 @@ router.get("/:companyId/goals/:id", requireAuth, async (req, res, next) => {
 
 router.patch("/:companyId/goals/:id", requireAuth, validate(UpdateGoalSchema), async (req, res, next) => {
   try {
-    const goal = await goalsService.updateGoal(req.params.companyId, req.params.id, req.body);
+    const goal = await goalsService.updateGoal(String(req.params.companyId), String(req.params.id), req.body);
     res.json(goal);
   } catch (err) {
     next(err);
@@ -58,7 +58,7 @@ router.patch("/:companyId/goals/:id", requireAuth, validate(UpdateGoalSchema), a
 
 router.delete("/:companyId/goals/:id", requireAuth, async (req, res, next) => {
   try {
-    await goalsService.deleteGoal(req.params.companyId, req.params.id);
+    await goalsService.deleteGoal(String(req.params.companyId), String(req.params.id));
     res.status(204).end();
   } catch (err) {
     next(err);

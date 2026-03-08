@@ -2,6 +2,9 @@
  * hub-federation service — hub registration, sync protocol, cross-hub task routing.
  */
 import { randomUUID } from "node:crypto";
+import { getDb } from "../db.js";
+import { eq, asc, sql } from "drizzle-orm";
+import { hubFederation } from "@seaclip/db";
 import { notFound, conflict } from "../errors.js";
 import { getLogger } from "../middleware/logger.js";
 
@@ -59,13 +62,47 @@ export interface FederationStatus {
 }
 
 const LOCAL_HUB_ID = process.env.LOCAL_HUB_ID ?? randomUUID();
-const hubStore = new Map<string, Hub>();
-const syncSequences = new Map<string, number>(); // hubId → last processed sequence
+
+// ---------------------------------------------------------------------------
+// Helper
+// ---------------------------------------------------------------------------
+
+function rowToHub(row: typeof hubFederation.$inferSelect): Hub {
+  const meta = (row.metadata ?? {}) as Record<string, unknown>;
+  const capabilities = Array.isArray(meta.capabilities)
+    ? (meta.capabilities as string[])
+    : [];
+  const lastSyncSequence =
+    typeof meta.lastSyncSequence === "number" ? meta.lastSyncSequence : 0;
+
+  return {
+    id: row.hubId,
+    name: row.name,
+    url: row.url,
+    publicKey: typeof meta.publicKey === "string" ? meta.publicKey : undefined,
+    region: typeof meta.region === "string" ? meta.region : undefined,
+    capabilities,
+    status: (row.status as HubStatus) ?? "active",
+    lastSyncAt: row.lastSyncAt?.toISOString(),
+    lastSyncSequence,
+    metadata: meta,
+    registeredAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
 
 export async function listHubs(): Promise<Hub[]> {
-  return Array.from(hubStore.values()).sort(
-    (a, b) => a.registeredAt.localeCompare(b.registeredAt),
-  );
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(hubFederation)
+    .orderBy(asc(hubFederation.createdAt));
+
+  return rows.map(rowToHub);
 }
 
 export async function registerHub(input: {
@@ -76,55 +113,78 @@ export async function registerHub(input: {
   capabilities?: string[];
   metadata?: Record<string, unknown>;
 }): Promise<Hub> {
+  const db = getDb();
+
   // Check URL uniqueness
-  for (const h of hubStore.values()) {
-    if (h.url === input.url) {
-      throw conflict(`A hub with URL "${input.url}" is already registered`);
-    }
+  const [existing] = await db
+    .select()
+    .from(hubFederation)
+    .where(eq(hubFederation.url, input.url));
+
+  if (existing) {
+    throw conflict(`A hub with URL "${input.url}" is already registered`);
   }
 
-  const now = new Date().toISOString();
-  const hub: Hub = {
-    id: randomUUID(),
-    name: input.name,
-    url: input.url,
-    publicKey: input.publicKey,
-    region: input.region,
-    capabilities: input.capabilities ?? [],
-    status: "active",
-    lastSyncSequence: 0,
-    metadata: input.metadata ?? {},
-    registeredAt: now,
-    updatedAt: now,
-  };
+  const metadata: Record<string, unknown> = { ...(input.metadata ?? {}) };
+  if (input.publicKey) metadata.publicKey = input.publicKey;
+  if (input.region) metadata.region = input.region;
+  metadata.capabilities = input.capabilities ?? [];
+  metadata.lastSyncSequence = 0;
 
-  hubStore.set(hub.id, hub);
-  return hub;
+  const hubId = randomUUID();
+
+  const [row] = await db
+    .insert(hubFederation)
+    .values({
+      hubId,
+      name: input.name,
+      url: input.url,
+      status: "active",
+      metadata,
+    })
+    .returning();
+
+  return rowToHub(row);
 }
 
 export async function getHub(id: string): Promise<Hub> {
-  const hub = hubStore.get(id);
-  if (!hub) throw notFound(`Hub "${id}" not found`);
-  return hub;
+  const db = getDb();
+
+  const [row] = await db
+    .select()
+    .from(hubFederation)
+    .where(eq(hubFederation.hubId, id));
+
+  if (!row) throw notFound(`Hub "${id}" not found`);
+  return rowToHub(row);
 }
 
 export async function receiveSyncPayload(
   payload: SyncPayload,
 ): Promise<SyncResult> {
   const logger = getLogger();
+  const db = getDb();
   const errors: string[] = [];
   let eventsProcessed = 0;
 
-  const hub = hubStore.get(payload.sourceHubId);
-  if (!hub) {
-    // Auto-register unknown hubs as inactive
+  const [hubRow] = await db
+    .select()
+    .from(hubFederation)
+    .where(eq(hubFederation.hubId, payload.sourceHubId));
+
+  if (!hubRow) {
     logger.warn(
       { sourceHubId: payload.sourceHubId },
       "Received sync from unknown hub",
     );
   }
 
-  const lastSeq = syncSequences.get(payload.sourceHubId) ?? 0;
+  // Retrieve last processed sequence from metadata
+  const meta = hubRow
+    ? ((hubRow.metadata ?? {}) as Record<string, unknown>)
+    : {};
+  const lastSeq =
+    typeof meta.lastSyncSequence === "number" ? meta.lastSyncSequence : 0;
 
   if (payload.sequenceNumber <= lastSeq) {
     logger.warn(
@@ -138,7 +198,9 @@ export async function receiveSyncPayload(
     return {
       accepted: false,
       eventsProcessed: 0,
-      errors: [`Sequence ${payload.sequenceNumber} already processed (last: ${lastSeq})`],
+      errors: [
+        `Sequence ${payload.sequenceNumber} already processed (last: ${lastSeq})`,
+      ],
       syncedAt: new Date().toISOString(),
     };
   }
@@ -147,28 +209,38 @@ export async function receiveSyncPayload(
   for (const event of payload.events) {
     try {
       logger.debug(
-        { eventId: event.id, eventType: event.type, companyId: event.companyId },
+        {
+          eventId: event.id,
+          eventType: event.type,
+          companyId: event.companyId,
+        },
         "Processing federated event",
       );
-      // In a full implementation: route to appropriate service based on event.type
       eventsProcessed++;
     } catch (err) {
-      errors.push(`Event ${event.id}: ${err instanceof Error ? err.message : String(err)}`);
+      errors.push(
+        `Event ${event.id}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 
-  // Update sequence counter and hub lastSyncAt
-  syncSequences.set(payload.sourceHubId, payload.sequenceNumber);
-
-  if (hub) {
-    const now = new Date().toISOString();
-    hubStore.set(hub.id, {
-      ...hub,
-      lastSyncAt: now,
+  // Persist updated sequence + lastSyncAt
+  if (hubRow) {
+    const now = new Date();
+    const updatedMeta: Record<string, unknown> = {
+      ...meta,
       lastSyncSequence: payload.sequenceNumber,
-      status: "active",
-      updatedAt: now,
-    });
+    };
+
+    await db
+      .update(hubFederation)
+      .set({
+        status: "active",
+        lastSyncAt: now,
+        updatedAt: now,
+        metadata: updatedMeta,
+      })
+      .where(eq(hubFederation.hubId, payload.sourceHubId));
   }
 
   logger.info(
@@ -189,16 +261,24 @@ export async function receiveSyncPayload(
 }
 
 export async function getFederationStatus(): Promise<FederationStatus> {
-  const hubs = Array.from(hubStore.values());
+  const db = getDb();
+
+  const rows = await db
+    .select()
+    .from(hubFederation)
+    .orderBy(asc(hubFederation.createdAt));
+
+  const hubs = rows.map(rowToHub);
   const connectedHubs = hubs.filter((h) => h.status === "active").length;
 
   const lastSyncTimes = hubs
     .filter((h) => h.lastSyncAt)
     .map((h) => new Date(h.lastSyncAt!).getTime());
 
-  const lastSyncAt = lastSyncTimes.length > 0
-    ? new Date(Math.max(...lastSyncTimes)).toISOString()
-    : undefined;
+  const lastSyncAt =
+    lastSyncTimes.length > 0
+      ? new Date(Math.max(...lastSyncTimes)).toISOString()
+      : undefined;
 
   const syncLag = lastSyncAt
     ? Math.floor((Date.now() - new Date(lastSyncAt).getTime()) / 1000)

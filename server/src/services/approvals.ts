@@ -1,4 +1,6 @@
-import { randomUUID } from "node:crypto";
+import { getDb } from "../db.js";
+import { eq, and, desc, sql } from "drizzle-orm";
+import { approvals } from "@seaclip/db";
 import { notFound, conflict } from "../errors.js";
 
 export type ApprovalStatus = "pending" | "approved" | "rejected" | "cancelled";
@@ -43,49 +45,125 @@ export interface ListApprovalsOptions {
   limit: number;
 }
 
-const store = new Map<string, Approval>();
+/**
+ * Map a DB row back to the Approval interface.
+ *
+ * DB schema mapping:
+ *   type                 → stored as "approval" (generic); title/description are in requestPayload JSONB
+ *   requestedByAgentId   → agentId (the requesting agent)
+ *   requestPayload       → JSONB containing { title, description, issueId, requestedById, expiresAt, metadata, agentId }
+ *   resolution           → text containing the decision ("approved" | "rejected") or reason packed as JSON
+ *   resolvedByUserId     → resolvedById
+ *   resolvedAt           → resolvedAt
+ *   status               → status
+ */
+function rowToApproval(row: typeof approvals.$inferSelect): Approval {
+  const payload = (row.requestPayload ?? {}) as Record<string, unknown>;
+
+  let decision: "approved" | "rejected" | undefined;
+  let reason: string | undefined;
+
+  if (row.resolution) {
+    try {
+      const res = JSON.parse(row.resolution) as Record<string, unknown>;
+      if (res.decision === "approved" || res.decision === "rejected") {
+        decision = res.decision;
+      }
+      if (typeof res.reason === "string") reason = res.reason;
+    } catch {
+      // resolution stored as plain decision string
+      if (row.resolution === "approved" || row.resolution === "rejected") {
+        decision = row.resolution as "approved" | "rejected";
+      }
+    }
+  }
+
+  return {
+    id: row.id,
+    companyId: row.companyId,
+    agentId: typeof payload.agentId === "string" ? payload.agentId : row.requestedByAgentId,
+    issueId: typeof payload.issueId === "string" ? payload.issueId : undefined,
+    title: typeof payload.title === "string" ? payload.title : "",
+    description: typeof payload.description === "string" ? payload.description : undefined,
+    requestedById: typeof payload.requestedById === "string" ? payload.requestedById : undefined,
+    resolvedById: row.resolvedByUserId ?? undefined,
+    status: row.status as ApprovalStatus,
+    decision,
+    reason,
+    requestedAt: row.createdAt.toISOString(),
+    resolvedAt: row.resolvedAt?.toISOString(),
+    expiresAt: typeof payload.expiresAt === "string" ? payload.expiresAt : undefined,
+    metadata: typeof payload.metadata === "object" && payload.metadata !== null
+      ? (payload.metadata as Record<string, unknown>)
+      : {},
+  };
+}
 
 export async function createApproval(
   companyId: string,
   input: CreateApprovalInput,
 ): Promise<Approval> {
-  const now = new Date().toISOString();
-  const approval: Approval = {
-    id: randomUUID(),
-    companyId,
-    agentId: input.agentId,
-    issueId: input.issueId,
+  const db = getDb();
+
+  const requestPayload: Record<string, unknown> = {
     title: input.title,
-    description: input.description,
-    requestedById: input.requestedById,
-    status: "pending",
-    requestedAt: now,
-    expiresAt: input.expiresAt,
     metadata: input.metadata ?? {},
   };
-  store.set(approval.id, approval);
-  return approval;
+  if (input.agentId) requestPayload.agentId = input.agentId;
+  if (input.issueId) requestPayload.issueId = input.issueId;
+  if (input.description) requestPayload.description = input.description;
+  if (input.requestedById) requestPayload.requestedById = input.requestedById;
+  if (input.expiresAt) requestPayload.expiresAt = input.expiresAt;
+
+  const [row] = await db
+    .insert(approvals)
+    .values({
+      companyId,
+      type: "approval",
+      status: "pending",
+      // requestedByAgentId is NOT NULL in schema; use agentId if provided, else a placeholder
+      requestedByAgentId: input.agentId ?? companyId,
+      requestPayload,
+    })
+    .returning();
+
+  return rowToApproval(row);
 }
 
 export async function listApprovals(
   companyId: string,
   options: ListApprovalsOptions,
 ): Promise<{ data: Approval[]; total: number; page: number; limit: number }> {
-  let approvals = Array.from(store.values()).filter(
-    (a) => a.companyId === companyId,
-  );
+  const db = getDb();
 
+  const conditions = [eq(approvals.companyId, companyId)];
   if (options.status && options.status !== "all") {
-    approvals = approvals.filter((a) => a.status === options.status);
+    conditions.push(eq(approvals.status, options.status));
   }
 
-  approvals.sort((a, b) => b.requestedAt.localeCompare(a.requestedAt));
+  const where = and(...conditions);
 
-  const total = approvals.length;
+  const [{ total }] = await db
+    .select({ total: sql<number>`cast(count(*) as int)` })
+    .from(approvals)
+    .where(where);
+
   const offset = (options.page - 1) * options.limit;
-  const data = approvals.slice(offset, offset + options.limit);
 
-  return { data, total, page: options.page, limit: options.limit };
+  const rows = await db
+    .select()
+    .from(approvals)
+    .where(where)
+    .orderBy(desc(approvals.createdAt))
+    .limit(options.limit)
+    .offset(offset);
+
+  return {
+    data: rows.map(rowToApproval),
+    total,
+    page: options.page,
+    limit: options.limit,
+  };
 }
 
 export async function resolveApproval(
@@ -93,51 +171,71 @@ export async function resolveApproval(
   id: string,
   input: ResolveApprovalInput,
 ): Promise<Approval> {
-  const approval = store.get(id);
-  if (!approval || approval.companyId !== companyId) {
+  const db = getDb();
+
+  const [existing] = await db
+    .select()
+    .from(approvals)
+    .where(and(eq(approvals.id, id), eq(approvals.companyId, companyId)));
+
+  if (!existing) {
     throw notFound(`Approval "${id}" not found`);
   }
 
-  if (approval.status !== "pending") {
+  if (existing.status !== "pending") {
     throw conflict(
-      `Approval "${id}" is already in status "${approval.status}" and cannot be resolved`,
+      `Approval "${id}" is already in status "${existing.status}" and cannot be resolved`,
     );
   }
 
-  // Check expiry
-  if (approval.expiresAt && new Date(approval.expiresAt) < new Date()) {
+  // Check expiry (stored in requestPayload)
+  const payload = (existing.requestPayload ?? {}) as Record<string, unknown>;
+  if (typeof payload.expiresAt === "string" && new Date(payload.expiresAt) < new Date()) {
     throw conflict(`Approval "${id}" has expired`);
   }
 
-  const updated: Approval = {
-    ...approval,
-    status: input.decision,
-    decision: input.decision,
-    reason: input.reason,
-    resolvedById: input.resolvedById,
-    resolvedAt: new Date().toISOString(),
-  };
+  const resolution = JSON.stringify({ decision: input.decision, reason: input.reason });
 
-  store.set(id, updated);
-  return updated;
+  const [row] = await db
+    .update(approvals)
+    .set({
+      status: input.decision,
+      resolution,
+      resolvedByUserId: input.resolvedById ?? null,
+      resolvedAt: new Date(),
+    })
+    .where(eq(approvals.id, id))
+    .returning();
+
+  return rowToApproval(row);
 }
 
 export async function cancelApproval(
   companyId: string,
   id: string,
 ): Promise<Approval> {
-  const approval = store.get(id);
-  if (!approval || approval.companyId !== companyId) {
+  const db = getDb();
+
+  const [existing] = await db
+    .select()
+    .from(approvals)
+    .where(and(eq(approvals.id, id), eq(approvals.companyId, companyId)));
+
+  if (!existing) {
     throw notFound(`Approval "${id}" not found`);
   }
-  if (approval.status !== "pending") {
-    throw conflict(`Cannot cancel approval in status "${approval.status}"`);
+  if (existing.status !== "pending") {
+    throw conflict(`Cannot cancel approval in status "${existing.status}"`);
   }
-  const updated: Approval = {
-    ...approval,
-    status: "cancelled",
-    resolvedAt: new Date().toISOString(),
-  };
-  store.set(id, updated);
-  return updated;
+
+  const [row] = await db
+    .update(approvals)
+    .set({
+      status: "cancelled",
+      resolvedAt: new Date(),
+    })
+    .where(eq(approvals.id, id))
+    .returning();
+
+  return rowToApproval(row);
 }

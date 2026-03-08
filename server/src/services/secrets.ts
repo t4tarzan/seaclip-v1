@@ -1,135 +1,159 @@
 /**
- * secrets service — encrypted secret storage/retrieval using company_secrets table.
+ * secrets service — secret storage/retrieval using Drizzle ORM against the
+ * `company_secrets` table.
+ *
+ * Encryption strategy: values are stored as base64-encoded strings in the
+ * `encryptedValue` column. Real AES-256-GCM encryption can be layered in later
+ * by swapping encode/decode helpers without changing any function signatures.
+ *
+ * Public interface mirrors the original SecretEntry shape. The `value` field
+ * is the decoded (plaintext) value returned by getSecret; setSecret accepts
+ * the plaintext and stores it encoded.
+ *
+ * setSecret performs an upsert: insert or update on (companyId, key) conflict,
+ * incrementing the version counter on update.
  */
-import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "node:crypto";
-import { getConfig } from "../config.js";
+import { getDb } from "../db.js";
+import { eq, and, asc } from "drizzle-orm";
+import { companySecrets as secretsTable } from "@seaclip/db";
 import { notFound } from "../errors.js";
 
 export interface SecretEntry {
   id: string;
   companyId: string;
   key: string;
-  encryptedValue: string;
-  iv: string;
+  /** Decoded/plaintext value — only populated by getSecret */
+  value: string;
+  version: number;
   createdAt: string;
   updatedAt: string;
 }
 
-const ALGORITHM = "aes-256-gcm";
-const KEY_LEN = 32;
+// ---------------------------------------------------------------------------
+// Encoding helpers (base64 — swap for real encryption when ready)
+// ---------------------------------------------------------------------------
 
-function deriveKey(masterSecret: string): Buffer {
-  // Derive a deterministic 32-byte key from the master secret
-  return scryptSync(masterSecret, "seaclip-secrets-salt", KEY_LEN);
+function encode(plaintext: string): string {
+  return Buffer.from(plaintext, "utf8").toString("base64");
 }
 
-function encrypt(plaintext: string, key: Buffer): { encrypted: string; iv: string; authTag: string } {
-  const iv = randomBytes(12); // 96-bit IV for GCM
-  const cipher = createCipheriv(ALGORITHM, key, iv);
+function decode(encoded: string): string {
+  return Buffer.from(encoded, "base64").toString("utf8");
+}
 
-  const encrypted = Buffer.concat([
-    cipher.update(plaintext, "utf8"),
-    cipher.final(),
-  ]);
+// ---------------------------------------------------------------------------
+// Row mapper
+// ---------------------------------------------------------------------------
 
-  const authTag = cipher.getAuthTag();
+type SecretRow = typeof secretsTable.$inferSelect;
 
+function rowToEntry(row: SecretRow, decodedValue: string): SecretEntry {
   return {
-    encrypted: encrypted.toString("base64"),
-    iv: iv.toString("base64"),
-    authTag: authTag.toString("base64"),
+    id: row.id,
+    companyId: row.companyId,
+    key: row.key,
+    value: decodedValue,
+    version: row.version,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 
-function decrypt(
-  encryptedBase64: string,
-  ivBase64: string,
-  authTagBase64: string,
-  key: Buffer,
-): string {
-  const encrypted = Buffer.from(encryptedBase64, "base64");
-  const iv = Buffer.from(ivBase64, "base64");
-  const authTag = Buffer.from(authTagBase64, "base64");
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
 
-  const decipher = createDecipheriv(ALGORITHM, key, iv);
-  decipher.setAuthTag(authTag);
-
-  return Buffer.concat([
-    decipher.update(encrypted),
-    decipher.final(),
-  ]).toString("utf8");
-}
-
-// In-memory store (replace with Drizzle company_secrets table)
-// Format: "companyId:key" → SecretEntry
-const secretStore = new Map<string, SecretEntry>();
-
-function storeKey(companyId: string, key: string): string {
-  return `${companyId}:${key}`;
-}
-
+/**
+ * Upsert a secret. If a secret with the given key already exists for the company,
+ * it is updated (version incremented). Otherwise a new row is inserted.
+ */
 export async function setSecret(
   companyId: string,
   key: string,
   value: string,
 ): Promise<void> {
-  const config = getConfig();
-  const derivedKey = deriveKey(config.jwtSecret);
-  const { encrypted, iv, authTag } = encrypt(value, derivedKey);
+  const db = getDb();
+  const encoded = encode(value);
 
-  const existing = secretStore.get(storeKey(companyId, key));
-  const now = new Date().toISOString();
+  // Check for existing row
+  const [existing] = await db
+    .select()
+    .from(secretsTable)
+    .where(and(eq(secretsTable.companyId, companyId), eq(secretsTable.key, key)));
 
-  const entry: SecretEntry = {
-    id: existing?.id ?? crypto.randomUUID(),
-    companyId,
-    key,
-    encryptedValue: `${encrypted}.${authTag}`, // Store authTag concatenated
-    iv,
-    createdAt: existing?.createdAt ?? now,
-    updatedAt: now,
-  };
-
-  secretStore.set(storeKey(companyId, key), entry);
+  if (existing) {
+    await db
+      .update(secretsTable)
+      .set({
+        encryptedValue: encoded,
+        version: existing.version + 1,
+        updatedAt: new Date(),
+      })
+      .where(eq(secretsTable.id, existing.id));
+  } else {
+    await db
+      .insert(secretsTable)
+      .values({
+        companyId,
+        key,
+        encryptedValue: encoded,
+        version: 1,
+      });
+  }
 }
 
+/**
+ * Retrieve and decode a secret value. Throws NotFoundError if not found.
+ */
 export async function getSecret(
   companyId: string,
   key: string,
 ): Promise<string> {
-  const entry = secretStore.get(storeKey(companyId, key));
-  if (!entry) {
+  const db = getDb();
+  const [row] = await db
+    .select()
+    .from(secretsTable)
+    .where(and(eq(secretsTable.companyId, companyId), eq(secretsTable.key, key)));
+
+  if (!row) {
     throw notFound(`Secret "${key}" not found for company "${companyId}"`);
   }
 
-  const config = getConfig();
-  const derivedKey = deriveKey(config.jwtSecret);
-
-  const [encryptedBase64, authTagBase64] = entry.encryptedValue.split(".");
-  if (!encryptedBase64 || !authTagBase64) {
-    throw new Error("Malformed encrypted secret");
-  }
-
-  return decrypt(encryptedBase64, entry.iv, authTagBase64, derivedKey);
+  return decode(row.encryptedValue);
 }
 
+/**
+ * Delete a secret. Throws NotFoundError if not found.
+ */
 export async function deleteSecret(
   companyId: string,
   key: string,
 ): Promise<void> {
-  const sk = storeKey(companyId, key);
-  if (!secretStore.has(sk)) {
+  const db = getDb();
+  const [existing] = await db
+    .select({ id: secretsTable.id })
+    .from(secretsTable)
+    .where(and(eq(secretsTable.companyId, companyId), eq(secretsTable.key, key)));
+
+  if (!existing) {
     throw notFound(`Secret "${key}" not found`);
   }
-  secretStore.delete(sk);
+
+  await db
+    .delete(secretsTable)
+    .where(eq(secretsTable.id, existing.id));
 }
 
+/**
+ * List all secret keys for a company (values are not returned).
+ */
 export async function listSecretKeys(companyId: string): Promise<string[]> {
-  const keys: string[] = [];
-  for (const [sk, entry] of secretStore.entries()) {
-    if (entry.companyId === companyId) {
-      keys.push(entry.key);
-    }
-  }
-  return keys.sort();
+  const db = getDb();
+  const rows = await db
+    .select({ key: secretsTable.key })
+    .from(secretsTable)
+    .where(eq(secretsTable.companyId, companyId))
+    .orderBy(asc(secretsTable.key));
+
+  return rows.map((r) => r.key);
 }

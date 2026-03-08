@@ -1,7 +1,32 @@
 /**
  * issues service — CRUD + atomic checkout + comment management.
+ *
+ * Uses Drizzle ORM against `issues` and `issueComments` tables from @seaclip/db.
+ *
+ * Schema mapping notes:
+ *  - `sequenceNumber`   → DB `issueNumber` (auto-incremented via companies.issueCounter)
+ *  - `assignedAgentId`  → DB `assigneeAgentId`
+ *  - `checkedOutByAgentId` → DB `checkoutRunId` (stores agentId; UUID type matches)
+ *  - `checkedOutAt`     → not a DB column; always returned as undefined after reload
+ *                         (checkout state is inferred from checkoutRunId presence)
+ *  - `resolvedAt`       → DB `completedAt`
+ *  - `labels`           → not a DB column; always returned as [] (no JSONB on issues)
+ *  - `metadata`         → not a DB column; always returned as {}
+ *  - `dueAt`            → not a DB column; always returned as undefined
+ *
+ * IssueComment mapping:
+ *  - `authorId`/`authorType` → DB has `authorAgentId` + `authorUserId`
+ *    When authorType == "agent", authorId → authorAgentId.
+ *    When authorType == "human" or "system", authorId → authorUserId.
+ *  - `companyId` on IssueComment is not a DB column; we derive it from the issue.
  */
-import { randomUUID } from "node:crypto";
+import { getDb } from "../db.js";
+import { eq, and, asc, desc, sql } from "drizzle-orm";
+import {
+  issues as issuesTable,
+  issueComments as issueCommentsTable,
+  companies as companiesTable,
+} from "@seaclip/db";
 import { notFound, conflict } from "../errors.js";
 
 export type IssueStatus = "open" | "in_progress" | "blocked" | "done" | "cancelled";
@@ -62,72 +87,189 @@ export interface ListIssuesOptions {
   limit: number;
 }
 
-const issueStore = new Map<string, Issue>();
-const commentStore = new Map<string, IssueComment>();
-const sequenceCounters = new Map<string, number>();
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-function nextSequenceNumber(companyId: string): number {
-  const n = (sequenceCounters.get(companyId) ?? 0) + 1;
-  sequenceCounters.set(companyId, n);
-  return n;
+type DbIssueRow = typeof issuesTable.$inferSelect;
+type DbCommentRow = typeof issueCommentsTable.$inferSelect;
+
+function rowToIssue(row: DbIssueRow, companyId: string): Issue {
+  return {
+    id: row.id,
+    companyId,
+    title: row.title,
+    description: row.description ?? undefined,
+    status: (row.status ?? "open") as IssueStatus,
+    priority: (row.priority ?? "medium") as IssuePriority,
+    assignedAgentId: row.assigneeAgentId ?? undefined,
+    checkedOutByAgentId: row.checkoutRunId ?? undefined,
+    // checkedOutAt is not stored in DB; we signal checkout via checkedOutByAgentId
+    checkedOutAt: undefined,
+    projectId: row.projectId ?? undefined,
+    goalId: row.goalId ?? undefined,
+    labels: [],       // no JSONB column on issues table
+    metadata: {},     // no JSONB column on issues table
+    dueAt: undefined, // no column on issues table
+    resolvedAt: row.completedAt?.toISOString(),
+    sequenceNumber: row.issueNumber,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }
 
-function issuesForCompany(companyId: string): Issue[] {
-  return Array.from(issueStore.values()).filter((i) => i.companyId === companyId);
+function rowToComment(row: DbCommentRow, companyId: string): IssueComment {
+  // Determine authorType and authorId from which column is set
+  let authorType: "human" | "agent" | "system" = "system";
+  let authorId: string | undefined;
+
+  if (row.authorAgentId) {
+    authorType = "agent";
+    authorId = row.authorAgentId;
+  } else if (row.authorUserId) {
+    authorType = "human";
+    authorId = row.authorUserId;
+  }
+
+  return {
+    id: row.id,
+    issueId: row.issueId,
+    companyId,
+    body: row.body,
+    authorId,
+    authorType,
+    createdAt: row.createdAt.toISOString(),
+  };
 }
+
+/**
+ * Atomically increment the issueCounter on the companies row and return
+ * the new counter value to use as the issue number.
+ */
+async function nextIssueNumber(companyId: string): Promise<number> {
+  const db = getDb();
+  const [updated] = await db
+    .update(companiesTable)
+    .set({
+      issueCounter: sql`${companiesTable.issueCounter} + 1`,
+    })
+    .where(eq(companiesTable.id, companyId))
+    .returning() as any;
+
+  if (!updated) {
+    throw notFound(`Company "${companyId}" not found`);
+  }
+
+  return (updated as any).issueCounter;
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
 
 export async function listIssues(
   companyId: string,
   options: ListIssuesOptions,
 ): Promise<{ data: Issue[]; total: number; page: number; limit: number }> {
-  let issues = issuesForCompany(companyId);
+  const db = getDb();
 
-  if (options.status) issues = issues.filter((i) => i.status === options.status);
-  if (options.priority) issues = issues.filter((i) => i.priority === options.priority);
-  if (options.agentId) issues = issues.filter((i) => i.assignedAgentId === options.agentId);
-  if (options.projectId) issues = issues.filter((i) => i.projectId === options.projectId);
+  // Build WHERE conditions
+  const conditions = [eq(issuesTable.companyId, companyId)];
 
-  issues.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  if (options.status) {
+    conditions.push(eq(issuesTable.status, options.status));
+  }
+  if (options.priority) {
+    conditions.push(eq(issuesTable.priority, options.priority));
+  }
+  if (options.agentId) {
+    conditions.push(eq(issuesTable.assigneeAgentId, options.agentId));
+  }
+  if (options.projectId) {
+    conditions.push(eq(issuesTable.projectId, options.projectId));
+  }
 
-  const total = issues.length;
+  const where = and(...conditions);
+
+  // Total count
+  const countResult = await db
+    .select({ count: sql<number>`cast(count(*) as integer)` })
+    .from(issuesTable)
+    .where(where);
+
+  const total = countResult[0]?.count ?? 0;
+
+  // Paginated rows
   const offset = (options.page - 1) * options.limit;
-  const data = issues.slice(offset, offset + options.limit);
+  const rows = await db
+    .select()
+    .from(issuesTable)
+    .where(where)
+    .orderBy(desc(issuesTable.createdAt))
+    .limit(options.limit)
+    .offset(offset);
 
-  return { data, total, page: options.page, limit: options.limit };
+  return {
+    data: rows.map((r) => rowToIssue(r, companyId)),
+    total,
+    page: options.page,
+    limit: options.limit,
+  };
 }
 
 export async function createIssue(
   companyId: string,
   input: CreateIssueInput,
 ): Promise<Issue> {
-  const now = new Date().toISOString();
-  const issue: Issue = {
-    id: randomUUID(),
-    companyId,
-    title: input.title,
-    description: input.description,
-    status: input.status ?? "open",
-    priority: input.priority ?? "medium",
-    assignedAgentId: input.assignedAgentId,
-    projectId: input.projectId,
-    goalId: input.goalId,
-    labels: input.labels ?? [],
-    metadata: input.metadata ?? {},
-    dueAt: input.dueAt,
-    sequenceNumber: nextSequenceNumber(companyId),
-    createdAt: now,
-    updatedAt: now,
-  };
-  issueStore.set(issue.id, issue);
-  return issue;
+  const db = getDb();
+
+  const issueNumber = await nextIssueNumber(companyId);
+
+  // Derive identifier — fetch the company issuePrefix
+  const [company] = await db
+    .select({ issuePrefix: companiesTable.issuePrefix })
+    .from(companiesTable)
+    .where(eq(companiesTable.id, companyId));
+
+  const prefix = company?.issuePrefix ?? "SC";
+  const identifier = `${prefix}-${issueNumber}`;
+
+  const [row] = await db
+    .insert(issuesTable)
+    .values({
+      companyId,
+      title: input.title,
+      description: input.description ?? null,
+      status: input.status ?? "open",
+      priority: input.priority ?? "medium",
+      assigneeAgentId: input.assignedAgentId ?? null,
+      projectId: input.projectId ?? null,
+      goalId: input.goalId ?? null,
+      issueNumber,
+      identifier,
+    })
+    .returning();
+
+  return rowToIssue(row, companyId);
 }
 
 export async function getIssue(companyId: string, id: string): Promise<Issue> {
-  const issue = issueStore.get(id);
-  if (!issue || issue.companyId !== companyId) {
+  const db = getDb();
+  const [row] = await db
+    .select()
+    .from(issuesTable)
+    .where(
+      and(
+        eq(issuesTable.id, id),
+        eq(issuesTable.companyId, companyId),
+      ),
+    );
+
+  if (!row) {
     throw notFound(`Issue "${id}" not found`);
   }
-  return issue;
+
+  return rowToIssue(row, companyId);
 }
 
 export async function updateIssue(
@@ -135,68 +277,141 @@ export async function updateIssue(
   id: string,
   input: UpdateIssueInput,
 ): Promise<Issue> {
-  const issue = await getIssue(companyId, id);
-  const now = new Date().toISOString();
+  const db = getDb();
 
-  const updated: Issue = {
-    ...issue,
-    ...input,
-    labels: input.labels ?? issue.labels,
-    metadata: input.metadata !== undefined
-      ? { ...issue.metadata, ...input.metadata }
-      : issue.metadata,
-    resolvedAt:
-      input.status === "done" && issue.status !== "done"
-        ? now
-        : issue.resolvedAt,
+  const [existing] = await db
+    .select()
+    .from(issuesTable)
+    .where(
+      and(
+        eq(issuesTable.id, id),
+        eq(issuesTable.companyId, companyId),
+      ),
+    );
+
+  if (!existing) {
+    throw notFound(`Issue "${id}" not found`);
+  }
+
+  const now = new Date();
+  const updateValues: Partial<typeof issuesTable.$inferInsert> = {
     updatedAt: now,
   };
 
-  issueStore.set(id, updated);
-  return updated;
+  if (input.title !== undefined) updateValues.title = input.title;
+  if (input.description !== undefined) updateValues.description = input.description;
+  if (input.status !== undefined) updateValues.status = input.status;
+  if (input.priority !== undefined) updateValues.priority = input.priority;
+  if (input.assignedAgentId !== undefined) updateValues.assigneeAgentId = input.assignedAgentId;
+  if (input.projectId !== undefined) updateValues.projectId = input.projectId;
+  if (input.goalId !== undefined) updateValues.goalId = input.goalId;
+
+  // Transition to done: record completedAt
+  if (
+    input.status === "done" &&
+    existing.status !== "done" &&
+    !existing.completedAt
+  ) {
+    updateValues.completedAt = now;
+  }
+
+  // Transition to cancelled: record cancelledAt
+  if (
+    input.status === "cancelled" &&
+    existing.status !== "cancelled" &&
+    !existing.cancelledAt
+  ) {
+    updateValues.cancelledAt = now;
+  }
+
+  // Transition to in_progress: record startedAt
+  if (
+    input.status === "in_progress" &&
+    existing.status !== "in_progress" &&
+    !existing.startedAt
+  ) {
+    updateValues.startedAt = now;
+  }
+
+  const [updated] = await db
+    .update(issuesTable)
+    .set(updateValues)
+    .where(eq(issuesTable.id, id))
+    .returning();
+
+  return rowToIssue(updated, companyId);
 }
 
 export async function deleteIssue(companyId: string, id: string): Promise<void> {
-  await getIssue(companyId, id);
-  issueStore.delete(id);
-  // Remove associated comments
-  for (const [cId, c] of commentStore.entries()) {
-    if (c.issueId === id) commentStore.delete(cId);
+  const db = getDb();
+
+  const [existing] = await db
+    .select({ id: issuesTable.id })
+    .from(issuesTable)
+    .where(
+      and(
+        eq(issuesTable.id, id),
+        eq(issuesTable.companyId, companyId),
+      ),
+    );
+
+  if (!existing) {
+    throw notFound(`Issue "${id}" not found`);
   }
+
+  // Comments are deleted by cascade (FK: issue_comments.issue_id → issues.id ON DELETE CASCADE)
+  await db.delete(issuesTable).where(eq(issuesTable.id, id));
 }
 
 /**
  * Atomic checkout — only one agent can hold a given issue at a time.
- * Simulates SELECT FOR UPDATE semantics.
+ * Uses checkoutRunId column to track which agent holds the checkout.
  */
 export async function checkoutIssue(
   companyId: string,
   id: string,
   agentId: string,
 ): Promise<Issue> {
-  const issue = await getIssue(companyId, id);
+  const db = getDb();
 
-  if (issue.checkedOutByAgentId && issue.checkedOutByAgentId !== agentId) {
+  const [existing] = await db
+    .select()
+    .from(issuesTable)
+    .where(
+      and(
+        eq(issuesTable.id, id),
+        eq(issuesTable.companyId, companyId),
+      ),
+    );
+
+  if (!existing) {
+    throw notFound(`Issue "${id}" not found`);
+  }
+
+  if (existing.checkoutRunId && existing.checkoutRunId !== agentId) {
     throw conflict(
-      `Issue is already checked out by agent "${issue.checkedOutByAgentId}"`,
+      `Issue is already checked out by agent "${existing.checkoutRunId}"`,
     );
   }
 
-  if (issue.status === "done" || issue.status === "cancelled") {
-    throw conflict(`Cannot check out an issue with status "${issue.status}"`);
+  if (existing.status === "done" || existing.status === "cancelled") {
+    throw conflict(`Cannot check out an issue with status "${existing.status}"`);
   }
 
-  const now = new Date().toISOString();
-  const updated: Issue = {
-    ...issue,
-    checkedOutByAgentId: agentId,
-    checkedOutAt: now,
-    status: "in_progress",
-    updatedAt: now,
-  };
+  const now = new Date();
 
-  issueStore.set(id, updated);
-  return updated;
+  const [updated] = await db
+    .update(issuesTable)
+    .set({
+      checkoutRunId: agentId,
+      status: "in_progress",
+      startedAt: existing.startedAt ?? now,
+      updatedAt: now,
+    })
+    .where(eq(issuesTable.id, id))
+    .returning();
+
+  return rowToIssue(updated, companyId);
 }
 
 export async function addComment(
@@ -204,28 +419,40 @@ export async function addComment(
   issueId: string,
   input: { body: string; authorId?: string; authorType: "human" | "agent" | "system" },
 ): Promise<IssueComment> {
-  await getIssue(companyId, issueId); // verify issue exists
+  // Verify issue exists in company
+  await getIssue(companyId, issueId);
 
-  const comment: IssueComment = {
-    id: randomUUID(),
+  const db = getDb();
+
+  const insertValues: typeof issueCommentsTable.$inferInsert = {
     issueId,
-    companyId,
     body: input.body,
-    authorId: input.authorId,
-    authorType: input.authorType,
-    createdAt: new Date().toISOString(),
+    authorAgentId: input.authorType === "agent" ? (input.authorId ?? null) : null,
+    authorUserId: input.authorType !== "agent" ? (input.authorId ?? null) : null,
   };
 
-  commentStore.set(comment.id, comment);
-  return comment;
+  const [row] = await db
+    .insert(issueCommentsTable)
+    .values(insertValues)
+    .returning();
+
+  return rowToComment(row, companyId);
 }
 
 export async function listComments(
   companyId: string,
   issueId: string,
 ): Promise<IssueComment[]> {
-  await getIssue(companyId, issueId); // verify issue exists
-  return Array.from(commentStore.values())
-    .filter((c) => c.issueId === issueId && c.companyId === companyId)
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  // Verify issue exists in company
+  await getIssue(companyId, issueId);
+
+  const db = getDb();
+
+  const rows = await db
+    .select()
+    .from(issueCommentsTable)
+    .where(eq(issueCommentsTable.issueId, issueId))
+    .orderBy(asc(issueCommentsTable.createdAt));
+
+  return rows.map((r) => rowToComment(r, companyId));
 }

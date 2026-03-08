@@ -7,7 +7,7 @@ const router = Router({ mergeParams: true });
 // GET /api/companies/:companyId/dashboard
 router.get("/:companyId/dashboard", requireAuth, async (req, res, next) => {
   try {
-    const data = await dashboardService.getDashboard(req.params.companyId);
+    const data = await dashboardService.getDashboard(String(req.params.companyId));
     res.json(data);
   } catch (err) {
     next(err);

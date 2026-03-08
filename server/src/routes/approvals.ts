@@ -16,7 +16,7 @@ const ResolveApprovalSchema = z.object({
 router.get("/:companyId/approvals", requireAuth, async (req, res, next) => {
   try {
     const { status = "pending", page, limit } = req.query;
-    const approvals = await approvalsService.listApprovals(req.params.companyId, {
+    const approvals = await approvalsService.listApprovals(String(req.params.companyId), {
       status: status as string,
       page: page ? Number(page) : 1,
       limit: limit ? Number(limit) : 50,
@@ -35,14 +35,14 @@ router.post(
   async (req, res, next) => {
     try {
       const approval = await approvalsService.resolveApproval(
-        req.params.companyId,
-        req.params.id,
+        String(req.params.companyId),
+        String(req.params.id),
         {
           ...req.body,
-          resolvedById: req.body.resolvedById ?? req.user?.id,
+          resolvedById: req.body.resolvedById ?? (req as any).user?.id,
         },
       );
-      await publishLiveEvent(req.params.companyId, {
+      await publishLiveEvent(String(req.params.companyId), {
         type: "approval.resolved",
         approval,
       });

@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
@@ -9,10 +9,15 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "sourceMap": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

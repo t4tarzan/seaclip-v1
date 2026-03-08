@@ -26,7 +26,7 @@ const UpdateAgentSchema = CreateAgentSchema.partial();
 // GET /api/companies/:companyId/agents
 router.get("/:companyId/agents", requireAuth, async (req, res, next) => {
   try {
-    const agents = await agentsService.listAgents(req.params.companyId);
+    const agents = await agentsService.listAgents(String(req.params.companyId));
     res.json({ data: agents, count: agents.length });
   } catch (err) {
     next(err);
@@ -36,8 +36,8 @@ router.get("/:companyId/agents", requireAuth, async (req, res, next) => {
 // POST /api/companies/:companyId/agents
 router.post("/:companyId/agents", requireAuth, validate(CreateAgentSchema), async (req, res, next) => {
   try {
-    const agent = await agentsService.createAgent(req.params.companyId, req.body);
-    await publishLiveEvent(req.params.companyId, { type: "agent.created", agent });
+    const agent = await agentsService.createAgent(String(req.params.companyId), req.body);
+    await publishLiveEvent(String(req.params.companyId), { type: "agent.created", agent });
     res.status(201).json(agent);
   } catch (err) {
     next(err);
@@ -47,7 +47,7 @@ router.post("/:companyId/agents", requireAuth, validate(CreateAgentSchema), asyn
 // GET /api/companies/:companyId/agents/:id
 router.get("/:companyId/agents/:id", requireAuth, async (req, res, next) => {
   try {
-    const agent = await agentsService.getAgent(req.params.companyId, req.params.id);
+    const agent = await agentsService.getAgent(String(req.params.companyId), String(req.params.id));
     res.json(agent);
   } catch (err) {
     next(err);
@@ -57,8 +57,8 @@ router.get("/:companyId/agents/:id", requireAuth, async (req, res, next) => {
 // PATCH /api/companies/:companyId/agents/:id
 router.patch("/:companyId/agents/:id", requireAuth, validate(UpdateAgentSchema), async (req, res, next) => {
   try {
-    const agent = await agentsService.updateAgent(req.params.companyId, req.params.id, req.body);
-    await publishLiveEvent(req.params.companyId, { type: "agent.updated", agent });
+    const agent = await agentsService.updateAgent(String(req.params.companyId), String(req.params.id), req.body);
+    await publishLiveEvent(String(req.params.companyId), { type: "agent.updated", agent });
     res.json(agent);
   } catch (err) {
     next(err);
@@ -68,10 +68,10 @@ router.patch("/:companyId/agents/:id", requireAuth, validate(UpdateAgentSchema),
 // DELETE /api/companies/:companyId/agents/:id
 router.delete("/:companyId/agents/:id", requireAuth, async (req, res, next) => {
   try {
-    await agentsService.deleteAgent(req.params.companyId, req.params.id);
-    await publishLiveEvent(req.params.companyId, {
+    await agentsService.deleteAgent(String(req.params.companyId), String(req.params.id));
+    await publishLiveEvent(String(req.params.companyId), {
       type: "agent.deleted",
-      agentId: req.params.id,
+      agentId: String(req.params.id),
     });
     res.status(204).end();
   } catch (err) {
@@ -82,14 +82,14 @@ router.delete("/:companyId/agents/:id", requireAuth, async (req, res, next) => {
 // POST /api/companies/:companyId/agents/:id/invoke — manually trigger heartbeat
 router.post("/:companyId/agents/:id/invoke", requireAuth, async (req, res, next) => {
   try {
-    const agent = await agentsService.getAgent(req.params.companyId, req.params.id);
+    const agent = await agentsService.getAgent(String(req.params.companyId), String(req.params.id));
     const runResult = await heartbeatService.invokeAgent(agent, {
-      triggeredBy: req.user?.id ?? "manual",
+      triggeredBy: (req as any).user?.id ?? "manual",
       manual: true,
       context: req.body ?? {},
     });
 
-    await publishLiveEvent(req.params.companyId, {
+    await publishLiveEvent(String(req.params.companyId), {
       type: "agent.heartbeat",
       agentId: agent.id,
       result: runResult,

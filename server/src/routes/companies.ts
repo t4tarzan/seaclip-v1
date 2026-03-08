@@ -38,7 +38,7 @@ router.post("/", requireAuth, validate(CreateCompanySchema), async (req, res, ne
 // GET /api/companies/:id
 router.get("/:id", requireAuth, async (req, res, next) => {
   try {
-    const company = await companiesService.getCompany(req.params.id);
+    const company = await companiesService.getCompany(String(req.params.id));
     res.json(company);
   } catch (err) {
     next(err);
@@ -48,7 +48,7 @@ router.get("/:id", requireAuth, async (req, res, next) => {
 // PATCH /api/companies/:id
 router.patch("/:id", requireAuth, validate(UpdateCompanySchema), async (req, res, next) => {
   try {
-    const company = await companiesService.updateCompany(req.params.id, req.body);
+    const company = await companiesService.updateCompany(String(req.params.id), req.body);
     res.json(company);
   } catch (err) {
     next(err);
@@ -58,7 +58,7 @@ router.patch("/:id", requireAuth, validate(UpdateCompanySchema), async (req, res
 // DELETE /api/companies/:id
 router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
-    await companiesService.deleteCompany(req.params.id);
+    await companiesService.deleteCompany(String(req.params.id));
     res.status(204).end();
   } catch (err) {
     next(err);

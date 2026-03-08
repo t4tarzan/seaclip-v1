@@ -11,11 +11,7 @@ export interface AuthUser {
   companyIds: string[];
 }
 
-declare module "express-serve-static-core" {
-  interface Request {
-    user?: AuthUser;
-  }
-}
+// Express Request augmentation handled via (req as any).user
 
 const LOCAL_TRUSTED_USER: AuthUser = {
   id: "local-board-user",
@@ -76,7 +72,7 @@ export async function requireAuth(
   const config = getConfig();
 
   if (config.deploymentMode === "local_trusted") {
-    req.user = { ...LOCAL_TRUSTED_USER };
+    (req as any).user = { ...LOCAL_TRUSTED_USER };
     next();
     return;
   }
@@ -88,7 +84,7 @@ export async function requireAuth(
   }
 
   try {
-    req.user = await verifyToken(token);
+    (req as any).user = await verifyToken(token);
     next();
   } catch (err) {
     next(err);
@@ -96,7 +92,7 @@ export async function requireAuth(
 }
 
 /**
- * Optional auth — populates req.user if a valid token is present, but does not
+ * Optional auth — populates (req as any).user if a valid token is present, but does not
  * reject unauthenticated requests.
  */
 export async function optionalAuth(
@@ -107,7 +103,7 @@ export async function optionalAuth(
   const config = getConfig();
 
   if (config.deploymentMode === "local_trusted") {
-    req.user = { ...LOCAL_TRUSTED_USER };
+    (req as any).user = { ...LOCAL_TRUSTED_USER };
     next();
     return;
   }
@@ -119,7 +115,7 @@ export async function optionalAuth(
   }
 
   try {
-    req.user = await verifyToken(token);
+    (req as any).user = await verifyToken(token);
   } catch {
     // Silently ignore invalid tokens for optional auth
     getLogger().debug("Optional auth: invalid token, continuing unauthenticated");
@@ -136,7 +132,7 @@ export function requireCompanyAccess(
   req: Request,
   companyId: string,
 ): void {
-  const user = req.user;
+  const user = (req as any).user;
   if (!user) {
     throw unauthorized("Authentication required");
   }

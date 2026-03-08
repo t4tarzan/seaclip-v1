@@ -4,11 +4,22 @@ import { loadConfig } from "./config.js";
 import { createApp } from "./app.js";
 import { createLiveEventsWsServer } from "./realtime/live-events-ws.js";
 import { getLogger } from "./middleware/index.js";
+import { initDb, closeDb } from "./db.js";
+import { pushSchema } from "./db-push.js";
+import { startHeartbeatScheduler, stopHeartbeatScheduler } from "./services/heartbeat-scheduler.js";
 
 async function main(): Promise<void> {
   // 1. Load config first — all modules depend on it
   const config = loadConfig();
   const logger = getLogger();
+
+  // 1b. Initialize database connection (async — PGlite needs to boot)
+  const db = await initDb(config.databaseUrl);
+  logger.info("Database connection initialized");
+
+  // 1c. Push schema — creates tables if they don't exist
+  await pushSchema(db);
+  logger.info("Database schema ready");
 
   // 2. Create Express app
   const app = createApp();
@@ -24,7 +35,16 @@ async function main(): Promise<void> {
     httpServer.listen(config.port, config.host, resolve);
   });
 
-  // 6. Print startup banner
+  // 6. Start heartbeat scheduler if enabled
+  if (config.heartbeatSchedulerEnabled) {
+    startHeartbeatScheduler(config.heartbeatSchedulerIntervalMs);
+    logger.info(
+      { intervalMs: config.heartbeatSchedulerIntervalMs },
+      "Heartbeat scheduler started",
+    );
+  }
+
+  // 7. Print startup banner
   const banner = `
 ╔══════════════════════════════════════════════════════╗
 ║               SeaClip Server v${process.env.npm_package_version ?? "0.1.0"}                 ║
@@ -43,9 +63,11 @@ async function main(): Promise<void> {
     "SeaClip server started",
   );
 
-  // 7. Graceful shutdown
+  // 8. Graceful shutdown
   const shutdown = async (signal: string): Promise<void> => {
     logger.info({ signal }, "Shutting down SeaClip server...");
+
+    stopHeartbeatScheduler();
 
     await new Promise<void>((resolve, reject) => {
       httpServer.close((err) => {
@@ -54,6 +76,7 @@ async function main(): Promise<void> {
       });
     });
 
+    await closeDb();
     logger.info("Server closed. Goodbye.");
     process.exit(0);
   };

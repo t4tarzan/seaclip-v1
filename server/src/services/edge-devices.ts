@@ -2,7 +2,9 @@
  * edge-devices service — device registration, telemetry ingestion,
  * mesh topology builder, health check aggregation.
  */
-import { randomUUID } from "node:crypto";
+import { getDb } from "../db.js";
+import { eq, and, asc } from "drizzle-orm";
+import { edgeDevices } from "@seaclip/db";
 import { notFound } from "../errors.js";
 
 export type DeviceStatus = "online" | "offline" | "degraded" | "unknown";
@@ -78,22 +80,39 @@ export interface MeshEdge {
   latencyMs?: number;
 }
 
-const deviceStore = new Map<string, EdgeDevice>();
-const telemetryStore = new Map<string, DeviceTelemetry[]>();
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-function devicesForCompany(companyId: string): EdgeDevice[] {
-  return Array.from(deviceStore.values()).filter(
-    (d) => d.companyId === companyId,
-  );
+function rowToDevice(row: typeof edgeDevices.$inferSelect): EdgeDevice {
+  const meta = (row.metadata ?? {}) as Record<string, unknown>;
+  const caps = Array.isArray(row.capabilities) ? (row.capabilities as string[]) : [];
+
+  return {
+    id: row.id,
+    companyId: row.companyId,
+    name: row.name,
+    deviceType: row.deviceType,
+    hardwareId: typeof meta.hardwareId === "string" ? meta.hardwareId : undefined,
+    ipAddress: row.ipAddress ?? undefined,
+    endpoint: typeof meta.endpoint === "string" ? meta.endpoint : undefined,
+    location: typeof meta.location === "string" ? meta.location : undefined,
+    capabilities: caps,
+    status: (row.status as DeviceStatus) ?? "unknown",
+    metadata: meta,
+    registeredAt: row.createdAt.toISOString(),
+    lastSeenAt: row.lastHeartbeatAt?.toISOString() ?? row.lastPingAt?.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }
 
 function determineStatus(
-  device: EdgeDevice,
+  lastSeenAt: string | undefined,
   telemetry?: TelemetryInput,
 ): DeviceStatus {
-  if (!device.lastSeenAt) return "unknown";
+  if (!lastSeenAt) return "unknown";
 
-  const lastSeen = new Date(device.lastSeenAt).getTime();
+  const lastSeen = new Date(lastSeenAt).getTime();
   const staleThresholdMs = 5 * 60 * 1000; // 5 minutes
 
   if (Date.now() - lastSeen > staleThresholdMs) return "offline";
@@ -109,10 +128,19 @@ function determineStatus(
   return "online";
 }
 
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
 export async function listEdgeDevices(companyId: string): Promise<EdgeDevice[]> {
-  return devicesForCompany(companyId).sort(
-    (a, b) => a.registeredAt.localeCompare(b.registeredAt),
-  );
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(edgeDevices)
+    .where(eq(edgeDevices.companyId, companyId))
+    .orderBy(asc(edgeDevices.createdAt));
+
+  return rows.map(rowToDevice);
 }
 
 export async function registerEdgeDevice(
@@ -128,37 +156,70 @@ export async function registerEdgeDevice(
     metadata?: Record<string, unknown>;
   },
 ): Promise<EdgeDevice> {
-  const now = new Date().toISOString();
-  const device: EdgeDevice = {
-    id: randomUUID(),
-    companyId,
-    name: input.name,
-    deviceType: input.deviceType,
-    hardwareId: input.hardwareId,
-    ipAddress: input.ipAddress,
-    endpoint: input.endpoint,
-    location: input.location,
-    capabilities: input.capabilities ?? [],
-    status: "unknown",
-    metadata: input.metadata ?? {},
-    registeredAt: now,
-    updatedAt: now,
-  };
-  deviceStore.set(device.id, device);
-  return device;
+  const db = getDb();
+
+  const metadata: Record<string, unknown> = { ...(input.metadata ?? {}) };
+  if (input.hardwareId) metadata.hardwareId = input.hardwareId;
+  if (input.endpoint) metadata.endpoint = input.endpoint;
+  if (input.location) metadata.location = input.location;
+
+  const [row] = await db
+    .insert(edgeDevices)
+    .values({
+      companyId,
+      name: input.name,
+      deviceType: input.deviceType,
+      ipAddress: input.ipAddress ?? null,
+      status: "unknown",
+      capabilities: input.capabilities ?? [],
+      metadata,
+    })
+    .returning();
+
+  return rowToDevice(row);
 }
 
 export async function getEdgeDevice(
   companyId: string,
   id: string,
 ): Promise<EdgeDevice & { telemetryHistory: DeviceTelemetry[] }> {
-  const device = deviceStore.get(id);
-  if (!device || device.companyId !== companyId) {
+  const db = getDb();
+
+  const [row] = await db
+    .select()
+    .from(edgeDevices)
+    .where(and(eq(edgeDevices.id, id), eq(edgeDevices.companyId, companyId)));
+
+  if (!row) {
     throw notFound(`Edge device "${id}" not found`);
   }
-  const telemetryHistory = (telemetryStore.get(id) ?? [])
-    .slice(-100) // last 100 readings
-    .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+
+  const device = rowToDevice(row);
+
+  // Build a synthetic telemetry entry from latest persisted telemetry fields on the device row
+  const telemetryHistory: DeviceTelemetry[] = [];
+  const hasAnyTelemetry =
+    row.cpuUsage !== null ||
+    row.memoryUsageMb !== null ||
+    row.gpuUsagePct !== null ||
+    row.diskUsagePct !== null ||
+    row.temperature !== null;
+
+  if (hasAnyTelemetry) {
+    const ts = row.lastHeartbeatAt ?? row.updatedAt;
+    telemetryHistory.push({
+      id: crypto.randomUUID(),
+      deviceId: row.id,
+      companyId: row.companyId,
+      cpuPercent: row.cpuUsage ?? undefined,
+      memoryPercent: undefined, // stored as MB not %; no direct mapping without total RAM
+      diskPercent: row.diskUsagePct ?? undefined,
+      gpuPercent: row.gpuUsagePct ?? undefined,
+      temperatureCelsius: row.temperature ?? undefined,
+      timestamp: ts.toISOString(),
+      receivedAt: ts.toISOString(),
+    });
+  }
 
   return { ...device, telemetryHistory };
 }
@@ -176,33 +237,59 @@ export async function updateEdgeDevice(
     metadata: Record<string, unknown>;
   }>,
 ): Promise<EdgeDevice> {
-  const device = deviceStore.get(id);
-  if (!device || device.companyId !== companyId) {
+  const db = getDb();
+
+  const [existing] = await db
+    .select()
+    .from(edgeDevices)
+    .where(and(eq(edgeDevices.id, id), eq(edgeDevices.companyId, companyId)));
+
+  if (!existing) {
     throw notFound(`Edge device "${id}" not found`);
   }
-  const updated: EdgeDevice = {
-    ...device,
-    ...input,
-    metadata: input.metadata !== undefined
-      ? { ...device.metadata, ...input.metadata }
-      : device.metadata,
-    capabilities: input.capabilities ?? device.capabilities,
-    updatedAt: new Date().toISOString(),
+
+  const existingMeta = (existing.metadata ?? {}) as Record<string, unknown>;
+  const mergedMeta = input.metadata !== undefined
+    ? { ...existingMeta, ...input.metadata }
+    : existingMeta;
+
+  if (input.endpoint !== undefined) mergedMeta.endpoint = input.endpoint;
+  if (input.location !== undefined) mergedMeta.location = input.location;
+
+  const updateValues: Partial<typeof edgeDevices.$inferInsert> = {
+    updatedAt: new Date(),
+    metadata: mergedMeta,
   };
-  deviceStore.set(id, updated);
-  return updated;
+  if (input.name !== undefined) updateValues.name = input.name;
+  if (input.deviceType !== undefined) updateValues.deviceType = input.deviceType;
+  if (input.ipAddress !== undefined) updateValues.ipAddress = input.ipAddress;
+  if (input.capabilities !== undefined) updateValues.capabilities = input.capabilities;
+
+  const [row] = await db
+    .update(edgeDevices)
+    .set(updateValues)
+    .where(eq(edgeDevices.id, id))
+    .returning();
+
+  return rowToDevice(row);
 }
 
 export async function deregisterEdgeDevice(
   companyId: string,
   id: string,
 ): Promise<void> {
-  const device = deviceStore.get(id);
-  if (!device || device.companyId !== companyId) {
+  const db = getDb();
+
+  const [existing] = await db
+    .select()
+    .from(edgeDevices)
+    .where(and(eq(edgeDevices.id, id), eq(edgeDevices.companyId, companyId)));
+
+  if (!existing) {
     throw notFound(`Edge device "${id}" not found`);
   }
-  deviceStore.delete(id);
-  telemetryStore.delete(id);
+
+  await db.delete(edgeDevices).where(eq(edgeDevices.id, id));
 }
 
 export async function ingestTelemetry(
@@ -210,14 +297,46 @@ export async function ingestTelemetry(
   deviceId: string,
   input: TelemetryInput,
 ): Promise<DeviceTelemetry> {
-  const device = deviceStore.get(deviceId);
-  if (!device || device.companyId !== companyId) {
+  const db = getDb();
+
+  const [device] = await db
+    .select()
+    .from(edgeDevices)
+    .where(and(eq(edgeDevices.id, deviceId), eq(edgeDevices.companyId, companyId)));
+
+  if (!device) {
     throw notFound(`Edge device "${deviceId}" not found`);
   }
 
-  const now = new Date().toISOString();
+  const now = new Date();
+  const existingMeta = (device.metadata ?? {}) as Record<string, unknown>;
+
+  // Persist extra telemetry fields into metadata JSONB
+  const updatedMeta: Record<string, unknown> = { ...existingMeta };
+  if (input.networkBytesIn !== undefined) updatedMeta.networkBytesIn = input.networkBytesIn;
+  if (input.networkBytesOut !== undefined) updatedMeta.networkBytesOut = input.networkBytesOut;
+  if (input.uptimeSeconds !== undefined) updatedMeta.uptimeSeconds = input.uptimeSeconds;
+  if (input.customMetrics !== undefined) updatedMeta.customMetrics = input.customMetrics;
+  if (input.gpuMemoryPercent !== undefined) updatedMeta.gpuMemoryPercent = input.gpuMemoryPercent;
+
+  const newStatus = determineStatus(now.toISOString(), input);
+
+  await db
+    .update(edgeDevices)
+    .set({
+      cpuUsage: input.cpuPercent ?? device.cpuUsage,
+      gpuUsagePct: input.gpuPercent ?? device.gpuUsagePct,
+      diskUsagePct: input.diskPercent ?? device.diskUsagePct,
+      temperature: input.temperatureCelsius ?? device.temperature,
+      status: newStatus,
+      lastHeartbeatAt: now,
+      updatedAt: now,
+      metadata: updatedMeta,
+    })
+    .where(eq(edgeDevices.id, deviceId));
+
   const telemetry: DeviceTelemetry = {
-    id: randomUUID(),
+    id: crypto.randomUUID(),
     deviceId,
     companyId,
     cpuPercent: input.cpuPercent,
@@ -230,32 +349,23 @@ export async function ingestTelemetry(
     networkBytesOut: input.networkBytesOut,
     uptimeSeconds: input.uptimeSeconds,
     customMetrics: input.customMetrics,
-    timestamp: input.timestamp ?? now,
-    receivedAt: now,
+    timestamp: input.timestamp ?? now.toISOString(),
+    receivedAt: now.toISOString(),
   };
-
-  // Store telemetry (cap at 1000 readings per device)
-  if (!telemetryStore.has(deviceId)) {
-    telemetryStore.set(deviceId, []);
-  }
-  const history = telemetryStore.get(deviceId)!;
-  history.push(telemetry);
-  if (history.length > 1000) history.splice(0, history.length - 1000);
-
-  // Update device status and last seen
-  const newStatus = determineStatus(device, input);
-  deviceStore.set(deviceId, {
-    ...device,
-    status: newStatus,
-    lastSeenAt: now,
-    updatedAt: now,
-  });
 
   return telemetry;
 }
 
 export async function getMeshTopology(companyId: string): Promise<MeshTopology> {
-  const devices = devicesForCompany(companyId);
+  const db = getDb();
+
+  const rows = await db
+    .select()
+    .from(edgeDevices)
+    .where(eq(edgeDevices.companyId, companyId))
+    .orderBy(asc(edgeDevices.createdAt));
+
+  const devices = rows.map(rowToDevice);
 
   const nodes: MeshNode[] = devices.map((d) => ({
     id: d.id,
@@ -266,7 +376,7 @@ export async function getMeshTopology(companyId: string): Promise<MeshTopology> 
     capabilities: d.capabilities,
   }));
 
-  // Simple mesh: devices that are online are considered connected to each other
+  // Simple mesh: connect online devices in the same location
   const onlineDevices = devices.filter((d) => d.status === "online");
   const edges: MeshEdge[] = [];
 
@@ -275,7 +385,6 @@ export async function getMeshTopology(companyId: string): Promise<MeshTopology> 
       const a = onlineDevices[i];
       const b = onlineDevices[j];
 
-      // Only create edges between devices in close geographic proximity or same location
       if (a.location && b.location && a.location === b.location) {
         edges.push({
           sourceId: a.id,

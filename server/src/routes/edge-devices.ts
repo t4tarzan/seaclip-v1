@@ -36,7 +36,7 @@ const TelemetrySchema = z.object({
 // GET /api/companies/:companyId/edge-devices
 router.get("/:companyId/edge-devices", requireAuth, async (req, res, next) => {
   try {
-    const devices = await edgeDevicesService.listEdgeDevices(req.params.companyId);
+    const devices = await edgeDevicesService.listEdgeDevices(String(req.params.companyId));
     res.json({ data: devices, count: devices.length });
   } catch (err) {
     next(err);
@@ -46,7 +46,7 @@ router.get("/:companyId/edge-devices", requireAuth, async (req, res, next) => {
 // GET /api/companies/:companyId/edge-devices/mesh — topology (before :id to avoid conflict)
 router.get("/:companyId/edge-devices/mesh", requireAuth, async (req, res, next) => {
   try {
-    const topology = await edgeDevicesService.getMeshTopology(req.params.companyId);
+    const topology = await edgeDevicesService.getMeshTopology(String(req.params.companyId));
     res.json(topology);
   } catch (err) {
     next(err);
@@ -60,8 +60,8 @@ router.post(
   validate(RegisterDeviceSchema),
   async (req, res, next) => {
     try {
-      const device = await edgeDevicesService.registerEdgeDevice(req.params.companyId, req.body);
-      await publishLiveEvent(req.params.companyId, {
+      const device = await edgeDevicesService.registerEdgeDevice(String(req.params.companyId), req.body);
+      await publishLiveEvent(String(req.params.companyId), {
         type: "edge_device.registered",
         device,
       });
@@ -76,8 +76,8 @@ router.post(
 router.get("/:companyId/edge-devices/:id", requireAuth, async (req, res, next) => {
   try {
     const device = await edgeDevicesService.getEdgeDevice(
-      req.params.companyId,
-      req.params.id,
+      String(req.params.companyId),
+      String(req.params.id),
     );
     res.json(device);
   } catch (err) {
@@ -93,11 +93,11 @@ router.patch(
   async (req, res, next) => {
     try {
       const device = await edgeDevicesService.updateEdgeDevice(
-        req.params.companyId,
-        req.params.id,
+        String(req.params.companyId),
+        String(req.params.id),
         req.body,
       );
-      await publishLiveEvent(req.params.companyId, {
+      await publishLiveEvent(String(req.params.companyId), {
         type: "edge_device.updated",
         device,
       });
@@ -111,10 +111,10 @@ router.patch(
 // DELETE /api/companies/:companyId/edge-devices/:id
 router.delete("/:companyId/edge-devices/:id", requireAuth, async (req, res, next) => {
   try {
-    await edgeDevicesService.deregisterEdgeDevice(req.params.companyId, req.params.id);
-    await publishLiveEvent(req.params.companyId, {
+    await edgeDevicesService.deregisterEdgeDevice(String(req.params.companyId), String(req.params.id));
+    await publishLiveEvent(String(req.params.companyId), {
       type: "edge_device.deregistered",
-      deviceId: req.params.id,
+      deviceId: String(req.params.id),
     });
     res.status(204).end();
   } catch (err) {
@@ -130,13 +130,13 @@ router.post(
   async (req, res, next) => {
     try {
       const telemetry = await edgeDevicesService.ingestTelemetry(
-        req.params.companyId,
-        req.params.id,
+        String(req.params.companyId),
+        String(req.params.id),
         req.body,
       );
-      await publishLiveEvent(req.params.companyId, {
+      await publishLiveEvent(String(req.params.companyId), {
         type: "edge_device.telemetry",
-        deviceId: req.params.id,
+        deviceId: String(req.params.id),
         telemetry,
       });
       res.status(202).json({ accepted: true, telemetry });

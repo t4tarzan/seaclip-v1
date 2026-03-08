@@ -17,7 +17,7 @@ router.get("/:companyId/activity", requireAuth, async (req, res, next) => {
       to,
     } = req.query;
 
-    const result = await activityLogService.getActivityLog(req.params.companyId, {
+    const result = await activityLogService.getActivityLog(String(req.params.companyId), {
       page: page ? Number(page) : 1,
       limit: limit ? Math.min(Number(limit), 200) : 50,
       agentId: agentId as string | undefined,

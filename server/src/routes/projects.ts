@@ -19,7 +19,7 @@ const UpdateProjectSchema = CreateProjectSchema.partial();
 
 router.get("/:companyId/projects", requireAuth, async (req, res, next) => {
   try {
-    const projects = await projectsService.listProjects(req.params.companyId);
+    const projects = await projectsService.listProjects(String(req.params.companyId));
     res.json({ data: projects, count: projects.length });
   } catch (err) {
     next(err);
@@ -28,7 +28,7 @@ router.get("/:companyId/projects", requireAuth, async (req, res, next) => {
 
 router.post("/:companyId/projects", requireAuth, validate(CreateProjectSchema), async (req, res, next) => {
   try {
-    const project = await projectsService.createProject(req.params.companyId, req.body);
+    const project = await projectsService.createProject(String(req.params.companyId), req.body);
     res.status(201).json(project);
   } catch (err) {
     next(err);
@@ -37,7 +37,7 @@ router.post("/:companyId/projects", requireAuth, validate(CreateProjectSchema), 
 
 router.get("/:companyId/projects/:id", requireAuth, async (req, res, next) => {
   try {
-    const project = await projectsService.getProject(req.params.companyId, req.params.id);
+    const project = await projectsService.getProject(String(req.params.companyId), String(req.params.id));
     res.json(project);
   } catch (err) {
     next(err);
@@ -46,7 +46,7 @@ router.get("/:companyId/projects/:id", requireAuth, async (req, res, next) => {
 
 router.patch("/:companyId/projects/:id", requireAuth, validate(UpdateProjectSchema), async (req, res, next) => {
   try {
-    const project = await projectsService.updateProject(req.params.companyId, req.params.id, req.body);
+    const project = await projectsService.updateProject(String(req.params.companyId), String(req.params.id), req.body);
     res.json(project);
   } catch (err) {
     next(err);
@@ -55,7 +55,7 @@ router.patch("/:companyId/projects/:id", requireAuth, validate(UpdateProjectSche
 
 router.delete("/:companyId/projects/:id", requireAuth, async (req, res, next) => {
   try {
-    await projectsService.deleteProject(req.params.companyId, req.params.id);
+    await projectsService.deleteProject(String(req.params.companyId), String(req.params.id));
     res.status(204).end();
   } catch (err) {
     next(err);

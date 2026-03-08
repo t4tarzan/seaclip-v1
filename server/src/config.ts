@@ -55,7 +55,7 @@ export function loadConfig(): Config {
     port: parseInt10(process.env.PORT, 3001),
     databaseUrl:
       process.env.DATABASE_URL ??
-      "postgresql://postgres:postgres@localhost:5432/seaclip",
+      "pglite://.seaclip/data",
     serveUi: parseBool(process.env.SERVE_UI, false),
     ollamaBaseUrl: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434",
     telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "",

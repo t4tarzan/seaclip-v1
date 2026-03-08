@@ -8,7 +8,7 @@ const router = Router({ mergeParams: true });
 router.get("/:companyId/costs", requireAuth, async (req, res, next) => {
   try {
     const { from, to, agentId } = req.query;
-    const summary = await costsService.getCostSummary(req.params.companyId, {
+    const summary = await costsService.getCostSummary(String(req.params.companyId), {
       from: from as string | undefined,
       to: to as string | undefined,
       agentId: agentId as string | undefined,
@@ -23,7 +23,7 @@ router.get("/:companyId/costs", requireAuth, async (req, res, next) => {
 router.get("/:companyId/costs/by-agent", requireAuth, async (req, res, next) => {
   try {
     const { from, to } = req.query;
-    const breakdown = await costsService.getCostsByAgent(req.params.companyId, {
+    const breakdown = await costsService.getCostsByAgent(String(req.params.companyId), {
       from: from as string | undefined,
       to: to as string | undefined,
     });

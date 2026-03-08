@@ -31,7 +31,7 @@ const AddCommentSchema = z.object({
 router.get("/:companyId/issues", requireAuth, async (req, res, next) => {
   try {
     const { status, priority, agentId, projectId, page, limit } = req.query;
-    const issues = await issuesService.listIssues(req.params.companyId, {
+    const issues = await issuesService.listIssues(String(req.params.companyId), {
       status: status as string | undefined,
       priority: priority as string | undefined,
       agentId: agentId as string | undefined,
@@ -48,8 +48,8 @@ router.get("/:companyId/issues", requireAuth, async (req, res, next) => {
 // POST /api/companies/:companyId/issues
 router.post("/:companyId/issues", requireAuth, validate(CreateIssueSchema), async (req, res, next) => {
   try {
-    const issue = await issuesService.createIssue(req.params.companyId, req.body);
-    await publishLiveEvent(req.params.companyId, { type: "issue.created", issue });
+    const issue = await issuesService.createIssue(String(req.params.companyId), req.body);
+    await publishLiveEvent(String(req.params.companyId), { type: "issue.created", issue });
     res.status(201).json(issue);
   } catch (err) {
     next(err);
@@ -59,7 +59,7 @@ router.post("/:companyId/issues", requireAuth, validate(CreateIssueSchema), asyn
 // GET /api/companies/:companyId/issues/:id
 router.get("/:companyId/issues/:id", requireAuth, async (req, res, next) => {
   try {
-    const issue = await issuesService.getIssue(req.params.companyId, req.params.id);
+    const issue = await issuesService.getIssue(String(req.params.companyId), String(req.params.id));
     res.json(issue);
   } catch (err) {
     next(err);
@@ -69,8 +69,8 @@ router.get("/:companyId/issues/:id", requireAuth, async (req, res, next) => {
 // PATCH /api/companies/:companyId/issues/:id
 router.patch("/:companyId/issues/:id", requireAuth, validate(UpdateIssueSchema), async (req, res, next) => {
   try {
-    const issue = await issuesService.updateIssue(req.params.companyId, req.params.id, req.body);
-    await publishLiveEvent(req.params.companyId, { type: "issue.updated", issue });
+    const issue = await issuesService.updateIssue(String(req.params.companyId), String(req.params.id), req.body);
+    await publishLiveEvent(String(req.params.companyId), { type: "issue.updated", issue });
     res.json(issue);
   } catch (err) {
     next(err);
@@ -80,10 +80,10 @@ router.patch("/:companyId/issues/:id", requireAuth, validate(UpdateIssueSchema),
 // DELETE /api/companies/:companyId/issues/:id
 router.delete("/:companyId/issues/:id", requireAuth, async (req, res, next) => {
   try {
-    await issuesService.deleteIssue(req.params.companyId, req.params.id);
-    await publishLiveEvent(req.params.companyId, {
+    await issuesService.deleteIssue(String(req.params.companyId), String(req.params.id));
+    await publishLiveEvent(String(req.params.companyId), {
       type: "issue.deleted",
-      issueId: req.params.id,
+      issueId: String(req.params.id),
     });
     res.status(204).end();
   } catch (err) {
@@ -96,11 +96,11 @@ router.post("/:companyId/issues/:id/checkout", requireAuth, async (req, res, nex
   try {
     const { agentId } = req.body as { agentId?: string };
     const issue = await issuesService.checkoutIssue(
-      req.params.companyId,
-      req.params.id,
-      agentId ?? req.user?.id ?? "unknown",
+      String(req.params.companyId),
+      String(req.params.id),
+      agentId ?? (req as any).user?.id ?? "unknown",
     );
-    await publishLiveEvent(req.params.companyId, {
+    await publishLiveEvent(String(req.params.companyId), {
       type: "issue.checked_out",
       issue,
       agentId,
@@ -119,13 +119,13 @@ router.post(
   async (req, res, next) => {
     try {
       const comment = await issuesService.addComment(
-        req.params.companyId,
-        req.params.id,
-        { ...req.body, authorId: req.body.authorId ?? req.user?.id },
+        String(req.params.companyId),
+        String(req.params.id),
+        { ...req.body, authorId: req.body.authorId ?? (req as any).user?.id },
       );
-      await publishLiveEvent(req.params.companyId, {
+      await publishLiveEvent(String(req.params.companyId), {
         type: "issue.comment_added",
-        issueId: req.params.id,
+        issueId: String(req.params.id),
         comment,
       });
       res.status(201).json(comment);
@@ -139,8 +139,8 @@ router.post(
 router.get("/:companyId/issues/:id/comments", requireAuth, async (req, res, next) => {
   try {
     const comments = await issuesService.listComments(
-      req.params.companyId,
-      req.params.id,
+      String(req.params.companyId),
+      String(req.params.id),
     );
     res.json({ data: comments, count: comments.length });
   } catch (err) {

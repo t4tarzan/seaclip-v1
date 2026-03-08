@@ -1,10 +1,18 @@
 /**
  * companies service — CRUD operations on the companies table.
  *
- * NOTE: This service uses a DB stub pattern. When @seaclip/db is available,
- * swap out the stub calls for real Drizzle ORM queries.
+ * Uses Drizzle ORM against the `companies` table from @seaclip/db.
+ *
+ * Interface notes:
+ *  - `slug` is derived from `name` at read time (no dedicated column in schema).
+ *  - `logoUrl` is not stored in the schema; always returned as undefined.
+ *  - `settings` is not stored in the schema; always returned as {}.
+ *  - Slug uniqueness is enforced by checking for a matching name-derived slug
+ *    across all companies at write time.
  */
-import { randomUUID } from "node:crypto";
+import { getDb } from "../db.js";
+import { eq, asc } from "drizzle-orm";
+import { companies as companiesTable } from "@seaclip/db";
 import { notFound, conflict } from "../errors.js";
 
 export interface Company {
@@ -34,8 +42,9 @@ export interface UpdateCompanyInput {
   settings?: Record<string, unknown>;
 }
 
-// In-memory store (replace with Drizzle DB calls)
-const store = new Map<string, Company>();
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 function generateSlug(name: string): string {
   return name
@@ -45,72 +54,130 @@ function generateSlug(name: string): string {
     .slice(0, 64);
 }
 
+/** Map a DB row to the public Company interface. */
+function rowToCompany(row: typeof companiesTable.$inferSelect): Company {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: generateSlug(row.name),
+    description: row.description ?? undefined,
+    logoUrl: undefined,
+    settings: {},
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
 export async function listCompanies(): Promise<Company[]> {
-  // db: await db.select().from(companiesTable).orderBy(companiesTable.createdAt);
-  return Array.from(store.values()).sort(
-    (a, b) => a.createdAt.localeCompare(b.createdAt),
-  );
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(companiesTable)
+    .orderBy(asc(companiesTable.createdAt));
+  return rows.map(rowToCompany);
 }
 
 export async function createCompany(input: CreateCompanyInput): Promise<Company> {
+  const db = getDb();
   const slug = input.slug ?? generateSlug(input.name);
 
-  // Check slug uniqueness
-  for (const c of store.values()) {
-    if (c.slug === slug) {
+  // Check slug uniqueness — slug is derived from name, so we check whether
+  // any existing company would produce the same slug.
+  const existing = await db
+    .select({ id: companiesTable.id, name: companiesTable.name })
+    .from(companiesTable);
+
+  for (const row of existing) {
+    if (generateSlug(row.name) === slug) {
       throw conflict(`A company with slug "${slug}" already exists`);
     }
   }
 
-  const now = new Date().toISOString();
-  const company: Company = {
-    id: randomUUID(),
-    name: input.name,
-    slug,
-    description: input.description,
-    logoUrl: input.logoUrl,
-    settings: input.settings ?? {},
-    createdAt: now,
-    updatedAt: now,
-  };
+  const [row] = await db
+    .insert(companiesTable)
+    .values({
+      name: input.name,
+      description: input.description ?? null,
+    })
+    .returning();
 
-  store.set(company.id, company);
-  return company;
+  return rowToCompany(row);
 }
 
 export async function getCompany(id: string): Promise<Company> {
-  const company = store.get(id);
-  if (!company) {
+  const db = getDb();
+  const [row] = await db
+    .select()
+    .from(companiesTable)
+    .where(eq(companiesTable.id, id));
+
+  if (!row) {
     throw notFound(`Company "${id}" not found`);
   }
-  return company;
+
+  return rowToCompany(row);
 }
 
-export async function updateCompany(id: string, input: UpdateCompanyInput): Promise<Company> {
-  const company = await getCompany(id);
+export async function updateCompany(
+  id: string,
+  input: UpdateCompanyInput,
+): Promise<Company> {
+  const db = getDb();
 
-  if (input.slug && input.slug !== company.slug) {
-    for (const c of store.values()) {
-      if (c.id !== id && c.slug === input.slug) {
+  // Verify existence first
+  const [existing] = await db
+    .select()
+    .from(companiesTable)
+    .where(eq(companiesTable.id, id));
+
+  if (!existing) {
+    throw notFound(`Company "${id}" not found`);
+  }
+
+  // If a new slug is requested, derive the target name and check uniqueness
+  if (input.slug) {
+    const allRows = await db
+      .select({ id: companiesTable.id, name: companiesTable.name })
+      .from(companiesTable);
+
+    for (const row of allRows) {
+      if (row.id !== id && generateSlug(row.name) === input.slug) {
         throw conflict(`A company with slug "${input.slug}" already exists`);
       }
     }
   }
 
-  const updated: Company = {
-    ...company,
-    ...input,
-    settings: input.settings !== undefined
-      ? { ...company.settings, ...input.settings }
-      : company.settings,
-    updatedAt: new Date().toISOString(),
+  const updateValues: Partial<typeof companiesTable.$inferInsert> = {
+    updatedAt: new Date(),
   };
 
-  store.set(id, updated);
-  return updated;
+  if (input.name !== undefined) updateValues.name = input.name;
+  if (input.description !== undefined) updateValues.description = input.description;
+
+  const [updated] = await db
+    .update(companiesTable)
+    .set(updateValues)
+    .where(eq(companiesTable.id, id))
+    .returning();
+
+  return rowToCompany(updated);
 }
 
 export async function deleteCompany(id: string): Promise<void> {
-  await getCompany(id); // throws if not found
-  store.delete(id);
+  const db = getDb();
+
+  const [existing] = await db
+    .select({ id: companiesTable.id })
+    .from(companiesTable)
+    .where(eq(companiesTable.id, id));
+
+  if (!existing) {
+    throw notFound(`Company "${id}" not found`);
+  }
+
+  await db.delete(companiesTable).where(eq(companiesTable.id, id));
 }

@@ -44,7 +44,7 @@ export function errorHandler(
     "name" in err &&
     (err as { name: string }).name === "ZodError"
   ) {
-    const zodErr = err as { errors: Array<{ path: (string | number)[]; message: string }> };
+    const zodErr = err as unknown as { errors: Array<{ path: (string | number)[]; message: string }> };
     const message = zodErr.errors
       .map((e) => `${e.path.join(".")}: ${e.message}`)
       .join("; ");

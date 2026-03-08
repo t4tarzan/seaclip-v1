@@ -128,9 +128,9 @@ export class LocalDiskProvider implements StorageProvider {
     const objects: StorageObject[] = [];
 
     async function walk(dir: string, base: string): Promise<void> {
-      let entries: Awaited<ReturnType<typeof fs.readdir>>;
+      let entries: any[];
       try {
-        entries = await fs.readdir(dir, { withFileTypes: true });
+        entries = await fs.readdir(dir, { withFileTypes: true }) as any[];
       } catch {
         return;
       }

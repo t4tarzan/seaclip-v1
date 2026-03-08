@@ -34,7 +34,7 @@ export function validate<T extends ZodTypeAny>(
     }
 
     // Overwrite with parsed/coerced data
-    (req as Record<string, unknown>)[target] = result.data;
+    (req as unknown as Record<string, unknown>)[target] = result.data;
     next();
   };
 }
