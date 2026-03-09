@@ -1,0 +1,218 @@
+---
+const agents = [
+  { name: 'Local-Analyst', cron: '*/5 * * * *', ago: '2s ago', healthy: true },
+  { name: 'Cloud-Writer', cron: '0 */2 * * *', ago: '45s ago', healthy: true },
+  { name: 'Edge-Monitor', cron: '*/10 * * * *', ago: '8s ago', healthy: true },
+  { name: 'Backup-Agent', cron: '0 0 * * *', ago: '3h ago', healthy: true },
+];
+
+const telemetry = [
+  { label: 'CPU', value: 45, unit: '%', color: 'var(--color-success)' },
+  { label: 'Memory', value: 62, unit: '%', color: 'var(--color-accent)' },
+  { label: 'GPU', value: 38, unit: '%', color: 'var(--color-success)' },
+  { label: 'Temp', value: 52, unit: '°C', color: 'var(--color-warning)' },
+  { label: 'Disk', value: 71, unit: '%', color: 'var(--color-accent-secondary)' },
+];
+---
+
+<section class="heartbeats" id="heartbeats">
+  <div class="container">
+    <span class="section-label">HEARTBEATS</span>
+    <h2 class="section-title">Every pulse, accounted for</h2>
+    <p class="section-subtitle">
+      5-field cron scheduling per agent. Edge device telemetry side by side.
+    </p>
+
+    <div class="grid grid--2 heartbeats__grid">
+      <!-- Agent Heartbeats -->
+      <div class="card fade-in-left">
+        <h3 class="heartbeats__card-title">Agent Heartbeats</h3>
+        <div class="heartbeats__list">
+          {agents.map((agent) => (
+            <div class="heartbeats__agent">
+              <div class="heartbeats__agent-info">
+                <span class="heartbeats__agent-name">{agent.name}</span>
+                <code class="heartbeats__cron">{agent.cron}</code>
+              </div>
+              <div class="heartbeats__agent-status">
+                <span class="heartbeats__ago">{agent.ago}</span>
+                <span class={`heartbeats__dot ${agent.healthy ? 'heartbeats__dot--healthy' : 'heartbeats__dot--unhealthy'}`} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Device Telemetry -->
+      <div class="card fade-in-right">
+        <div class="heartbeats__device-header">
+          <h3 class="heartbeats__card-title">Device Telemetry</h3>
+          <span class="badge">pi-cluster-01</span>
+        </div>
+        <div class="heartbeats__telemetry">
+          {telemetry.map((metric) => (
+            <div class="heartbeats__metric">
+              <div class="heartbeats__metric-header">
+                <span class="heartbeats__metric-label">{metric.label}</span>
+                <span class="heartbeats__metric-value">{metric.value}{metric.unit}</span>
+              </div>
+              <div class="heartbeats__bar">
+                <div
+                  class="heartbeats__bar-fill"
+                  style={`width: ${metric.value}%; background: ${metric.color}`}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .heartbeats {
+    padding: 6rem 0;
+  }
+
+  .heartbeats__grid {
+    margin-top: 3rem;
+    gap: 2rem;
+  }
+
+  .heartbeats__card-title {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    color: var(--color-text);
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+
+  .heartbeats__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .heartbeats__agent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .heartbeats__agent:last-child {
+    border-bottom: none;
+  }
+
+  .heartbeats__agent-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .heartbeats__agent-name {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .heartbeats__cron {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    background: var(--color-bg);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    width: fit-content;
+  }
+
+  .heartbeats__agent-status {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .heartbeats__ago {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .heartbeats__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .heartbeats__dot--healthy {
+    background: var(--color-success);
+    box-shadow: 0 0 6px var(--color-success);
+  }
+
+  .heartbeats__dot--unhealthy {
+    background: var(--color-danger);
+    box-shadow: 0 0 6px var(--color-danger);
+  }
+
+  .heartbeats__device-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  .heartbeats__device-header .heartbeats__card-title {
+    margin-bottom: 0;
+  }
+
+  .heartbeats__telemetry {
+    display: flex;
+    flex-direction: column;
+    gap: 1.125rem;
+  }
+
+  .heartbeats__metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.375rem;
+  }
+
+  .heartbeats__metric-label {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+
+  .heartbeats__metric-value {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  .heartbeats__bar {
+    width: 100%;
+    height: 8px;
+    background: var(--color-bg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .heartbeats__bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+
+  @media (max-width: 768px) {
+    .heartbeats__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

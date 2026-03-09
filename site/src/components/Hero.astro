@@ -1,0 +1,254 @@
+---
+const githubUrl = 'https://github.com/t4tarzan/seaclip-v1';
+---
+
+<section class="hero">
+  <div class="container hero__inner">
+    <div class="hero__content fade-in">
+      <span class="badge hero__badge">Open Source | MIT Licensed</span>
+
+      <h1 class="hero__heading">
+        Open-source orchestration for edge-native AI fleets
+      </h1>
+
+      <p class="hero__subline">
+        Deploy AI agents from cloud to edge. Hub coordinates. Spokes execute.
+        Your Tailnet is the trust boundary.
+      </p>
+
+      <div class="hero__ctas">
+        <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="btn btn--primary">
+          Get started
+        </a>
+        <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="btn btn--secondary">
+          View on GitHub
+        </a>
+      </div>
+    </div>
+
+    <div class="hero__mesh" aria-hidden="true">
+      <!-- Hub node (center) -->
+      <div class="mesh__node mesh__node--hub"></div>
+
+      <!-- Spoke nodes -->
+      <div class="mesh__node mesh__node--spoke mesh__spoke-1"></div>
+      <div class="mesh__node mesh__node--spoke mesh__spoke-2"></div>
+      <div class="mesh__node mesh__node--spoke mesh__spoke-3"></div>
+      <div class="mesh__node mesh__node--spoke mesh__spoke-4"></div>
+      <div class="mesh__node mesh__node--spoke mesh__spoke-5"></div>
+      <div class="mesh__node mesh__node--spoke mesh__spoke-6"></div>
+
+      <!-- Connection lines (SVG) -->
+      <svg class="mesh__lines" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Hub to spokes -->
+        <line x1="200" y1="200" x2="200" y2="40" class="mesh__line mesh__line--1" />
+        <line x1="200" y1="200" x2="340" y2="110" class="mesh__line mesh__line--2" />
+        <line x1="200" y1="200" x2="340" y2="290" class="mesh__line mesh__line--3" />
+        <line x1="200" y1="200" x2="200" y2="360" class="mesh__line mesh__line--4" />
+        <line x1="200" y1="200" x2="60" y2="290" class="mesh__line mesh__line--5" />
+        <line x1="200" y1="200" x2="60" y2="110" class="mesh__line mesh__line--6" />
+        <!-- Spoke-to-spoke ring -->
+        <line x1="200" y1="40" x2="340" y2="110" class="mesh__line mesh__line--ring" />
+        <line x1="340" y1="110" x2="340" y2="290" class="mesh__line mesh__line--ring" />
+        <line x1="340" y1="290" x2="200" y2="360" class="mesh__line mesh__line--ring" />
+        <line x1="200" y1="360" x2="60" y2="290" class="mesh__line mesh__line--ring" />
+        <line x1="60" y1="290" x2="60" y2="110" class="mesh__line mesh__line--ring" />
+        <line x1="60" y1="110" x2="200" y2="40" class="mesh__line mesh__line--ring" />
+      </svg>
+
+      <!-- Pulse rings around hub -->
+      <div class="mesh__pulse mesh__pulse--1"></div>
+      <div class="mesh__pulse mesh__pulse--2"></div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-top: 5rem;
+    overflow: hidden;
+  }
+
+  .hero__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3xl);
+    align-items: center;
+  }
+
+  .hero__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .hero__badge {
+    align-self: flex-start;
+  }
+
+  .hero__heading {
+    font-family: var(--font-serif);
+    font-size: clamp(2.5rem, 5.5vw, 4rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+  }
+
+  .hero__subline {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    max-width: 50ch;
+  }
+
+  .hero__ctas {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  /* --- Mesh Graphic --- */
+  .hero__mesh {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 400px;
+    justify-self: center;
+  }
+
+  .mesh__lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .mesh__line {
+    stroke: var(--color-accent);
+    stroke-width: 1;
+    opacity: 0.3;
+  }
+
+  .mesh__line--ring {
+    stroke: var(--color-border);
+    stroke-width: 0.75;
+    opacity: 0.2;
+    stroke-dasharray: 4 4;
+  }
+
+  .mesh__line--1 { animation: linePulse 3s ease-in-out infinite; }
+  .mesh__line--2 { animation: linePulse 3s ease-in-out 0.5s infinite; }
+  .mesh__line--3 { animation: linePulse 3s ease-in-out 1s infinite; }
+  .mesh__line--4 { animation: linePulse 3s ease-in-out 1.5s infinite; }
+  .mesh__line--5 { animation: linePulse 3s ease-in-out 2s infinite; }
+  .mesh__line--6 { animation: linePulse 3s ease-in-out 2.5s infinite; }
+
+  @keyframes linePulse {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.5; }
+  }
+
+  .mesh__node {
+    position: absolute;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .mesh__node--hub {
+    width: 18px;
+    height: 18px;
+    background: var(--color-accent);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), 0 0 60px rgba(56, 189, 248, 0.15);
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+  }
+
+  .mesh__node--spoke {
+    width: 10px;
+    height: 10px;
+    background: var(--color-accent-secondary);
+    opacity: 0.7;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+    animation: spokeGlow 4s ease-in-out infinite;
+  }
+
+  .mesh__spoke-1 { top: 10%; left: 50%; animation-delay: 0s; }
+  .mesh__spoke-2 { top: 27.5%; left: 85%; animation-delay: 0.7s; }
+  .mesh__spoke-3 { top: 72.5%; left: 85%; animation-delay: 1.4s; }
+  .mesh__spoke-4 { top: 90%; left: 50%; animation-delay: 2.1s; }
+  .mesh__spoke-5 { top: 72.5%; left: 15%; animation-delay: 2.8s; }
+  .mesh__spoke-6 { top: 27.5%; left: 15%; animation-delay: 3.5s; }
+
+  @keyframes spokeGlow {
+    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+  }
+
+  /* Pulse rings emanating from hub */
+  .mesh__pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid var(--color-accent);
+    transform: translate(-50%, -50%);
+    animation: pulseRing 3s ease-out infinite;
+    pointer-events: none;
+  }
+
+  .mesh__pulse--2 {
+    animation-delay: 1.5s;
+  }
+
+  @keyframes pulseRing {
+    0% {
+      width: 18px;
+      height: 18px;
+      opacity: 0.6;
+    }
+    100% {
+      width: 180px;
+      height: 180px;
+      opacity: 0;
+    }
+  }
+
+  /* --- Responsive --- */
+  @media (max-width: 768px) {
+    .hero__inner {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .hero__badge {
+      align-self: center;
+    }
+
+    .hero__subline {
+      margin: 0 auto;
+    }
+
+    .hero__ctas {
+      justify-content: center;
+    }
+
+    .hero__mesh {
+      max-width: 280px;
+      order: -1;
+      opacity: 0.6;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero__ctas {
+      flex-direction: column;
+    }
+  }
+</style>

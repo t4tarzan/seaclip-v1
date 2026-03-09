@@ -1,0 +1,131 @@
+---
+const problems = [
+  {
+    problem: 'My agents have no structure',
+    solution: 'Hierarchical goals, projects, and tasks give every agent a mission.',
+    exclusive: false,
+  },
+  {
+    problem: "I can't track what agents are doing",
+    solution: 'Real-time heartbeats, audit logs, and WebSocket events.',
+    exclusive: false,
+  },
+  {
+    problem: 'Agent costs are a black box',
+    solution: 'Per-run token attribution with budget enforcement.',
+    exclusive: false,
+  },
+  {
+    problem: 'I need human oversight',
+    solution: 'Typed approval workflows for any agent action.',
+    exclusive: false,
+  },
+  {
+    problem: 'I have multiple teams',
+    solution: 'Multi-company isolation on a single instance.',
+    exclusive: false,
+  },
+  {
+    problem: 'My agents need different backends',
+    solution: 'Seven adapters: Claude, Ollama, SeaClaw, Codex, Process, HTTP, Telegram.',
+    exclusive: false,
+  },
+  {
+    problem: 'My edge devices run agents but I have no visibility',
+    solution: 'Edge mesh gives you real-time telemetry, health scores, and auto-reassignment.',
+    exclusive: true,
+  },
+  {
+    problem: "I can't trust cloud APIs with sensitive data",
+    solution: 'Environment isolation keeps local agents on your Tailnet. Cloud agents stay in the cloud.',
+    exclusive: true,
+  },
+];
+---
+
+<section id="problems-solved">
+  <div class="container">
+    <p class="section-label fade-in">PROBLEMS SOLVED</p>
+    <h2 class="section-title fade-in">Sound familiar?</h2>
+
+    <ol class="problems-list stagger">
+      {problems.map((item, i) => (
+        <li class="problem-item">
+          <div class="problem-number">{String(i + 1).padStart(2, '0')}</div>
+          <div class="problem-content">
+            <p class="problem-quote">&ldquo;{item.problem}&rdquo;</p>
+            <p class="problem-solution">
+              {item.solution}
+              {item.exclusive && <span class="badge badge--exclusive">SeaClip Exclusive</span>}
+            </p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .problems-list {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-3xl) auto 0;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .problem-item {
+    display: flex;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md, 12px);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition: border-color 0.2s ease;
+  }
+
+  .problem-item:hover {
+    border-color: var(--color-accent);
+  }
+
+  .problem-number {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    padding-top: 0.15em;
+    flex-shrink: 0;
+    width: 24px;
+  }
+
+  .problem-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .problem-quote {
+    font-style: italic;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .problem-solution {
+    font-size: 0.95rem;
+    color: var(--color-text);
+    line-height: 1.5;
+  }
+
+  .badge--exclusive {
+    margin-left: var(--space-sm);
+    vertical-align: middle;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>

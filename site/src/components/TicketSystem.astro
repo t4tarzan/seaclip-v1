@@ -1,0 +1,267 @@
+---
+const states = [
+  { label: 'pending', color: 'var(--color-text-muted)' },
+  { label: 'assigned', color: 'var(--color-accent)' },
+  { label: 'in_progress', color: 'var(--color-warning)' },
+  { label: 'pr_raised', color: 'var(--color-accent-secondary)' },
+  { label: 'merged', color: 'var(--color-success)' },
+  { label: 'done', color: 'var(--color-success)' },
+];
+
+const timeline = [
+  { event: 'Created', time: '2h ago' },
+  { event: 'Assigned to Local-Analyst', time: '1h ago' },
+  { event: 'Branch created', time: '45m ago' },
+  { event: 'PR raised', time: '10m ago' },
+];
+---
+
+<section id="ticket-system">
+  <div class="container">
+    <p class="section-label fade-in">TICKET SYSTEM</p>
+    <h2 class="section-title fade-in">Structured work, from edge to merge</h2>
+    <p class="section-subtitle fade-in">
+      Every task flows through a spoke workflow with full traceability.
+    </p>
+
+    <div class="ticket__pipeline fade-in">
+      {states.map((state, i) => (
+        <div class="ticket__pipeline-step">
+          <span class="ticket__state-pill" style={`--pill-color: ${state.color}`}>
+            {state.label}
+          </span>
+          {i < states.length - 1 && (
+            <svg class="ticket__arrow" width="24" height="12" viewBox="0 0 24 12" fill="none">
+              <path d="M0 6h20M16 1l5 5-5 5" stroke="var(--color-border)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          )}
+        </div>
+      ))}
+    </div>
+
+    <div class="ticket__card fade-in">
+      <div class="ticket__card-header">
+        <span class="ticket__issue-id">#42</span>
+        <span class="ticket__status-badge" style="background: var(--color-warning); color: var(--color-bg);">
+          in_progress
+        </span>
+      </div>
+      <h3 class="ticket__title">Deploy monitoring agent to pi-cluster-02</h3>
+      <div class="ticket__meta">
+        <div class="ticket__meta-item">
+          <span class="ticket__meta-label">Assignee</span>
+          <span class="ticket__meta-value">Local-Analyst</span>
+        </div>
+        <div class="ticket__meta-item">
+          <span class="ticket__meta-label">Branch</span>
+          <span class="ticket__meta-value ticket__branch">feat/monitor-42</span>
+        </div>
+      </div>
+
+      <div class="ticket__timeline">
+        {timeline.map((entry, i) => (
+          <div class="ticket__timeline-entry">
+            <div class="ticket__timeline-dot-wrap">
+              <div class="ticket__timeline-dot" />
+              {i < timeline.length - 1 && <div class="ticket__timeline-line" />}
+            </div>
+            <div class="ticket__timeline-content">
+              <span class="ticket__timeline-event">{entry.event}</span>
+              <span class="ticket__timeline-time">{entry.time}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  #ticket-system {
+    padding: 6rem 0;
+  }
+
+  .ticket__pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+  }
+
+  .ticket__pipeline-step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ticket__state-pill {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.375rem 0.875rem;
+    border-radius: 9999px;
+    border: 1px solid var(--pill-color);
+    color: var(--pill-color);
+    background: transparent;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+
+  .ticket__arrow {
+    flex-shrink: 0;
+  }
+
+  .ticket__card {
+    max-width: 560px;
+    margin: 0 auto;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .ticket__card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .ticket__issue-id {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .ticket__status-badge {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .ticket__title {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    color: var(--color-text);
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  .ticket__meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .ticket__meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .ticket__meta-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .ticket__meta-value {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+  }
+
+  .ticket__branch {
+    font-family: var(--font-mono);
+    color: var(--color-accent-secondary);
+  }
+
+  .ticket__timeline {
+    margin-top: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ticket__timeline-entry {
+    display: flex;
+    gap: 0.75rem;
+    min-height: 2.25rem;
+  }
+
+  .ticket__timeline-dot-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 12px;
+    flex-shrink: 0;
+  }
+
+  .ticket__timeline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .ticket__timeline-line {
+    width: 2px;
+    flex: 1;
+    background: var(--color-border);
+  }
+
+  .ticket__timeline-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex: 1;
+    padding-bottom: 0.75rem;
+  }
+
+  .ticket__timeline-event {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  .ticket__timeline-time {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 640px) {
+    .ticket__pipeline {
+      gap: 0.375rem;
+    }
+
+    .ticket__state-pill {
+      font-size: 0.625rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .ticket__arrow {
+      width: 16px;
+    }
+
+    .ticket__card {
+      padding: 1.25rem;
+    }
+  }
+</style>

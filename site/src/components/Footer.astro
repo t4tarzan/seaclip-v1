@@ -1,0 +1,140 @@
+---
+const githubUrl = 'https://github.com/t4tarzan/seaclip-v1';
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <span class="footer__logo">SeaClip</span>
+        <p class="footer__tagline">Open-source orchestration for edge-native AI fleets</p>
+      </div>
+
+      <nav class="footer__links" aria-label="Footer navigation">
+        <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="footer__link">GitHub</a>
+        <a href={`${githubUrl}#readme`} target="_blank" rel="noopener noreferrer" class="footer__link">Documentation</a>
+        <a href={`${githubUrl}/issues`} target="_blank" rel="noopener noreferrer" class="footer__link">Issues</a>
+      </nav>
+
+      <div class="footer__meta">
+        <span class="footer__meta-item">Built with Astro</span>
+        <span class="footer__meta-item">MIT License</span>
+        <span class="footer__meta-item">&copy; {currentYear}</span>
+      </div>
+    </div>
+
+    <hr class="footer__divider" />
+
+    <p class="footer__attribution">Forked with love from Paperclip</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--color-bg-alt);
+    padding: 3.5rem 0 2rem;
+  }
+
+  .footer__grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: var(--space-3xl, 3rem);
+    align-items: start;
+  }
+
+  .footer__brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .footer__logo {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    letter-spacing: -0.01em;
+  }
+
+  .footer__tagline {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin: 0;
+    max-width: 28ch;
+  }
+
+  .footer__links {
+    display: flex;
+    gap: var(--space-xl, 1.5rem);
+    align-items: center;
+  }
+
+  .footer__link {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .footer__link:hover {
+    color: var(--color-accent);
+  }
+
+  .footer__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+  }
+
+  .footer__meta-item {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+
+  .footer__divider {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 2.5rem 0 1.25rem;
+  }
+
+  .footer__attribution {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .footer__grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-xl, 1.5rem);
+      text-align: center;
+    }
+
+    .footer__brand {
+      align-items: center;
+    }
+
+    .footer__tagline {
+      max-width: none;
+    }
+
+    .footer__links {
+      justify-content: center;
+    }
+
+    .footer__meta {
+      align-items: center;
+      flex-direction: row;
+      justify-content: center;
+      gap: 1rem;
+    }
+  }
+</style>

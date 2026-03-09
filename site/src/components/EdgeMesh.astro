@@ -1,0 +1,335 @@
+---
+const devices = [
+  { name: 'Pi-01', angle: 0, health: 'green' },
+  { name: 'Jetson-02', angle: 72, health: 'green' },
+  { name: 'Mac-Studio', angle: 144, health: 'green' },
+  { name: 'Pi-03', angle: 216, health: 'red' },
+  { name: 'Phone-01', angle: 288, health: 'yellow' },
+];
+
+const features = [
+  {
+    title: 'Device Registration',
+    description: 'POST /api/devices — token-based onboarding',
+  },
+  {
+    title: 'Live Telemetry',
+    description: 'CPU, RAM, GPU, temp, disk at 10-30s intervals',
+  },
+  {
+    title: 'Health Scoring',
+    description: '0-100 scale, automatic threshold alerts',
+  },
+  {
+    title: 'Auto-Reassignment',
+    description: 'Unhealthy device? Tasks move to healthy agents',
+  },
+];
+
+const supported = ['Raspberry Pi', 'Jetson', 'Mac', 'Linux', 'Android', 'iPhone'];
+---
+
+<section id="edge-mesh" class="edge-mesh">
+  <div class="container">
+    <span class="badge fade-in">SEACLIP EXCLUSIVE</span>
+    <p class="section-label fade-in">EDGE MESH</p>
+    <h2 class="section-title fade-in">Your devices, orchestrated</h2>
+    <p class="section-subtitle fade-in">
+      Register any device. Monitor everything. Auto-reassign on failure.
+    </p>
+
+    <!-- Topology Diagram -->
+    <div class="topology fade-in">
+      <div class="topology__ring">
+        <!-- Hub center node -->
+        <div class="topology__hub">
+          <span class="topology__hub-label">Hub</span>
+        </div>
+
+        <!-- Device nodes + connecting lines -->
+        {devices.map((device) => {
+          const rad = (device.angle - 90) * (Math.PI / 180);
+          const radius = 42;
+          const x = 50 + radius * Math.cos(rad);
+          const y = 50 + radius * Math.sin(rad);
+          const isUnhealthy = device.health === 'red';
+
+          return (
+            <div
+              class:list={['topology__device', { 'topology__device--unhealthy': isUnhealthy }]}
+              style={`left: ${x}%; top: ${y}%;`}
+            >
+              <span class={`topology__health topology__health--${device.health}`} />
+              <span class="topology__device-name">{device.name}</span>
+            </div>
+          );
+        })}
+
+        <!-- SVG lines connecting hub to devices -->
+        <svg class="topology__lines" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+          {devices.map((device) => {
+            const rad = (device.angle - 90) * (Math.PI / 180);
+            const radius = 42;
+            const x = 50 + radius * Math.cos(rad);
+            const y = 50 + radius * Math.sin(rad);
+            const isUnhealthy = device.health === 'red';
+
+            return (
+              <line
+                x1="50" y1="50"
+                x2={x} y2={y}
+                class:list={['topology__line', { 'topology__line--dashed': isUnhealthy }]}
+              />
+            );
+          })}
+        </svg>
+      </div>
+    </div>
+
+    <!-- Feature cards -->
+    <div class="grid grid--4 stagger edge-features">
+      {features.map((feat) => (
+        <div class="card edge-feature-card">
+          <h3 class="edge-feature-title">{feat.title}</h3>
+          <p class="edge-feature-desc">{feat.description}</p>
+        </div>
+      ))}
+    </div>
+
+    <!-- Supported devices -->
+    <div class="edge-supported fade-in">
+      <p class="edge-supported__label">Supported devices</p>
+      <p class="edge-supported__list">
+        {supported.join(' \u00A0|\u00A0 ')}
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .edge-mesh {
+    position: relative;
+  }
+
+  .edge-mesh::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 30%, rgba(56, 189, 248, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Topology */
+  .topology {
+    display: flex;
+    justify-content: center;
+    margin: var(--space-3xl) auto var(--space-2xl);
+    max-width: 560px;
+  }
+
+  .topology__ring {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+  }
+
+  .topology__lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .topology__line {
+    stroke: var(--color-accent);
+    stroke-width: 0.4;
+    opacity: 0.5;
+  }
+
+  .topology__line--dashed {
+    stroke: var(--color-danger);
+    stroke-dasharray: 2 2;
+    opacity: 0.6;
+    animation: dash-move 1.5s linear infinite;
+  }
+
+  @keyframes dash-move {
+    to {
+      stroke-dashoffset: -8;
+    }
+  }
+
+  .topology__hub {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--color-accent) 0%, rgba(56, 189, 248, 0.25) 70%);
+    border: 2px solid var(--color-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.3), 0 0 60px rgba(56, 189, 248, 0.1);
+  }
+
+  .topology__hub-label {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-bg);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .topology__device {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .topology__device::before {
+    content: '';
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .topology__device:hover::before {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+  }
+
+  .topology__device--unhealthy::before {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 16px rgba(248, 113, 113, 0.25);
+  }
+
+  .topology__health {
+    position: absolute;
+    top: -2px;
+    right: calc(50% - 26px);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--color-bg-alt);
+    z-index: 4;
+  }
+
+  .topology__health--green {
+    background: var(--color-success);
+  }
+
+  .topology__health--yellow {
+    background: var(--color-warning);
+  }
+
+  .topology__health--red {
+    background: var(--color-danger);
+    animation: pulse-red 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(248, 113, 113, 0); }
+  }
+
+  .topology__device-name {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+
+  /* Feature cards */
+  .edge-features {
+    margin-top: var(--space-2xl);
+  }
+
+  .grid--4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 900px) {
+    .grid--4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .grid--4 {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .edge-feature-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .edge-feature-title {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    color: var(--color-text);
+  }
+
+  .edge-feature-desc {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+
+  /* Supported devices */
+  .edge-supported {
+    text-align: center;
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-xl);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .edge-supported__label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-sm);
+  }
+
+  .edge-supported__list {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 520px) {
+    .topology__hub {
+      width: 60px;
+      height: 60px;
+    }
+
+    .topology__device::before {
+      width: 32px;
+      height: 32px;
+    }
+
+    .topology__device-name {
+      font-size: 0.5625rem;
+    }
+  }
+</style>

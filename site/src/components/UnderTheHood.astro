@@ -1,0 +1,57 @@
+---
+const techPoints = [
+  { label: 'Express 5', description: 'Async-first API with typed error handling' },
+  { label: 'Drizzle ORM', description: 'Type-safe schema, zero runtime overhead' },
+  { label: 'PGlite / PostgreSQL', description: 'Embedded for dev, Postgres for prod' },
+  { label: 'React 19 + Vite 6', description: 'Dashboard with TanStack Query and Radix UI' },
+  { label: 'WebSocket', description: 'Live events pushed to every connected client' },
+  { label: 'Commander.js CLI', description: 'Full CLI with onboard wizard and health checks' },
+  { label: 'AES-256-GCM', description: 'Secrets encrypted at rest with scrypt key derivation' },
+  { label: 'Edge-native telemetry', description: '10-30s device reporting with health scoring' },
+  { label: 'Hub federation protocol', description: 'Event-driven sync with conflict resolution' },
+  { label: 'Environment routing guards', description: 'Cloud and local agents never cross boundaries' },
+];
+---
+
+<section id="under-the-hood">
+  <div class="container">
+    <p class="section-label fade-in">UNDER THE HOOD</p>
+    <h2 class="section-title fade-in">Built for builders</h2>
+
+    <div class="grid grid--2 stagger tech-grid">
+      {techPoints.map((point) => (
+        <div class="card tech-card">
+          <span class="tech-label">{point.label}</span>
+          <p class="tech-desc">{point.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .tech-grid {
+    margin-top: var(--space-3xl);
+  }
+
+  .tech-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-lg);
+  }
+
+  .tech-label {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    letter-spacing: 0.02em;
+  }
+
+  .tech-desc {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+</style>

@@ -1,0 +1,122 @@
+---
+const hierarchy = [
+  { level: 'Company Goal', text: 'Increase uptime to 99.9%', color: 'var(--color-accent)' },
+  { level: 'Project', text: 'Deploy monitoring agents', color: 'var(--color-accent-secondary)' },
+  { level: 'Task', text: 'Configure edge heartbeats', color: 'var(--color-success)' },
+  { level: 'Agent Assignment', text: 'Local-Analyst on Pi-cluster-01', color: 'var(--color-warning)' },
+];
+---
+
+<section class="goal-alignment" id="goal-alignment">
+  <div class="container">
+    <span class="section-label">GOAL ALIGNMENT</span>
+    <h2 class="section-title">Goals flow from hub to spoke</h2>
+    <p class="section-subtitle">
+      Every agent knows its mission. Hierarchical goals cascade from company objectives
+      down to individual tasks.
+    </p>
+
+    <div class="goal-alignment__cascade fade-in">
+      {hierarchy.map((item, i) => (
+        <div class="goal-alignment__step">
+          {i > 0 && (
+            <div class="goal-alignment__connector">
+              <div class="goal-alignment__line" />
+              <svg class="goal-alignment__arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+                <path d="M6 8L0 0h12L6 8z" fill={item.color} />
+              </svg>
+            </div>
+          )}
+          <div class="goal-alignment__box" style={`border-color: ${item.color}`}>
+            <span class="goal-alignment__level" style={`color: ${item.color}`}>
+              {item.level}
+            </span>
+            <span class="goal-alignment__text">{item.text}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .goal-alignment {
+    padding: 6rem 0;
+  }
+
+  .goal-alignment__cascade {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 3rem;
+    gap: 0;
+  }
+
+  .goal-alignment__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .goal-alignment__connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 40px;
+  }
+
+  .goal-alignment__line {
+    width: 2px;
+    flex: 1;
+    background: var(--color-border);
+  }
+
+  .goal-alignment__arrow {
+    flex-shrink: 0;
+  }
+
+  .goal-alignment__box {
+    width: 100%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .goal-alignment__box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .goal-alignment__level {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .goal-alignment__text {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--color-text);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 640px) {
+    .goal-alignment__step {
+      max-width: 100%;
+    }
+
+    .goal-alignment__box {
+      padding: 1rem 1.25rem;
+    }
+  }
+</style>

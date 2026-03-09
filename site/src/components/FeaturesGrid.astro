@@ -1,0 +1,219 @@
+---
+const features = [
+  {
+    title: 'BYOA',
+    subtitle: '7 adapters',
+    description: 'Claude, Ollama, SeaClaw, Codex, Process, HTTP, Telegram',
+    badge: null,
+    icon: 'plug',
+  },
+  {
+    title: 'Goal Alignment',
+    subtitle: null,
+    description: 'Hierarchical goals cascade from company to agent',
+    badge: null,
+    icon: 'target',
+  },
+  {
+    title: 'Heartbeats',
+    subtitle: null,
+    description: '5-field cron scheduling per agent',
+    badge: null,
+    icon: 'pulse',
+  },
+  {
+    title: 'Cost Control',
+    subtitle: null,
+    description: 'Per-run token and cost attribution',
+    badge: null,
+    icon: 'coin',
+  },
+  {
+    title: 'Multi-Company',
+    subtitle: null,
+    description: 'Isolated tenants sharing one instance',
+    badge: null,
+    icon: 'building',
+  },
+  {
+    title: 'Ticket System',
+    subtitle: null,
+    description: 'Structured issues with atomic checkout',
+    badge: null,
+    icon: 'ticket',
+  },
+  {
+    title: 'Edge Mesh',
+    subtitle: null,
+    description: 'Device fleet with health scoring',
+    badge: 'NEW',
+    icon: 'mesh',
+  },
+  {
+    title: 'Hub Federation',
+    subtitle: null,
+    description: 'Multi-hub sync and task routing',
+    badge: 'NEW',
+    icon: 'hub',
+  },
+  {
+    title: 'Spoke Thin-Client',
+    subtitle: null,
+    description: 'Mobile-friendly device UI',
+    badge: 'NEW',
+    icon: 'phone',
+  },
+  {
+    title: 'Secrets Management',
+    subtitle: null,
+    description: 'AES-256-GCM encrypted store',
+    badge: null,
+    icon: 'lock',
+  },
+  {
+    title: 'Claude Code Adapter',
+    subtitle: null,
+    description: 'Native git/branch/PR integration',
+    badge: null,
+    icon: 'git',
+  },
+  {
+    title: 'WebSocket Events',
+    subtitle: null,
+    description: 'Real-time dashboard updates',
+    badge: null,
+    icon: 'zap',
+  },
+];
+---
+
+<section id="features">
+  <div class="container">
+    <p class="section-label fade-in">FEATURES</p>
+    <h2 class="section-title fade-in">Everything you need to run AI at the edge</h2>
+
+    <div class="grid grid--4 stagger features-grid">
+      {features.map((f) => (
+        <div class="card feature-card">
+          <div class="feature-header">
+            <div class="feature-icon">
+              {f.icon === 'plug' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22v-5" /><path d="M9 8V2" /><path d="M15 8V2" /><path d="M18 8v5a6 6 0 0 1-12 0V8z" />
+                </svg>
+              )}
+              {f.icon === 'target' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
+                </svg>
+              )}
+              {f.icon === 'pulse' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+              )}
+              {f.icon === 'coin' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" /><path d="M12 6v12" /><path d="M15.5 9.5a3 3 0 0 0-3-2H11a3 3 0 0 0 0 5h2a3 3 0 0 1 0 5h-1.5a3 3 0 0 1-3-2" />
+                </svg>
+              )}
+              {f.icon === 'building' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" />
+                </svg>
+              )}
+              {f.icon === 'ticket' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z" /><path d="M13 5v2" /><path d="M13 17v2" /><path d="M13 11v2" />
+                </svg>
+              )}
+              {f.icon === 'mesh' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="5" cy="6" r="2" /><circle cx="19" cy="6" r="2" /><circle cx="12" cy="18" r="2" /><circle cx="12" cy="12" r="2" /><path d="M7 7l3 3" /><path d="M17 7l-3 3" /><path d="M12 14v2" />
+                </svg>
+              )}
+              {f.icon === 'hub' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3" /><path d="M12 2v7" /><path d="M12 15v7" /><path d="M2 12h7" /><path d="M15 12h7" />
+                </svg>
+              )}
+              {f.icon === 'phone' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="2" width="14" height="20" rx="2" /><path d="M12 18h.01" />
+                </svg>
+              )}
+              {f.icon === 'lock' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              )}
+              {f.icon === 'git' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="18" r="3" /><circle cx="6" cy="6" r="3" /><circle cx="18" cy="6" r="3" /><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1 .4-1 1v2" /><path d="M12 12v3" />
+                </svg>
+              )}
+              {f.icon === 'zap' && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              )}
+            </div>
+            {f.badge && <span class="badge">{f.badge}</span>}
+          </div>
+          <h4 class="feature-title">{f.title}{f.subtitle && <span class="feature-subtitle"> ({f.subtitle})</span>}</h4>
+          <p class="feature-desc">{f.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .features-grid {
+    margin-top: var(--space-3xl);
+  }
+
+  .feature-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-lg);
+  }
+
+  .feature-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-xs);
+  }
+
+  .feature-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: var(--color-accent-glow);
+    color: var(--color-accent);
+  }
+
+  .feature-title {
+    font-size: 1rem;
+    font-weight: 500;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+  }
+
+  .feature-subtitle {
+    color: var(--color-text-muted);
+    font-weight: 400;
+    font-size: 0.875rem;
+  }
+
+  .feature-desc {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+</style>

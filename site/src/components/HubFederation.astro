@@ -1,0 +1,264 @@
+---
+const hubs = [
+  { name: 'Hub US-West', agents: 12, position: 'top' },
+  { name: 'Hub EU-Central', agents: 8, position: 'bottom-left' },
+  { name: 'Hub AP-Tokyo', agents: 6, position: 'bottom-right' },
+];
+
+const features = [
+  {
+    title: 'Mutual Handshake',
+    description: 'Public key exchange, verified identity',
+  },
+  {
+    title: 'Event-Driven Sync',
+    description: 'Real-time updates + 5-min reconciliation',
+  },
+  {
+    title: 'Cross-Hub Routing',
+    description: 'Route tasks to the best hub for the job',
+  },
+  {
+    title: 'Conflict Resolution',
+    description: 'Last-writer-wins with 30-day tombstones',
+  },
+];
+---
+
+<section id="hub-federation" class="hub-federation">
+  <div class="container">
+    <span class="badge fade-in">SEACLIP EXCLUSIVE</span>
+    <p class="section-label fade-in">HUB FEDERATION</p>
+    <h2 class="section-title fade-in">Hubs that talk to hubs</h2>
+    <p class="section-subtitle fade-in">
+      Multi-hub sync protocol. Cross-hub task routing. Geographic distribution.
+    </p>
+
+    <!-- Federation Triangle Diagram -->
+    <div class="federation-diagram fade-in">
+      <svg class="federation-lines" viewBox="0 0 400 360" preserveAspectRatio="xMidYMid meet">
+        <!-- Triangle edges with bidirectional arrows -->
+        <!-- US-West (top) to EU-Central (bottom-left) -->
+        <line x1="200" y1="60" x2="80" y2="300" class="federation-line" />
+        <polygon points="130,200 124,210 136,208" class="federation-arrow" />
+        <polygon points="150,160 156,150 144,152" class="federation-arrow" />
+
+        <!-- US-West (top) to AP-Tokyo (bottom-right) -->
+        <line x1="200" y1="60" x2="320" y2="300" class="federation-line" />
+        <polygon points="270,200 276,210 264,208" class="federation-arrow" />
+        <polygon points="250,160 244,150 256,152" class="federation-arrow" />
+
+        <!-- EU-Central (bottom-left) to AP-Tokyo (bottom-right) -->
+        <line x1="80" y1="300" x2="320" y2="300" class="federation-line" />
+        <polygon points="170,300 164,294 164,306" class="federation-arrow" />
+        <polygon points="230,300 236,294 236,306" class="federation-arrow" />
+
+        <!-- Animated pulse circles on lines -->
+        <circle r="3" fill="var(--color-accent)" opacity="0.8">
+          <animateMotion dur="3s" repeatCount="indefinite" path="M200,60 L80,300" />
+        </circle>
+        <circle r="3" fill="var(--color-accent-secondary)" opacity="0.8">
+          <animateMotion dur="3.5s" repeatCount="indefinite" path="M200,60 L320,300" />
+        </circle>
+        <circle r="3" fill="var(--color-accent)" opacity="0.8">
+          <animateMotion dur="2.8s" repeatCount="indefinite" path="M80,300 L320,300" />
+        </circle>
+      </svg>
+
+      <!-- Hub nodes -->
+      <div class="federation-node federation-node--top">
+        <div class="federation-node__circle">
+          <span class="federation-node__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="2" width="20" height="20" rx="3" />
+              <path d="M12 6v12M6 12h12" />
+            </svg>
+          </span>
+        </div>
+        <span class="federation-node__name">{hubs[0].name}</span>
+        <span class="federation-node__count">{hubs[0].agents} agents</span>
+      </div>
+
+      <div class="federation-node federation-node--bottom-left">
+        <div class="federation-node__circle">
+          <span class="federation-node__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="2" width="20" height="20" rx="3" />
+              <path d="M12 6v12M6 12h12" />
+            </svg>
+          </span>
+        </div>
+        <span class="federation-node__name">{hubs[1].name}</span>
+        <span class="federation-node__count">{hubs[1].agents} agents</span>
+      </div>
+
+      <div class="federation-node federation-node--bottom-right">
+        <div class="federation-node__circle">
+          <span class="federation-node__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="2" width="20" height="20" rx="3" />
+              <path d="M12 6v12M6 12h12" />
+            </svg>
+          </span>
+        </div>
+        <span class="federation-node__name">{hubs[2].name}</span>
+        <span class="federation-node__count">{hubs[2].agents} agents</span>
+      </div>
+    </div>
+
+    <!-- Feature cards -->
+    <div class="grid grid--2 stagger federation-features">
+      {features.map((feat) => (
+        <div class="card federation-card">
+          <h3 class="federation-card__title">{feat.title}</h3>
+          <p class="federation-card__desc">{feat.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .hub-federation {
+    position: relative;
+  }
+
+  .hub-federation::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(34, 211, 238, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Federation Diagram */
+  .federation-diagram {
+    position: relative;
+    max-width: 440px;
+    margin: var(--space-3xl) auto var(--space-2xl);
+    aspect-ratio: 400 / 360;
+  }
+
+  .federation-lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .federation-line {
+    stroke: var(--color-accent-secondary);
+    stroke-width: 1.5;
+    opacity: 0.35;
+  }
+
+  .federation-arrow {
+    fill: var(--color-accent-secondary);
+    opacity: 0.6;
+  }
+
+  /* Hub nodes */
+  .federation-node {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transform: translate(-50%, -50%);
+  }
+
+  .federation-node--top {
+    left: 50%;
+    top: 14%;
+  }
+
+  .federation-node--bottom-left {
+    left: 20%;
+    top: 84%;
+  }
+
+  .federation-node--bottom-right {
+    left: 80%;
+    top: 84%;
+  }
+
+  .federation-node__circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: var(--color-surface);
+    border: 2px solid var(--color-accent-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent-secondary);
+    box-shadow: 0 0 24px rgba(34, 211, 238, 0.15);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .federation-node:hover .federation-node__circle {
+    transform: scale(1.08);
+    box-shadow: 0 0 32px rgba(34, 211, 238, 0.3);
+  }
+
+  .federation-node__name {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+
+  .federation-node__count {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  /* Feature cards */
+  .federation-features {
+    margin-top: var(--space-xl);
+  }
+
+  .federation-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .federation-card__title {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    color: var(--color-text);
+  }
+
+  .federation-card__desc {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 520px) {
+    .federation-node__circle {
+      width: 44px;
+      height: 44px;
+    }
+
+    .federation-node__circle svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .federation-node__name {
+      font-size: 0.625rem;
+    }
+
+    .federation-node__count {
+      font-size: 0.5625rem;
+    }
+  }
+</style>

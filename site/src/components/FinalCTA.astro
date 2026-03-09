@@ -1,0 +1,71 @@
+---
+const githubUrl = 'https://github.com/t4tarzan/seaclip-v1';
+---
+
+<section class="final-cta">
+  <div class="container final-cta__inner fade-in">
+    <h2 class="final-cta__heading">Ready to deploy your fleet?</h2>
+    <p class="final-cta__subline">Open source. MIT licensed. Run it anywhere.</p>
+    <div class="final-cta__buttons">
+      <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="btn btn--primary">
+        Get started
+      </a>
+      <a href={`${githubUrl}#readme`} target="_blank" rel="noopener noreferrer" class="btn btn--secondary">
+        Read the docs
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .final-cta {
+    padding: 8rem 0;
+    background: linear-gradient(
+      180deg,
+      var(--color-bg-alt) 0%,
+      var(--color-bg) 100%
+    );
+  }
+
+  .final-cta__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-xl, 1.5rem);
+  }
+
+  .final-cta__heading {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .final-cta__subline {
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    margin: 0;
+    max-width: 36ch;
+  }
+
+  .final-cta__buttons {
+    display: flex;
+    gap: var(--space-md, 1rem);
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: var(--space-md, 1rem);
+  }
+
+  @media (max-width: 480px) {
+    .final-cta__buttons {
+      flex-direction: column;
+      width: 100%;
+      max-width: 20rem;
+    }
+  }
+</style>

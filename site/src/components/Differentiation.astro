@@ -1,0 +1,77 @@
+---
+const contrasts = [
+  {
+    not: 'Not a chatbot',
+    is: 'A fleet orchestrator that manages agents, not conversations.',
+  },
+  {
+    not: 'Not a model provider',
+    is: 'Bring your own models. We connect them.',
+  },
+  {
+    not: 'Not a cloud-only platform',
+    is: 'SeaClip runs where your data lives. Edge devices, air-gapped networks, home labs.',
+  },
+  {
+    not: 'Not a no-code tool',
+    is: 'Built for developers. CLI-first, Git-native, fully extensible.',
+  },
+  {
+    not: 'Not a monitoring dashboard',
+    is: 'Monitoring is one feature. Orchestration is the mission.',
+  },
+  {
+    not: 'Not Paperclip',
+    is: 'Forked with love, re-architected for the edge. Hub-spoke, device mesh, environment isolation.',
+  },
+];
+---
+
+<section id="differentiation">
+  <div class="container">
+    <p class="section-label fade-in">WHAT SEACLIP IS NOT</p>
+    <h2 class="section-title fade-in">Clear boundaries</h2>
+
+    <div class="grid grid--2 stagger diff-grid">
+      {contrasts.map((item) => (
+        <div class="card diff-card">
+          <p class="diff-not"><s>{item.not}</s></p>
+          <p class="diff-is">{item.is}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .diff-grid {
+    margin-top: var(--space-3xl);
+  }
+
+  .diff-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-lg);
+  }
+
+  .diff-not {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f87171;
+    text-decoration: none;
+  }
+
+  .diff-not s {
+    text-decoration: line-through;
+    text-decoration-color: #f8717180;
+    text-decoration-thickness: 2px;
+  }
+
+  .diff-is {
+    font-size: 0.9rem;
+    color: var(--color-accent);
+    line-height: 1.6;
+  }
+</style>

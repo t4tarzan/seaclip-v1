@@ -1,0 +1,132 @@
+---
+const templates = [
+  {
+    title: 'Smart Home Fleet',
+    description: 'Manage home automation agents across Pis and phones',
+    icon: 'home',
+  },
+  {
+    title: 'Industrial IoT Monitor',
+    description: 'Factory floor sensor agents with health scoring',
+    icon: 'factory',
+  },
+  {
+    title: 'Dev Agency',
+    description: 'AI coding agents with PR workflow and cost tracking',
+    icon: 'terminal',
+  },
+  {
+    title: 'Research Lab',
+    description: 'GPU cluster agents for ML training and inference',
+    icon: 'lab',
+  },
+];
+---
+
+<section id="templates">
+  <div class="container">
+    <p class="section-label fade-in">TEMPLATES</p>
+    <h2 class="section-title fade-in">Pre-built fleet configurations</h2>
+    <p class="section-subtitle fade-in">
+      Coming soon — one-click deployment templates for common edge scenarios.
+    </p>
+
+    <div class="grid grid--2 stagger templates-grid">
+      {templates.map((tpl) => (
+        <div class="card template-card">
+          <span class="badge template-badge">Coming Soon</span>
+          <div class="template-icon">
+            {tpl.icon === 'home' && (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            )}
+            {tpl.icon === 'factory' && (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z" />
+                <path d="M17 18h1" />
+                <path d="M12 18h1" />
+                <path d="M7 18h1" />
+              </svg>
+            )}
+            {tpl.icon === 'terminal' && (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 17 10 11 4 5" />
+                <line x1="12" y1="19" x2="20" y2="19" />
+              </svg>
+            )}
+            {tpl.icon === 'lab' && (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 3h6" />
+                <path d="M10 9V3" />
+                <path d="M14 9V3" />
+                <path d="M7.2 15h9.6" />
+                <path d="M10 9a7.48 7.48 0 0 0-5.65 8.28A2 2 0 0 0 6.33 19h11.34a2 2 0 0 0 1.98-1.72A7.48 7.48 0 0 0 14 9" />
+              </svg>
+            )}
+          </div>
+          <h3 class="template-title">{tpl.title}</h3>
+          <p class="template-desc">{tpl.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  #templates {
+    padding: 6rem 0;
+  }
+
+  .templates-grid {
+    margin-top: var(--space-3xl, 3rem);
+  }
+
+  .template-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    opacity: 0.7;
+    transition: opacity 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .template-card:hover {
+    opacity: 0.85;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .template-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .template-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-accent-glow, rgba(56, 189, 248, 0.1));
+    color: var(--color-accent);
+  }
+
+  .template-title {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .template-desc {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin: 0;
+  }
+</style>

@@ -1,0 +1,68 @@
+---
+const identities = [
+  {
+    title: 'An AI fleet commander',
+    description: 'Coordinate dozens of agents across cloud and edge from a single dashboard.',
+  },
+  {
+    title: 'A device fleet manager',
+    description: 'Register, monitor, and health-score every device in your mesh.',
+  },
+  {
+    title: 'A privacy-first platform',
+    description: 'Your data stays on your network. Local agents never leave your Tailnet.',
+  },
+  {
+    title: 'A goal-driven system',
+    description: 'Every agent action traces back to a company objective.',
+  },
+  {
+    title: 'A governance layer',
+    description: 'Approvals, cost limits, and audit trails for every decision.',
+  },
+  {
+    title: 'A developer tool',
+    description: 'Git-native PR workflows, Claude Code integration, and a CLI that feels like home.',
+  },
+];
+---
+
+<section id="identity">
+  <div class="container">
+    <p class="section-label fade-in">WHAT SEACLIP IS</p>
+    <h2 class="section-title fade-in">More than an orchestrator</h2>
+
+    <div class="grid grid--2 stagger identity-grid">
+      {identities.map((item) => (
+        <div class="card identity-card">
+          <h3 class="identity-title">{item.title}</h3>
+          <p class="identity-desc">{item.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .identity-grid {
+    margin-top: var(--space-3xl);
+  }
+
+  .identity-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .identity-title {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--color-accent);
+  }
+
+  .identity-desc {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+</style>

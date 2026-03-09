@@ -2,4 +2,5 @@ packages:
   - cli
   - server
   - ui
+  - site
   - packages/*

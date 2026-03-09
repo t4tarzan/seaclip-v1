@@ -1,0 +1,107 @@
+---
+const steps = [
+  {
+    number: '01',
+    title: 'Define the mission',
+    description: 'Set company goals cascading to projects and tasks. Every agent knows the objective.',
+    icon: 'target',
+  },
+  {
+    number: '02',
+    title: 'Deploy the fleet',
+    description: 'Register edge devices, assign agents — cloud and local. Your Tailnet defines the boundary.',
+    icon: 'rocket',
+  },
+  {
+    number: '03',
+    title: 'Monitor and govern',
+    description: 'Dashboard, approvals, cost control, live telemetry. You\'re the board.',
+    icon: 'chart',
+  },
+];
+---
+
+<section id="process">
+  <div class="container">
+    <p class="section-label fade-in">HOW IT WORKS</p>
+    <h2 class="section-title fade-in">Three steps to your fleet</h2>
+
+    <div class="grid grid--3 stagger process-grid">
+      {steps.map((step) => (
+        <div class="card process-card">
+          <span class="process-number">{step.number}</span>
+          <div class="process-icon">
+            {step.icon === 'target' && (
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" />
+              </svg>
+            )}
+            {step.icon === 'rocket' && (
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+              </svg>
+            )}
+            {step.icon === 'chart' && (
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M7 17v-4" />
+                <path d="M12 17V7" />
+                <path d="M17 17v-6" />
+              </svg>
+            )}
+          </div>
+          <h3 class="process-title">{step.title}</h3>
+          <p class="process-desc">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .process-grid {
+    margin-top: var(--space-3xl);
+  }
+
+  .process-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .process-number {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    letter-spacing: 0.05em;
+  }
+
+  .process-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: var(--color-accent-glow);
+    color: var(--color-accent);
+  }
+
+  .process-title {
+    font-size: 1.25rem;
+    margin-top: var(--space-xs);
+  }
+
+  .process-desc {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+</style>

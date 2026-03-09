@@ -1,0 +1,159 @@
+---
+const faqs = [
+  {
+    question: 'How is SeaClip different from Paperclip?',
+    answer: 'SeaClip is a fork of Paperclip, re-architected for edge-native deployment. We added hub-spoke architecture, edge device mesh, environment isolation, device telemetry, health scoring, hub federation, and a spoke thin-client. The core orchestration DNA is shared — everything else is built for the edge.',
+  },
+  {
+    question: 'What devices can run as spokes?',
+    answer: 'Anything that runs Linux or macOS: Raspberry Pi, Jetson boards, Mac, Linux servers, and even phones. The SeaClaw C binary is just 709KB and runs on minimal hardware.',
+  },
+  {
+    question: 'Do I need Tailscale?',
+    answer: 'Recommended but not required. Tailscale provides zero-config mesh networking and is the default trust boundary for environment isolation. Without it, you can still use SeaClip with any VPN or direct network access.',
+  },
+  {
+    question: 'Can spokes run without internet?',
+    answer: 'Yes. Local agents (Ollama, SeaClaw, Process) work fully offline. Cloud agents (Claude, HTTP) need connectivity. Environment isolation ensures local agents never attempt external calls.',
+  },
+  {
+    question: 'How does environment isolation work?',
+    answer: "Agents are tagged as 'cloud' or 'local'. Routing guards enforce that local agents only communicate within your network, and cloud agents only reach external APIs. The boundary is your Tailnet.",
+  },
+  {
+    question: "What's the SeaClaw binary?",
+    answer: 'A 709KB C11 binary that runs on edge devices as a lightweight agent runtime. It reports telemetry, executes tasks, and communicates with the hub over HTTP.',
+  },
+  {
+    question: 'Is SeaClip production-ready?',
+    answer: 'SeaClip is in active development. The core orchestration, edge mesh, and hub federation are functional. We recommend it for development, testing, and home lab use. Production hardening is ongoing.',
+  },
+  {
+    question: 'How do I contribute?',
+    answer: 'Fork the repo, pick an issue, and open a PR. We use conventional commits and require passing typecheck and tests. See CLAUDE.md in the repo for full coding conventions.',
+  },
+];
+---
+
+<section id="faq">
+  <div class="container">
+    <p class="section-label fade-in">FAQ</p>
+    <h2 class="section-title fade-in">Frequently asked questions</h2>
+
+    <div class="faq-list stagger">
+      {faqs.map((faq) => (
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span class="faq-question-text">{faq.question}</span>
+            <span class="faq-icon" aria-hidden="true"></span>
+          </summary>
+          <p class="faq-answer">{faq.answer}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  #faq {
+    padding: 6rem 0;
+  }
+
+  .faq-list {
+    margin-top: var(--space-3xl, 3rem);
+    max-width: 48rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .faq-item:first-child {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md, 1rem);
+    padding: 1.25rem 0;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: color 0.2s ease;
+  }
+
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-question::marker {
+    display: none;
+    content: '';
+  }
+
+  .faq-question:hover {
+    color: var(--color-accent);
+  }
+
+  .faq-question-text {
+    flex: 1;
+  }
+
+  .faq-icon {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .faq-icon::before,
+  .faq-icon::after {
+    content: '';
+    position: absolute;
+    background: var(--color-text-secondary);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .faq-icon::before {
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 1.5px;
+    transform: translate(-50%, -50%);
+  }
+
+  .faq-icon::after {
+    top: 50%;
+    left: 50%;
+    width: 1.5px;
+    height: 14px;
+    transform: translate(-50%, -50%);
+  }
+
+  .faq-item[open] .faq-icon::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .faq-item[open] .faq-icon::after {
+    transform: translate(-50%, -50%) rotate(45deg);
+    opacity: 0;
+  }
+
+  .faq-answer {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text-muted);
+    margin: 0;
+    padding: 0 0 1.25rem 0;
+    max-width: 42rem;
+  }
+</style>

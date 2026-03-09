@@ -1,0 +1,123 @@
+---
+const companies = [
+  { name: 'EdgeCorp IoT', agents: 8, devices: 12, color: 'var(--color-accent)' },
+  { name: 'Research Lab Alpha', agents: 4, devices: 3, color: 'var(--color-accent-secondary)' },
+  { name: 'Home Automation', agents: 6, devices: 24, color: 'var(--color-success)' },
+];
+---
+
+<section class="multi-company" id="multi-company">
+  <div class="container">
+    <span class="section-label">MULTI-COMPANY</span>
+    <h2 class="section-title">One instance, many worlds</h2>
+    <p class="section-subtitle">
+      Isolated tenants sharing infrastructure. Each company sees only its own agents,
+      devices, and data.
+    </p>
+
+    <div class="grid grid--3 multi-company__grid stagger">
+      {companies.map((company) => (
+        <div class="card multi-company__card" style={`border-left-color: ${company.color}`}>
+          <span class="multi-company__name">{company.name}</span>
+          <div class="multi-company__stats">
+            <div class="multi-company__stat">
+              <span class="multi-company__stat-value" style={`color: ${company.color}`}>
+                {company.agents}
+              </span>
+              <span class="multi-company__stat-label">Agents</span>
+            </div>
+            <div class="multi-company__divider" />
+            <div class="multi-company__stat">
+              <span class="multi-company__stat-value" style={`color: ${company.color}`}>
+                {company.devices}
+              </span>
+              <span class="multi-company__stat-label">Devices</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <p class="multi-company__note fade-in">
+      Complete data isolation. Shared compute.
+    </p>
+  </div>
+</section>
+
+<style>
+  .multi-company {
+    padding: 6rem 0;
+  }
+
+  .multi-company__grid {
+    margin-top: 3rem;
+    gap: 1.5rem;
+  }
+
+  .multi-company__card {
+    border-left: 4px solid;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .multi-company__card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .multi-company__name {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--color-text);
+    display: block;
+    margin-bottom: 1.25rem;
+  }
+
+  .multi-company__stats {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .multi-company__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .multi-company__stat-value {
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  .multi-company__stat-label {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .multi-company__divider {
+    width: 1px;
+    height: 36px;
+    background: var(--color-border);
+  }
+
+  .multi-company__note {
+    text-align: center;
+    margin-top: 2.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 768px) {
+    .multi-company__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

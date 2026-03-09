@@ -1,0 +1,189 @@
+---
+const navLinks = [
+  { label: 'Features', href: '#features' },
+  { label: 'Edge Mesh', href: '#edge-mesh' },
+  { label: 'Open Source', href: '#open-source' },
+  { label: 'FAQ', href: '#faq' },
+];
+---
+
+<nav class="navbar glass">
+  <div class="navbar__inner container">
+    <a href="/" class="navbar__logo">SeaClip</a>
+
+    <div class="navbar__links">
+      {navLinks.map((link) => (
+        <a href={link.href} class="navbar__link">{link.label}</a>
+      ))}
+      <a
+        href="https://github.com/t4tarzan/seaclip-v1"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn--primary navbar__github"
+      >
+        GitHub
+      </a>
+    </div>
+
+    <button class="navbar__hamburger" aria-label="Toggle menu" aria-expanded="false">
+      <span class="navbar__hamburger-line"></span>
+      <span class="navbar__hamburger-line"></span>
+      <span class="navbar__hamburger-line"></span>
+    </button>
+  </div>
+
+  <div class="navbar__mobile">
+    {navLinks.map((link) => (
+      <a href={link.href} class="navbar__mobile-link">{link.label}</a>
+    ))}
+    <a
+      href="https://github.com/t4tarzan/seaclip-v1"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="btn btn--primary navbar__github"
+    >
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<script>
+  const hamburger = document.querySelector('.navbar__hamburger');
+  const mobileMenu = document.querySelector('.navbar__mobile');
+
+  hamburger?.addEventListener('click', () => {
+    const expanded = hamburger.getAttribute('aria-expanded') === 'true';
+    hamburger.setAttribute('aria-expanded', String(!expanded));
+    hamburger.classList.toggle('is-active');
+    mobileMenu?.classList.toggle('is-open');
+  });
+
+  // Close mobile menu on link click
+  document.querySelectorAll('.navbar__mobile-link').forEach((link) => {
+    link.addEventListener('click', () => {
+      hamburger?.classList.remove('is-active');
+      hamburger?.setAttribute('aria-expanded', 'false');
+      mobileMenu?.classList.remove('is-open');
+    });
+  });
+</script>
+
+<style>
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 0.75rem 0;
+  }
+
+  .navbar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .navbar__logo {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--color-accent);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .navbar__logo:hover {
+    color: var(--color-accent-secondary);
+  }
+
+  .navbar__links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
+  }
+
+  .navbar__link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .navbar__link:hover {
+    color: var(--color-text);
+  }
+
+  .navbar__github {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.8125rem;
+  }
+
+  .navbar__hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 10;
+  }
+
+  .navbar__hamburger-line {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--color-text);
+    border-radius: 2px;
+    transition: transform var(--transition-base), opacity var(--transition-base);
+  }
+
+  .navbar__hamburger.is-active .navbar__hamburger-line:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .navbar__hamburger.is-active .navbar__hamburger-line:nth-child(2) {
+    opacity: 0;
+  }
+
+  .navbar__hamburger.is-active .navbar__hamburger-line:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .navbar__mobile {
+    display: none;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-lg) var(--space-xl);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .navbar__mobile.is-open {
+    display: flex;
+  }
+
+  .navbar__mobile-link {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    padding: var(--space-sm) 0;
+  }
+
+  .navbar__mobile-link:hover {
+    color: var(--color-text);
+  }
+
+  @media (max-width: 768px) {
+    .navbar__links {
+      display: none;
+    }
+
+    .navbar__hamburger {
+      display: flex;
+    }
+  }
+</style>
