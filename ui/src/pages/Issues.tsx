@@ -1,15 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Filter } from "lucide-react";
-import { useIssues } from "../api/issues";
+import { Plus, Filter, LayoutGrid, List } from "lucide-react";
+import { useIssues, useUpdateIssue } from "../api/issues";
 import { useCompanyContext } from "../context/CompanyContext";
 import { StatusBadge } from "../components/StatusBadge";
 import { NewIssueDialog } from "../components/NewIssueDialog";
+import { KanbanBoard } from "../components/KanbanBoard";
+import { FilterBar, type FilterState } from "../components/FilterBar";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { SkeletonCard } from "../components/ui/skeleton";
 import type { Issue, IssueStatus, IssuePriority } from "../lib/types";
 import { cn, timeAgo } from "../lib/utils";
+
+type ViewMode = "board" | "list";
 
 const COLUMNS: { status: IssueStatus; label: string; color: string }[] = [
   { status: "backlog", label: "Backlog", color: "#6b7280" },
@@ -60,25 +64,76 @@ function IssueCard({ issue, onClick }: { issue: Issue; onClick: () => void }) {
   );
 }
 
+function getInitialViewMode(): ViewMode {
+  try {
+    const stored = localStorage.getItem("seaclip-issues-view");
+    if (stored === "board" || stored === "list") return stored;
+  } catch {
+    // localStorage unavailable
+  }
+  return "board";
+}
+
 export default function Issues() {
   const { companyId } = useCompanyContext();
   const navigate = useNavigate();
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [newIssueStatus, setNewIssueStatus] = useState<IssueStatus>("backlog");
   const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode);
+  const [filters, setFilters] = useState<FilterState>({});
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data: issues = [], isLoading } = useIssues(companyId);
+  const updateIssue = useUpdateIssue();
 
-  const filteredIssues = issues.filter((issue) =>
-    !search ||
-    issue.title.toLowerCase().includes(search.toLowerCase()) ||
-    issue.identifier.toLowerCase().includes(search.toLowerCase())
-  );
+  const uniqueAssignees = useMemo(() => {
+    const names = new Set<string>();
+    for (const issue of issues) {
+      if (issue.assigneeName) names.add(issue.assigneeName);
+    }
+    return Array.from(names).sort();
+  }, [issues]);
+
+  const filteredIssues = issues.filter((issue) => {
+    if (search) {
+      const q = search.toLowerCase();
+      if (
+        !issue.title.toLowerCase().includes(q) &&
+        !issue.identifier.toLowerCase().includes(q)
+      ) {
+        return false;
+      }
+    }
+    if (filters.status && issue.status !== filters.status) return false;
+    if (filters.priority && issue.priority !== filters.priority) return false;
+    if (filters.assignee && issue.assigneeName !== filters.assignee) return false;
+    return true;
+  });
 
   const issuesByStatus = COLUMNS.reduce((acc, col) => {
     acc[col.status] = filteredIssues.filter((i) => i.status === col.status);
     return acc;
   }, {} as Record<IssueStatus, Issue[]>);
+
+  function handleViewChange(mode: ViewMode) {
+    setViewMode(mode);
+    try {
+      localStorage.setItem("seaclip-issues-view", mode);
+    } catch {
+      // localStorage unavailable
+    }
+  }
+
+  function handleUpdateIssue(id: string, data: Record<string, unknown>) {
+    if (!companyId) return;
+    updateIssue.mutate({ companyId, id, data: data as Partial<Issue> });
+  }
+
+  function handleAddIssue(status: IssueStatus) {
+    setNewIssueStatus(status);
+    setShowNewDialog(true);
+  }
 
   return (
     <div className="p-6 flex flex-col gap-5 animate-fade-in h-full">
@@ -91,7 +146,40 @@ export default function Issues() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" icon={<Filter size={12} />}>
+          {/* View Toggle */}
+          <div className="flex items-center bg-[#1f2937] rounded-lg p-0.5">
+            <button
+              onClick={() => handleViewChange("board")}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-colors",
+                viewMode === "board"
+                  ? "bg-[#20808D] text-white"
+                  : "text-[#6b7280] hover:text-[#f9fafb]"
+              )}
+            >
+              <LayoutGrid size={12} />
+              Board
+            </button>
+            <button
+              onClick={() => handleViewChange("list")}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-colors",
+                viewMode === "list"
+                  ? "bg-[#20808D] text-white"
+                  : "text-[#6b7280] hover:text-[#f9fafb]"
+              )}
+            >
+              <List size={12} />
+              List
+            </button>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={<Filter size={12} />}
+            onClick={() => setShowFilters((v) => !v)}
+            className={showFilters ? "text-[#20808D]" : undefined}
+          >
             Filter
           </Button>
           <Button
@@ -114,7 +202,16 @@ export default function Issues() {
         />
       </div>
 
-      {/* Kanban Board */}
+      {/* Filter Bar */}
+      {showFilters && (
+        <FilterBar
+          filters={filters}
+          onFiltersChange={setFilters}
+          assignees={uniqueAssignees}
+        />
+      )}
+
+      {/* Content */}
       {isLoading ? (
         <div className="flex gap-4">
           {COLUMNS.map((col) => (
@@ -124,6 +221,12 @@ export default function Issues() {
             </div>
           ))}
         </div>
+      ) : viewMode === "board" ? (
+        <KanbanBoard
+          issues={filteredIssues}
+          onUpdateIssue={handleUpdateIssue}
+          onAddIssue={handleAddIssue}
+        />
       ) : (
         <div className="flex gap-3 overflow-x-auto pb-4 flex-1">
           {COLUMNS.map((col) => {

@@ -6,8 +6,11 @@ import { MetricCard } from "../components/MetricCard";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { SkeletonTable } from "../components/ui/skeleton";
-import { Cpu, Activity, CheckCircle, Send, Clock } from "lucide-react";
+import { Cpu, Activity, CheckCircle, Send, Clock, GitBranch, GitPullRequest } from "lucide-react";
 import { cn } from "../lib/utils";
+import { api } from "../api/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { SpokeTask } from "../lib/types";
 
 export default function SpokeView() {
   const { deviceId } = useParams<{ deviceId: string }>();
@@ -15,13 +18,34 @@ export default function SpokeView() {
   const { data: tasksData, isLoading: tasksLoading } = useSpokeTasks(deviceId);
   const { data: jobsData, isLoading: jobsLoading } = useSpokeJobs(deviceId);
   const feedbackMutation = useSpokeFeedback();
+  const qc = useQueryClient();
+
+  const { data: gitTasksData, isLoading: gitTasksLoading } = useQuery({
+    queryKey: ["spoke-git-tasks", deviceId],
+    queryFn: () => api.get<{ data: SpokeTask[] }>(`/spoke/${deviceId}/git-tasks`),
+    enabled: !!deviceId,
+    refetchInterval: 10_000,
+  });
 
   const [feedbackIssueId, setFeedbackIssueId] = useState("");
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackSent, setFeedbackSent] = useState(false);
+  const [submittingPR, setSubmittingPR] = useState<string | null>(null);
 
   const tasks = tasksData?.data ?? [];
   const jobs = jobsData?.data ?? [];
+  const gitTasks = gitTasksData?.data ?? [];
+
+  const handleSubmitPR = async (taskId: string) => {
+    if (!deviceId) return;
+    setSubmittingPR(taskId);
+    try {
+      await api.post(`/spoke/${deviceId}/git-tasks/${taskId}/submit-pr`, {});
+      void qc.invalidateQueries({ queryKey: ["spoke-git-tasks", deviceId] });
+    } finally {
+      setSubmittingPR(null);
+    }
+  };
 
   const handleSubmitFeedback = () => {
     if (!deviceId || !feedbackIssueId || !feedbackComment) return;
@@ -187,6 +211,76 @@ export default function SpokeView() {
                         {job.lastRunAt
                           ? new Date(job.lastRunAt).toLocaleString()
                           : "Never"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Spoke Git Tasks */}
+      <div>
+        <h3 className="text-[14px] font-semibold text-[#f9fafb] mb-2 flex items-center gap-2">
+          <GitBranch size={14} className="text-[#20808D]" />
+          Spoke Tasks
+        </h3>
+        <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
+          {gitTasksLoading ? (
+            <SkeletonTable rows={3} cols={4} />
+          ) : gitTasks.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <p className="text-[13px] text-[#9ca3af]">No git tasks assigned</p>
+              <p className="text-[11px] text-[#6b7280] mt-1">
+                Tasks will appear here when assigned from the hub
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Branch</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {gitTasks.map((gt) => (
+                    <tr key={gt.id}>
+                      <td>
+                        <span className="text-[12px] text-[#f9fafb] font-medium">
+                          {gt.title}
+                        </span>
+                        {gt.repoUrl && (
+                          <span className="text-[10px] text-[#6b7280] ml-1.5 truncate">
+                            {gt.repoUrl}
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <span className="text-[11px] text-[#9ca3af] font-mono">
+                          {gt.branch ?? "—"}
+                        </span>
+                      </td>
+                      <td>
+                        <StatusBadge type="spoke-task" value={gt.status} />
+                      </td>
+                      <td>
+                        {gt.status === "in_progress" && (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            icon={<GitPullRequest size={12} />}
+                            onClick={() => handleSubmitPR(gt.id)}
+                            loading={submittingPR === gt.id}
+                          >
+                            Submit PR
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}

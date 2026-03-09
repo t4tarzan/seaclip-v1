@@ -6,11 +6,14 @@ import type {
   IssuePriority,
   DeviceStatus,
   ApprovalStatus,
+  SpokeTaskStatus,
+  PRStatus,
+  PRReviewStatus,
 } from "../lib/types";
 
 interface StatusBadgeProps {
-  type: "agent" | "issue" | "priority" | "device" | "approval";
-  value: AgentStatus | IssueStatus | IssuePriority | DeviceStatus | ApprovalStatus;
+  type: "agent" | "issue" | "priority" | "device" | "approval" | "spoke-task" | "pr" | "pr-review";
+  value: AgentStatus | IssueStatus | IssuePriority | DeviceStatus | ApprovalStatus | SpokeTaskStatus | PRStatus | PRReviewStatus;
 }
 
 const agentStatusConfig: Record<
@@ -63,6 +66,36 @@ const approvalStatusConfig: Record<
   rejected: { label: "Rejected", variant: "error" },
 };
 
+const spokeTaskStatusConfig: Record<
+  SpokeTaskStatus,
+  { label: string; variant: "muted" | "warning" | "primary" | "info" | "success" }
+> = {
+  pending: { label: "Pending", variant: "muted" },
+  assigned: { label: "Assigned", variant: "warning" },
+  in_progress: { label: "In Progress", variant: "primary" },
+  pr_raised: { label: "PR Raised", variant: "info" },
+  merged: { label: "Merged", variant: "success" },
+  done: { label: "Done", variant: "success" },
+};
+
+const prStatusConfig: Record<
+  PRStatus,
+  { label: string; variant: "primary" | "success" | "muted" }
+> = {
+  open: { label: "Open", variant: "primary" },
+  merged: { label: "Merged", variant: "success" },
+  closed: { label: "Closed", variant: "muted" },
+};
+
+const prReviewStatusConfig: Record<
+  PRReviewStatus,
+  { label: string; variant: "warning" | "success" | "error" }
+> = {
+  pending: { label: "Pending", variant: "warning" },
+  approved: { label: "Approved", variant: "success" },
+  rejected: { label: "Rejected", variant: "error" },
+};
+
 export function StatusBadge({ type, value }: StatusBadgeProps) {
   let config: { label: string; variant: string } | undefined;
 
@@ -71,6 +104,9 @@ export function StatusBadge({ type, value }: StatusBadgeProps) {
   else if (type === "priority") config = priorityConfig[value as IssuePriority];
   else if (type === "device") config = deviceStatusConfig[value as DeviceStatus];
   else if (type === "approval") config = approvalStatusConfig[value as ApprovalStatus];
+  else if (type === "spoke-task") config = spokeTaskStatusConfig[value as SpokeTaskStatus];
+  else if (type === "pr") config = prStatusConfig[value as PRStatus];
+  else if (type === "pr-review") config = prReviewStatusConfig[value as PRReviewStatus];
 
   if (!config) return null;
 

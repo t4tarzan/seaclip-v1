@@ -207,3 +207,76 @@ export interface IssueFilters {
   assigneeId?: string;
   search?: string;
 }
+
+// Goals
+export type GoalStatus = "draft" | "active" | "achieved" | "abandoned";
+export type MetricType = "boolean" | "numeric" | "percentage";
+
+export interface Goal {
+  id: string;
+  companyId: string;
+  title: string;
+  description?: string;
+  status: GoalStatus;
+  targetDate?: string;
+  projectId?: string;
+  parentGoalId?: string;
+  metricType: MetricType;
+  metricTarget?: number;
+  metricCurrent: number;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Sidebar Badges
+export interface SidebarBadges {
+  pendingApprovals: number;
+  activeIssues: number;
+  runningAgents: number;
+  onlineDevices: number;
+  openPRs: number;
+  errorAgents: number;
+}
+
+// Spoke Tasks & Pull Requests
+export type SpokeTaskStatus = "pending" | "assigned" | "in_progress" | "pr_raised" | "merged" | "done";
+export type PRStatus = "open" | "merged" | "closed";
+export type PRReviewStatus = "pending" | "approved" | "rejected";
+
+export interface SpokeTask {
+  id: string;
+  companyId: string;
+  deviceId: string;
+  issueId?: string;
+  title: string;
+  description?: string;
+  repoUrl: string;
+  branch?: string;
+  worktreePath?: string;
+  status: SpokeTaskStatus;
+  assignedAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PullRequest {
+  id: string;
+  companyId: string;
+  spokeTaskId: string;
+  deviceId: string;
+  title: string;
+  description?: string;
+  sourceBranch: string;
+  targetBranch: string;
+  status: PRStatus;
+  reviewStatus: PRReviewStatus;
+  diffStat?: Record<string, unknown>;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  mergedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}

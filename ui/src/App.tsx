@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./context/ThemeContext";
 import { CompanyProvider } from "./context/CompanyContext";
 import { Layout } from "./components/Layout";
+import { CommandPalette } from "./components/CommandPalette";
 
 // Pages (lazy would be ideal for prod, but direct imports for clarity)
 import Dashboard from "./pages/Dashboard";
@@ -16,6 +17,13 @@ import Approvals from "./pages/Approvals";
 import Activity from "./pages/Activity";
 import Settings from "./pages/Settings";
 import SpokeView from "./pages/SpokeView";
+import Goals from "./pages/Goals";
+import SpokeTasks from "./pages/SpokeTasks";
+import PullRequests from "./pages/PullRequests";
+import ProjectDetail from "./pages/ProjectDetail";
+import ApprovalDetail from "./pages/ApprovalDetail";
+import Inbox from "./pages/Inbox";
+import OrgChart from "./pages/OrgChart";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +44,7 @@ export default function App() {
       <BrowserRouter>
         <ThemeProvider>
           <CompanyProvider>
+            <CommandPalette />
             <Routes>
               {/* Spoke view — standalone thin-client page (no sidebar/layout) */}
               <Route path="spoke/:deviceId" element={<SpokeView />} />
@@ -46,9 +55,16 @@ export default function App() {
                 <Route path="agents/:id" element={<AgentDetail />} />
                 <Route path="issues" element={<Issues />} />
                 <Route path="issues/:id" element={<IssueDetail />} />
+                <Route path="goals" element={<Goals />} />
+                <Route path="spoke-tasks" element={<SpokeTasks />} />
+                <Route path="pull-requests" element={<PullRequests />} />
+                <Route path="inbox" element={<Inbox />} />
+                <Route path="org-chart" element={<OrgChart />} />
                 <Route path="edge-mesh" element={<EdgeMesh />} />
                 <Route path="costs" element={<Costs />} />
+                <Route path="projects/:id" element={<ProjectDetail />} />
                 <Route path="approvals" element={<Approvals />} />
+                <Route path="approvals/:id" element={<ApprovalDetail />} />
                 <Route path="activity" element={<Activity />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="*" element={<Navigate to="/" replace />} />

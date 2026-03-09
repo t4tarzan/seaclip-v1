@@ -11,3 +11,7 @@ export { activityRouter } from "./activity.js";
 export { edgeDevicesRouter } from "./edge-devices.js";
 export { hubFederationRouter } from "./hub-federation.js";
 export { spokeRouter } from "./spoke.js";
+export { enhancementsRouter } from "./enhancements.js";
+export { spokeTasksRouter } from "./spoke-tasks.js";
+export { pullRequestsRouter } from "./pull-requests.js";
+export { sidebarBadgesRouter } from "./sidebar-badges.js";

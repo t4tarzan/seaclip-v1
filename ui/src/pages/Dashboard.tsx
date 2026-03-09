@@ -5,6 +5,7 @@ import { useCompanyContext } from "../context/CompanyContext";
 import { useDashboard } from "../api/dashboard";
 import { MetricCard } from "../components/MetricCard";
 import { ActivityRow } from "../components/ActivityRow";
+import { ActivityCharts } from "../components/ActivityCharts";
 import { StatusBadge } from "../components/StatusBadge";
 import { SkeletonCard } from "../components/ui/skeleton";
 import { formatCents } from "../lib/utils";
@@ -116,6 +117,21 @@ export default function Dashboard() {
           onClick={() => navigate("/edge-mesh")}
         />
       </div>
+
+      {/* Charts Overview */}
+      <ActivityCharts
+        agentCounts={agentCounts}
+        issueCounts={{
+          total: data?.issueCounts?.total ?? 0,
+          open: data?.issueCounts?.open ?? 0,
+          in_progress: data?.issueCounts?.in_progress ?? 0,
+          blocked: data?.issueCounts?.blocked ?? 0,
+          done: data?.issueCounts?.done ?? 0,
+          cancelled: data?.issueCounts?.cancelled ?? 0,
+        }}
+        edgeDeviceCount={data?.edgeDeviceCount ?? 0}
+        onlineDeviceCount={edgeDevicesOnline}
+      />
 
       {/* Middle row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

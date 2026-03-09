@@ -17,10 +17,19 @@ import {
   LogOut,
   User,
   Building2,
+  Target,
+  GitBranch,
+  GitPullRequest,
+  Inbox,
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useCompanyContext } from "../context/CompanyContext";
 import { useApprovals } from "../api/approvals";
+import { useSidebarBadges } from "../api/sidebar-badges";
+import { SidebarAgents } from "./SidebarAgents";
+import { SidebarProjects } from "./SidebarProjects";
+import { SidebarSection } from "./SidebarSection";
+import { BreadcrumbBar } from "./BreadcrumbBar";
 
 interface NavItem {
   to: string;
@@ -29,16 +38,34 @@ interface NavItem {
   end?: boolean;
 }
 
-const NAV_ITEMS: NavItem[] = [
+// Top-level nav items (always visible)
+const TOP_NAV: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/agents", label: "Agents", icon: Bot },
+];
+
+// Work section
+const WORK_NAV: NavItem[] = [
   { to: "/issues", label: "Issues", icon: CircleDot },
+  { to: "/goals", label: "Goals", icon: Target },
+];
+
+// Spokes section
+const SPOKE_NAV: NavItem[] = [
+  { to: "/spoke-tasks", label: "Spoke Tasks", icon: GitBranch },
+  { to: "/pull-requests", label: "Pull Requests", icon: GitPullRequest },
   { to: "/edge-mesh", label: "Edge Mesh", icon: Network },
+];
+
+// Company section
+const COMPANY_NAV: NavItem[] = [
   { to: "/costs", label: "Costs", icon: DollarSign },
   { to: "/approvals", label: "Approvals", icon: CheckSquare },
   { to: "/activity", label: "Activity", icon: Activity },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
+
+// All nav items flat (for mobile bottom nav + page title lookup)
+const NAV_ITEMS: NavItem[] = [...TOP_NAV, ...WORK_NAV, ...SPOKE_NAV, ...COMPANY_NAV];
 
 // SeaClip SVG Logo
 function SeaClipLogo({ collapsed }: { collapsed: boolean }) {
@@ -136,6 +163,7 @@ export function Layout() {
 
   const { data: approvals } = useApprovals(company?.id);
   const pendingApprovals = approvals?.filter((a) => a.status === "pending").length ?? 0;
+  const { data: badges } = useSidebarBadges(company?.id);
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0a0f1a]">
@@ -205,17 +233,86 @@ export function Layout() {
           className={cn(
             "flex-1 overflow-y-auto py-3",
             sidebarCollapsed ? "px-0" : "px-3",
-            "flex flex-col gap-0.5"
+            "flex flex-col gap-3"
           )}
         >
-          {NAV_ITEMS.map((item) => (
-            <SidebarNavItem
-              key={item.to}
-              item={item}
-              collapsed={sidebarCollapsed}
-              badge={item.to === "/approvals" ? pendingApprovals : undefined}
-            />
-          ))}
+          {/* Top */}
+          <div className="flex flex-col gap-0.5">
+            {TOP_NAV.map((item) => (
+              <SidebarNavItem key={item.to} item={item} collapsed={sidebarCollapsed} />
+            ))}
+          </div>
+
+          {/* Work */}
+          {!sidebarCollapsed ? (
+            <SidebarSection label="Work">
+              {WORK_NAV.map((item) => (
+                <SidebarNavItem
+                  key={item.to}
+                  item={item}
+                  collapsed={false}
+                  badge={item.to === "/issues" ? badges?.activeIssues : undefined}
+                />
+              ))}
+            </SidebarSection>
+          ) : (
+            <div className="flex flex-col gap-0.5">
+              {WORK_NAV.map((item) => (
+                <SidebarNavItem key={item.to} item={item} collapsed={true} />
+              ))}
+            </div>
+          )}
+
+          {/* Projects (collapsible) */}
+          <SidebarProjects collapsed={sidebarCollapsed} />
+
+          {/* Agents (collapsible) */}
+          <SidebarAgents collapsed={sidebarCollapsed} />
+
+          {/* Spokes */}
+          {!sidebarCollapsed ? (
+            <SidebarSection label="Spokes">
+              {SPOKE_NAV.map((item) => (
+                <SidebarNavItem
+                  key={item.to}
+                  item={item}
+                  collapsed={false}
+                  badge={item.to === "/pull-requests" ? badges?.openPRs : undefined}
+                />
+              ))}
+            </SidebarSection>
+          ) : (
+            <div className="flex flex-col gap-0.5">
+              {SPOKE_NAV.map((item) => (
+                <SidebarNavItem key={item.to} item={item} collapsed={true} />
+              ))}
+            </div>
+          )}
+
+          {/* Company */}
+          {!sidebarCollapsed ? (
+            <SidebarSection label="Company">
+              {COMPANY_NAV.map((item) => (
+                <SidebarNavItem
+                  key={item.to}
+                  item={item}
+                  collapsed={false}
+                  badge={item.to === "/approvals" ? pendingApprovals : undefined}
+                />
+              ))}
+            </SidebarSection>
+          ) : (
+            <div className="flex flex-col gap-0.5">
+              {COMPANY_NAV.map((item) => (
+                <SidebarNavItem
+                  key={item.to}
+                  item={item}
+                  collapsed={true}
+                  badge={item.to === "/approvals" ? pendingApprovals : undefined}
+                />
+              ))}
+            </div>
+          )}
         </nav>
 
         {/* User / Bottom area */}
@@ -314,6 +411,9 @@ export function Layout() {
           </div>
         </header>
 
+        {/* Breadcrumbs */}
+        <BreadcrumbBar />
+
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto">
           <Outlet />
@@ -354,9 +454,14 @@ function getPageTitle(pathname: string): string {
   if (pathname === "/agents") return "Agents";
   if (pathname.startsWith("/issues/")) return "Issue Detail";
   if (pathname === "/issues") return "Issues";
+  if (pathname === "/goals") return "Goals";
   if (pathname === "/edge-mesh") return "Edge Mesh";
+  if (pathname === "/spoke-tasks") return "Spoke Tasks";
+  if (pathname === "/pull-requests") return "Pull Requests";
   if (pathname === "/costs") return "Cost Tracking";
+  if (pathname.startsWith("/projects/")) return "Project Detail";
   if (pathname === "/approvals") return "Approvals";
+  if (pathname.startsWith("/approvals/")) return "Approval Detail";
   if (pathname === "/activity") return "Activity";
   if (pathname === "/settings") return "Settings";
   return "SeaClip";

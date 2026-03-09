@@ -260,7 +260,74 @@ CREATE TABLE IF NOT EXISTS edge_devices (
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- 17. enhancements (internal task tracking for development)
+CREATE TABLE IF NOT EXISTS enhancements (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  parent_id   UUID REFERENCES enhancements(id) ON DELETE CASCADE,
+  phase       TEXT NOT NULL,
+  category    TEXT NOT NULL,
+  title       TEXT NOT NULL,
+  description TEXT,
+  status      TEXT NOT NULL DEFAULT 'pending',
+  priority    INT  NOT NULL DEFAULT 50,
+  sort_order  INT  NOT NULL DEFAULT 0,
+  files       JSONB NOT NULL DEFAULT '[]',
+  tests       JSONB NOT NULL DEFAULT '[]',
+  depends_on  JSONB NOT NULL DEFAULT '[]',
+  notes       TEXT,
+  started_at  TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 18. spoke_tasks (hub-to-spoke task assignment with git workflow)
+CREATE TABLE IF NOT EXISTS spoke_tasks (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id      UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  device_id       UUID NOT NULL REFERENCES edge_devices(id) ON DELETE CASCADE,
+  issue_id        UUID REFERENCES issues(id) ON DELETE SET NULL,
+  title           TEXT NOT NULL,
+  description     TEXT,
+  repo_url        TEXT NOT NULL,
+  branch          TEXT,
+  worktree_path   TEXT,
+  status          TEXT NOT NULL DEFAULT 'pending',
+  assigned_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  started_at      TIMESTAMPTZ,
+  completed_at    TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 19. pull_requests (PR tracking from spokes)
+CREATE TABLE IF NOT EXISTS pull_requests (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id      UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  spoke_task_id   UUID NOT NULL REFERENCES spoke_tasks(id) ON DELETE CASCADE,
+  device_id       UUID NOT NULL REFERENCES edge_devices(id) ON DELETE CASCADE,
+  title           TEXT NOT NULL,
+  description     TEXT,
+  source_branch   TEXT NOT NULL,
+  target_branch   TEXT NOT NULL DEFAULT 'main',
+  status          TEXT NOT NULL DEFAULT 'open',
+  review_status   TEXT NOT NULL DEFAULT 'pending',
+  diff_stat       JSONB,
+  reviewed_by     TEXT,
+  reviewed_at     TIMESTAMPTZ,
+  merged_at       TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Indexes
+CREATE INDEX IF NOT EXISTS enhancements_status_idx ON enhancements(status);
+CREATE INDEX IF NOT EXISTS enhancements_parent_idx ON enhancements(parent_id);
+CREATE INDEX IF NOT EXISTS enhancements_phase_idx ON enhancements(phase);
+CREATE INDEX IF NOT EXISTS spoke_tasks_company_device_idx ON spoke_tasks(company_id, device_id);
+CREATE INDEX IF NOT EXISTS spoke_tasks_status_idx ON spoke_tasks(status);
+CREATE INDEX IF NOT EXISTS pull_requests_company_status_idx ON pull_requests(company_id, status);
+CREATE INDEX IF NOT EXISTS pull_requests_spoke_task_idx ON pull_requests(spoke_task_id);
 CREATE INDEX IF NOT EXISTS agents_company_status_idx ON agents(company_id, status);
 CREATE INDEX IF NOT EXISTS agents_company_reports_to_idx ON agents(company_id, reports_to);
 CREATE INDEX IF NOT EXISTS issues_company_status_idx ON issues(company_id, status);

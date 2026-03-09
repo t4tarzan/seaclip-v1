@@ -4,6 +4,7 @@ import { validate } from "../middleware/index.js";
 import * as edgeDevicesService from "../services/edge-devices.js";
 import * as agentsService from "../services/agents.js";
 import * as issuesService from "../services/issues.js";
+import * as spokeTasksService from "../services/spoke-tasks.js";
 
 const router = Router();
 
@@ -201,6 +202,20 @@ router.get("/:deviceId/jobs", async (req, res, next) => {
       }));
 
     res.json({ data: jobs, count: jobs.length });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/spoke/:deviceId/spoke-tasks
+// Returns spoke_tasks assigned to this device.
+// ---------------------------------------------------------------------------
+
+router.get("/:deviceId/spoke-tasks", async (req, res, next) => {
+  try {
+    const tasks = await spokeTasksService.listTasksByDevice(String(req.params.deviceId));
+    res.json({ data: tasks, count: tasks.length });
   } catch (err) {
     next(err);
   }

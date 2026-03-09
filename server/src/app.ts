@@ -19,6 +19,10 @@ import { activityRouter } from "./routes/activity.js";
 import { edgeDevicesRouter } from "./routes/edge-devices.js";
 import { hubFederationRouter } from "./routes/hub-federation.js";
 import { spokeRouter } from "./routes/spoke.js";
+import { enhancementsRouter } from "./routes/enhancements.js";
+import { spokeTasksRouter } from "./routes/spoke-tasks.js";
+import { pullRequestsRouter } from "./routes/pull-requests.js";
+import { sidebarBadgesRouter } from "./routes/sidebar-badges.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -67,6 +71,16 @@ export function createApp(): express.Express {
 
   // Spoke (thin-client) routes — no auth required (device-level endpoints)
   app.use("/api/spoke", spokeRouter);
+
+  // Spoke tasks and pull requests (company-scoped)
+  app.use("/api/companies", spokeTasksRouter);
+  app.use("/api/companies", pullRequestsRouter);
+
+  // Sidebar badge counts
+  app.use("/api/companies", sidebarBadgesRouter);
+
+  // Enhancements (internal dev task tracking)
+  app.use("/api/enhancements", enhancementsRouter);
 
   // ─── Static UI (optional) ─────────────────────────────────────────────────
   if (config.serveUi) {
