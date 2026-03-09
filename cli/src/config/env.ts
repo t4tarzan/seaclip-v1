@@ -32,9 +32,8 @@ export function buildEnvFromConfig(config: SeaClipConfig): NodeJS.ProcessEnv {
   if (config.database.mode === 'postgres' && config.database.connectionString) {
     env['DATABASE_URL'] = config.database.connectionString;
   } else {
-    // Embedded SQLite — server uses a file in storage dir
-    env['DATABASE_URL'] = `file:${config.storage.baseDir}/seaclip.db`;
-    env['DB_MODE'] = 'embedded';
+    // Embedded PGlite — server uses embedded PostgreSQL in storage dir
+    env['DATABASE_URL'] = `pglite://${config.storage.baseDir}`;
   }
 
   if (config.telegram.botToken) {
