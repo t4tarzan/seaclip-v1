@@ -129,6 +129,8 @@ export default function Dashboard() {
           done: data?.issueCounts?.done ?? 0,
           cancelled: data?.issueCounts?.cancelled ?? 0,
         }}
+        priorityCounts={data?.priorityCounts}
+        successRate={data?.heartbeatSuccessRate}
         edgeDeviceCount={data?.edgeDeviceCount ?? 0}
         onlineDeviceCount={edgeDevicesOnline}
       />

@@ -135,6 +135,8 @@ export interface MeshConnection {
 export interface DashboardData {
   agentCounts: Record<string, number>;
   issueCounts: Record<string, number>;
+  priorityCounts?: { urgent: number; high: number; medium: number; low: number; none: number };
+  heartbeatSuccessRate?: number;
   costs: { last30DaysTotalUsd: number; todayTotalUsd: number };
   edgeDeviceCount: number;
   onlineDeviceCount: number;

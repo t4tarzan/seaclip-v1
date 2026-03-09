@@ -6,6 +6,9 @@ import * as issuesService from "./issues.js";
 import * as costsService from "./costs.js";
 import * as activityLogService from "./activity-log.js";
 import * as edgeDevicesService from "./edge-devices.js";
+import { getDb } from "../db.js";
+import { heartbeatRuns } from "@seaclip/db";
+import { eq, sql } from "drizzle-orm";
 
 export interface DashboardData {
   agentCounts: {
@@ -24,6 +27,14 @@ export interface DashboardData {
     done: number;
     cancelled: number;
   };
+  priorityCounts: {
+    urgent: number;
+    high: number;
+    medium: number;
+    low: number;
+    none: number;
+  };
+  heartbeatSuccessRate: number;
   costs: {
     last30DaysTotalUsd: number;
     todayTotalUsd: number;
@@ -35,7 +46,8 @@ export interface DashboardData {
 }
 
 export async function getDashboard(companyId: string): Promise<DashboardData> {
-  const [agents, issueResult, costSummary, todayCostSummary, devices, activity] =
+  const db = getDb();
+  const [agents, issueResult, costSummary, todayCostSummary, devices, activity, hbStatusRows] =
     await Promise.all([
       agentsService.listAgents(companyId),
       issuesService.listIssues(companyId, { page: 1, limit: 1000 }),
@@ -45,6 +57,11 @@ export async function getDashboard(companyId: string): Promise<DashboardData> {
       }),
       edgeDevicesService.listEdgeDevices(companyId),
       activityLogService.getActivityLog(companyId, { page: 1, limit: 10 }),
+      db
+        .select({ status: heartbeatRuns.status, cnt: sql<number>`count(*)::int` })
+        .from(heartbeatRuns)
+        .where(eq(heartbeatRuns.companyId, companyId))
+        .groupBy(heartbeatRuns.status),
     ]);
 
   const issues = issueResult.data;
@@ -67,6 +84,22 @@ export async function getDashboard(companyId: string): Promise<DashboardData> {
     cancelled: issues.filter((i) => i.status === "cancelled").length,
   };
 
+  const priorityCounts = {
+    urgent: issues.filter((i) => (i as unknown as { priority: string }).priority === "urgent").length,
+    high: issues.filter((i) => (i as unknown as { priority: string }).priority === "high").length,
+    medium: issues.filter((i) => (i as unknown as { priority: string }).priority === "medium").length,
+    low: issues.filter((i) => (i as unknown as { priority: string }).priority === "low").length,
+    none: issues.filter((i) => (i as unknown as { priority: string }).priority === "none").length,
+  };
+
+  const hbCounts: Record<string, number> = {};
+  for (const row of hbStatusRows) {
+    hbCounts[row.status ?? "unknown"] = row.cnt;
+  }
+  const totalRuns = Object.values(hbCounts).reduce((a, b) => a + b, 0);
+  const successRuns = (hbCounts["success"] ?? 0) + (hbCounts["completed"] ?? 0);
+  const heartbeatSuccessRate = totalRuns > 0 ? Math.round((successRuns / totalRuns) * 100) : 100;
+
   const onlineDeviceCount = devices.filter(
     (d) => (d as unknown as { status: string }).status === "online",
   ).length;
@@ -74,6 +107,8 @@ export async function getDashboard(companyId: string): Promise<DashboardData> {
   return {
     agentCounts,
     issueCounts,
+    priorityCounts,
+    heartbeatSuccessRate,
     costs: {
       last30DaysTotalUsd: costSummary.totalCostUsd,
       todayTotalUsd: todayCostSummary.totalCostUsd,

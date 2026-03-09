@@ -94,6 +94,43 @@ function BarChart({
   );
 }
 
+function GaugeChart({ value, label }: { value: number; label: string }) {
+  const pct = Math.min(Math.max(value, 0), 100);
+  const color = pct >= 80 ? "#22c55e" : pct >= 50 ? "#eab308" : "#ef4444";
+  // SVG arc for the gauge (semicircle)
+  const radius = 44;
+  const circumference = Math.PI * radius;
+  const offset = circumference - (pct / 100) * circumference;
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <svg width="112" height="64" viewBox="0 0 112 64" className="overflow-visible">
+        <path
+          d="M 8 56 A 44 44 0 0 1 104 56"
+          fill="none"
+          stroke="#374151"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
+        <path
+          d="M 8 56 A 44 44 0 0 1 104 56"
+          fill="none"
+          stroke={color}
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          className="transition-all duration-700"
+        />
+        <text x="56" y="52" textAnchor="middle" className="text-[20px] font-bold" fill="#f9fafb">
+          {pct}%
+        </text>
+      </svg>
+      <span className="text-[11px] text-[#9ca3af] font-medium">{label}</span>
+    </div>
+  );
+}
+
 interface ActivityChartsProps {
   agentCounts: {
     total: number;
@@ -110,6 +147,14 @@ interface ActivityChartsProps {
     done: number;
     cancelled?: number;
   };
+  priorityCounts?: {
+    urgent: number;
+    high: number;
+    medium: number;
+    low: number;
+    none: number;
+  };
+  successRate?: number;
   edgeDeviceCount: number;
   onlineDeviceCount: number;
 }
@@ -117,6 +162,8 @@ interface ActivityChartsProps {
 export function ActivityCharts({
   agentCounts,
   issueCounts,
+  priorityCounts,
+  successRate,
   edgeDeviceCount,
   onlineDeviceCount,
 }: ActivityChartsProps) {
@@ -140,6 +187,16 @@ export function ActivityCharts({
     { label: "Offline", value: edgeDeviceCount - onlineDeviceCount, color: "#6b7280" },
   ];
 
+  const prioritySegments: DonutSegment[] = priorityCounts
+    ? [
+        { label: "Urgent", value: priorityCounts.urgent, color: "#ef4444" },
+        { label: "High", value: priorityCounts.high, color: "#f97316" },
+        { label: "Medium", value: priorityCounts.medium, color: "#eab308" },
+        { label: "Low", value: priorityCounts.low, color: "#22c55e" },
+        { label: "None", value: priorityCounts.none, color: "#6b7280" },
+      ]
+    : [];
+
   return (
     <div className="bg-[#1f2937] border border-[#374151] rounded-xl p-4">
       <h3 className="text-[13px] font-semibold text-[#f9fafb] mb-4">Overview</h3>
@@ -154,6 +211,20 @@ export function ActivityCharts({
           <DonutChart segments={deviceSegments} label="Edge Devices" />
         </div>
       </div>
+      {(priorityCounts || successRate !== undefined) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-4 border-t border-[#374151]">
+          {priorityCounts && (
+            <div className="flex justify-center">
+              <DonutChart segments={prioritySegments} label="Issues by Priority" />
+            </div>
+          )}
+          {successRate !== undefined && (
+            <div className="flex justify-center">
+              <GaugeChart value={successRate} label="Heartbeat Success Rate" />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

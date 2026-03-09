@@ -36,9 +36,9 @@ export default function PullRequests() {
   const mergePR = useMergePR();
   const [mergeTarget, setMergeTarget] = useState<PullRequest | null>(null);
 
-  const handleReview = (prId: string, reviewStatus: "approved" | "rejected") => {
+  const handleReview = (prId: string, action: "approved" | "rejected") => {
     if (!companyId) return;
-    reviewPR.mutate({ companyId, prId, reviewStatus });
+    reviewPR.mutate({ companyId, prId, action, reviewedBy: "dashboard-user" });
   };
 
   const handleMerge = () => {

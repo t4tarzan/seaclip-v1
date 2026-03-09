@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Inbox as InboxIcon, CheckSquare, CircleDot, GitPullRequest, Bell, Check } from "lucide-react";
+import { Inbox as InboxIcon, CheckSquare, CircleDot, GitPullRequest, Bell, Check, AlertTriangle, X } from "lucide-react";
 import { useCompanyContext } from "../context/CompanyContext";
 import { useApprovals } from "../api/approvals";
 import { useIssues } from "../api/issues";
+import { usePullRequests } from "../api/pull-requests";
 import { StatusBadge } from "../components/StatusBadge";
 import { Button } from "../components/ui/button";
 import { SkeletonCard } from "../components/ui/skeleton";
 import { timeAgo, cn } from "../lib/utils";
 
-type InboxTab = "all" | "approvals" | "issues" | "mentions";
+type InboxTab = "all" | "approvals" | "issues" | "prs";
 
 interface InboxItem {
   id: string;
-  type: "approval" | "issue" | "mention";
+  type: "approval" | "issue" | "mention" | "pr";
   title: string;
   description: string;
   icon: React.ElementType;
@@ -28,10 +29,24 @@ export default function Inbox() {
   const [tab, setTab] = useState<InboxTab>("all");
   const { data: approvals = [], isLoading: approvalsLoading } = useApprovals(companyId);
   const { data: issues = [], isLoading: issuesLoading } = useIssues(companyId, { status: "in_progress" });
+  const { data: pendingPRs = [], isLoading: prsLoading } = usePullRequests(companyId, { reviewStatus: "pending" });
 
-  const isLoading = approvalsLoading || issuesLoading;
+  const isLoading = approvalsLoading || issuesLoading || prsLoading;
 
-  // Build inbox items from pending approvals and active issues
+  // Dismissed items stored in localStorage
+  const [dismissed, setDismissed] = useState<Set<string>>(
+    () => new Set(JSON.parse(localStorage.getItem("inbox.dismissed") ?? "[]")),
+  );
+  const dismiss = (id: string) => {
+    setDismissed((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      localStorage.setItem("inbox.dismissed", JSON.stringify([...next]));
+      return next;
+    });
+  };
+
+  // Build inbox items from pending approvals, active issues, and PRs awaiting review
   const items: InboxItem[] = [
     ...approvals
       .filter((a) => a.status === "pending")
@@ -55,14 +70,31 @@ export default function Inbox() {
       time: issue.updatedAt,
       read: false,
     })),
-  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+    ...pendingPRs.map((pr) => ({
+      id: `pr-${pr.id}`,
+      type: "pr" as const,
+      title: `PR: ${pr.title}`,
+      description: `${pr.sourceBranch} → ${pr.targetBranch}`,
+      icon: GitPullRequest,
+      route: `/pull-requests`,
+      time: pr.createdAt,
+      read: false,
+    })),
+  ]
+    .filter((item) => !dismissed.has(item.id))
+    .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
-  const filtered = tab === "all" ? items : items.filter((i) => i.type === tab.replace("s", ""));
+  const filtered = tab === "all"
+    ? items
+    : tab === "prs"
+      ? items.filter((i) => i.type === "pr")
+      : items.filter((i) => i.type === tab.replace(/s$/, ""));
 
   const tabs: { key: InboxTab; label: string; count: number }[] = [
     { key: "all", label: "All", count: items.length },
     { key: "approvals", label: "Approvals", count: items.filter((i) => i.type === "approval").length },
     { key: "issues", label: "Issues", count: items.filter((i) => i.type === "issue").length },
+    { key: "prs", label: "PRs", count: items.filter((i) => i.type === "pr").length },
   ];
 
   return (
@@ -125,7 +157,7 @@ export default function Inbox() {
                 <button
                   key={item.id}
                   onClick={() => navigate(item.route)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#263244] transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#263244] transition-colors group/item"
                 >
                   <div className="w-8 h-8 rounded-lg bg-[#374151] flex items-center justify-center flex-shrink-0">
                     <Icon size={14} className="text-[#9ca3af]" />
@@ -135,6 +167,13 @@ export default function Inbox() {
                     <p className="text-[10px] text-[#6b7280] truncate">{item.description}</p>
                   </div>
                   <span className="text-[10px] text-[#6b7280] flex-shrink-0">{timeAgo(item.time)}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); dismiss(item.id); }}
+                    className="p-1 rounded text-[#6b7280] hover:text-[#f9fafb] hover:bg-[#374151] transition-colors flex-shrink-0 opacity-0 group-hover/item:opacity-100"
+                    title="Dismiss"
+                  >
+                    <X size={12} />
+                  </button>
                 </button>
               );
             })}

@@ -22,7 +22,7 @@ export default function SpokeView() {
 
   const { data: gitTasksData, isLoading: gitTasksLoading } = useQuery({
     queryKey: ["spoke-git-tasks", deviceId],
-    queryFn: () => api.get<{ data: SpokeTask[] }>(`/spoke/${deviceId}/git-tasks`),
+    queryFn: () => api.get<{ data: SpokeTask[] }>(`/spoke/${deviceId}/spoke-tasks`),
     enabled: !!deviceId,
     refetchInterval: 10_000,
   });
@@ -36,11 +36,23 @@ export default function SpokeView() {
   const jobs = jobsData?.data ?? [];
   const gitTasks = gitTasksData?.data ?? [];
 
-  const handleSubmitPR = async (taskId: string) => {
-    if (!deviceId) return;
-    setSubmittingPR(taskId);
+  const handleSubmitPR = async (task: SpokeTask) => {
+    if (!deviceId || !task.companyId) return;
+    setSubmittingPR(task.id);
     try {
-      await api.post(`/spoke/${deviceId}/git-tasks/${taskId}/submit-pr`, {});
+      // Update task status to pr_raised
+      await api.patch(`/companies/${task.companyId}/spoke-tasks/${task.id}/status`, {
+        status: "pr_raised",
+      });
+      // Create a PR for this task
+      await api.post(`/companies/${task.companyId}/pull-requests`, {
+        spokeTaskId: task.id,
+        deviceId,
+        title: task.title,
+        description: task.description ?? "",
+        sourceBranch: task.branch ?? `spoke/${deviceId}/${task.id}`,
+        targetBranch: "main",
+      });
       void qc.invalidateQueries({ queryKey: ["spoke-git-tasks", deviceId] });
     } finally {
       setSubmittingPR(null);
@@ -275,7 +287,7 @@ export default function SpokeView() {
                             variant="primary"
                             size="sm"
                             icon={<GitPullRequest size={12} />}
-                            onClick={() => handleSubmitPR(gt.id)}
+                            onClick={() => handleSubmitPR(gt)}
                             loading={submittingPR === gt.id}
                           >
                             Submit PR

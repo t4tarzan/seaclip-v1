@@ -40,14 +40,17 @@ export function useReviewPR() {
     mutationFn: ({
       companyId,
       prId,
-      reviewStatus,
+      action,
+      reviewedBy,
     }: {
       companyId: string;
       prId: string;
-      reviewStatus: "approved" | "rejected";
+      action: "approved" | "rejected";
+      reviewedBy: string;
     }) =>
-      api.patch<PullRequest>(`/companies/${companyId}/pull-requests/${prId}`, {
-        reviewStatus,
+      api.patch<PullRequest>(`/companies/${companyId}/pull-requests/${prId}/review`, {
+        action,
+        reviewedBy,
       }),
     onSuccess: (_data, { companyId, prId }) => {
       void qc.invalidateQueries({ queryKey: ["pull-requests", companyId] });
