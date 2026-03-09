@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SeaClip Spoke Setup Guide</title>
+<style>
+:root {
+  --bg: #0d0d14;
+  --bg-surface: #13131f;
+  --bg-card: #1a1a2e;
+  --bg-elevated: #222240;
+  --border: #2a2a4a;
+  --border-light: #353560;
+  --text: #e0e0f0;
+  --text-secondary: #9999bb;
+  --text-dim: #6a6a8a;
+  --accent: #89b4fa;
+  --accent-hover: #a6c8ff;
+  --green: #a6e3a1;
+  --red: #f38ba8;
+  --yellow: #f9e2af;
+  --cyan: #89dceb;
+  --magenta: #cba6f7;
+  --orange: #fab387;
+  --teal: #20808D;
+  --sidebar-w: 260px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed; top: 0; left: 0;
+  width: var(--sidebar-w); height: 100vh;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto; z-index: 100;
+  display: flex; flex-direction: column;
+}
+.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); }
+.sidebar-header h1 { font-size: 15px; font-weight: 700; color: var(--text); }
+.sidebar-header h1 span { color: var(--teal); }
+.sidebar-header p { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+.sidebar-nav { padding: 12px 10px; flex: 1; }
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 6px;
+  text-decoration: none; color: var(--text-secondary);
+  font-size: 13px; font-weight: 500; transition: all 0.15s;
+}
+.sidebar-nav a:hover { background: var(--bg-elevated); color: var(--text); }
+.sidebar-nav a.active { background: rgba(32,128,141,0.15); color: var(--cyan); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.sidebar-back { padding: 12px 20px; border-top: 1px solid var(--border); }
+.sidebar-back a { color: var(--text-dim); text-decoration: none; font-size: 12px; }
+.sidebar-back a:hover { color: var(--accent); }
+
+/* Main */
+.main { margin-left: var(--sidebar-w); padding: 40px 48px; max-width: 900px; }
+
+h2 { font-size: 22px; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h2:first-of-type { margin-top: 0; }
+h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--cyan); }
+h4 { font-size: 14px; font-weight: 600; margin: 20px 0 8px; color: var(--text); }
+p { margin-bottom: 12px; }
+ul, ol { margin: 8px 0 16px 24px; }
+li { margin-bottom: 6px; }
+
+/* Code */
+pre {
+  background: #1a1a2e; border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px 20px;
+  overflow-x: auto; margin: 12px 0 20px;
+  font-size: 13px; line-height: 1.6;
+}
+code { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace; }
+p code, li code {
+  background: var(--bg-elevated); padding: 2px 6px;
+  border-radius: 4px; font-size: 13px; color: var(--orange);
+}
+
+/* Cards */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px; margin: 16px 0;
+}
+.card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.card-header .icon { font-size: 20px; }
+.card-header h4 { margin: 0; font-size: 15px; }
+.card p:last-child { margin-bottom: 0; }
+
+/* Network diagram */
+.network-diagram {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 24px; margin: 20px 0;
+  font-family: 'SF Mono', monospace; font-size: 13px;
+  line-height: 1.4; white-space: pre; overflow-x: auto;
+  color: var(--text-secondary);
+}
+.network-diagram .hub { color: var(--teal); font-weight: bold; }
+.network-diagram .spoke { color: var(--cyan); }
+.network-diagram .ip { color: var(--yellow); }
+.network-diagram .line { color: var(--text-dim); }
+
+/* Status table */
+table {
+  width: 100%; border-collapse: collapse;
+  margin: 12px 0 20px; font-size: 13px;
+}
+th { text-align: left; padding: 10px 12px; background: var(--bg-elevated); color: var(--text-secondary); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* Badge */
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; font-weight: 600;
+}
+.badge-hub { background: rgba(32,128,141,0.2); color: var(--teal); }
+.badge-spoke { background: rgba(137,180,250,0.2); color: var(--accent); }
+.badge-online { background: rgba(166,227,161,0.2); color: var(--green); }
+.badge-step { background: rgba(203,166,247,0.2); color: var(--magenta); min-width: 24px; text-align: center; }
+
+/* Step list */
+.steps { counter-reset: step; list-style: none; margin-left: 0; padding-left: 0; }
+.steps li { counter-increment: step; position: relative; padding-left: 40px; margin-bottom: 20px; }
+.steps li::before {
+  content: counter(step); position: absolute; left: 0; top: 0;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  color: var(--cyan); font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* FAQ */
+details {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; margin: 8px 0; overflow: hidden;
+}
+summary {
+  padding: 14px 20px; cursor: pointer; font-weight: 600;
+  font-size: 14px; color: var(--text);
+  list-style: none; display: flex; align-items: center; gap: 8px;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "▸"; color: var(--text-dim); transition: transform 0.2s; }
+details[open] summary::before { transform: rotate(90deg); }
+details > div { padding: 0 20px 16px; color: var(--text-secondary); font-size: 14px; }
+
+/* Alert */
+.alert {
+  border-left: 3px solid var(--yellow); background: rgba(249,226,175,0.05);
+  padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 12px 0;
+  font-size: 13px;
+}
+.alert-info { border-left-color: var(--accent); background: rgba(137,180,250,0.05); }
+.alert-success { border-left-color: var(--green); background: rgba(166,227,161,0.05); }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1>Sea<span>Clip</span> Spoke Guide</h1>
+    <p>Setup &amp; Registration Manual</p>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <a href="#overview"><span class="nav-icon">&#127968;</span> Overview</a>
+    <a href="#network"><span class="nav-icon">&#127760;</span> Network Map</a>
+    <a href="#prerequisites"><span class="nav-icon">&#9881;</span> Prerequisites</a>
+    <a href="#step1"><span class="nav-icon">1&#xFE0F;&#x20E3;</span> Install Tailscale</a>
+    <a href="#step2"><span class="nav-icon">2&#xFE0F;&#x20E3;</span> Register Device</a>
+    <a href="#step3"><span class="nav-icon">3&#xFE0F;&#x20E3;</span> Install Agent Zero</a>
+    <a href="#step4"><span class="nav-icon">4&#xFE0F;&#x20E3;</span> Configure Models</a>
+    <a href="#step5"><span class="nav-icon">5&#xFE0F;&#x20E3;</span> Start Telemetry</a>
+    <a href="#step6"><span class="nav-icon">6&#xFE0F;&#x20E3;</span> Pull Tasks</a>
+    <a href="#step7"><span class="nav-icon">7&#xFE0F;&#x20E3;</span> Git Workflow</a>
+    <a href="#step8"><span class="nav-icon">8&#xFE0F;&#x20E3;</span> Submit PRs</a>
+    <a href="#dashboard"><span class="nav-icon">&#9673;</span> Hub Dashboard</a>
+    <a href="#api"><span class="nav-icon">&#128225;</span> API Reference</a>
+    <a href="#troubleshoot"><span class="nav-icon">&#128295;</span> Troubleshooting</a>
+    <a href="#faq"><span class="nav-icon">&#10067;</span> FAQ</a>
+  </nav>
+  <div class="sidebar-back">
+    <a href="index.html">&larr; Back to Hub Docs</a>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main">
+
+<!-- ============================================================ -->
+<h2 id="overview">&#127968; Overview</h2>
+
+<p>This guide walks you through connecting a <strong>spoke device</strong> (MacBook, Raspberry Pi, Jetson, or any machine) to the SeaClip Hub. Once connected, the spoke can:</p>
+
+<ul>
+  <li>Receive coding tasks from the hub orchestrator</li>
+  <li>Run <strong>Agent Zero</strong> locally for autonomous coding</li>
+  <li>Use AI models hosted on the hub via Tailscale (Ollama: qwen3.5:35b, glm-4.7-flash)</li>
+  <li>Work on code in isolated <strong>git worktrees</strong></li>
+  <li>Submit <strong>pull requests</strong> for hub review and merge</li>
+  <li>Report telemetry (CPU, RAM, disk) back to the hub dashboard</li>
+</ul>
+
+<div class="alert alert-info">
+  <strong>Architecture:</strong> The hub runs on Mac Studio M3 Ultra (96GB) with Ollama models, PGlite database, and the SeaClip dashboard. Spokes are thin clients that connect over Tailscale VPN and use the hub's API + models.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="network">&#127760; Current Network Map</h2>
+
+<div class="network-diagram"><span class="line">                    ┌─────────────────────────────────────┐</span>
+<span class="line">                    │</span>  <span class="hub">&#9673; SeaClip Hub (Mac Studio M3 Ultra)</span>  <span class="line">│</span>
+<span class="line">                    │</span>  <span class="ip">100.114.140.33</span>  (Tailscale)          <span class="line">│</span>
+<span class="line">                    │</span>  Ollama · Claude Code · Dashboard     <span class="line">│</span>
+<span class="line">                    │</span>  Port 3001 (API) · Port 5173 (UI)     <span class="line">│</span>
+<span class="line">                    │</span>  Port 11434 (Ollama)                  <span class="line">│</span>
+<span class="line">                    └──────────┬──────────┬────────────────┘</span>
+<span class="line">                       Tailscale Mesh</span>
+<span class="line">                ┌──────────────┘              └──────────────┐</span>
+<span class="line">      ┌─────────┴─────────────────┐      ┌──────────┴────────────────┐</span>
+<span class="line">      │</span> <span class="spoke">&#9679; Spoke 1 (MacBook Pro)</span>    <span class="line">│      │</span> <span class="spoke">&#9679; Spoke 2 (MacBook Air)</span>     <span class="line">│</span>
+<span class="line">      │</span> <span class="ip">100.66.184.42</span>              <span class="line">│      │</span> <span class="ip">100.121.174.16</span>             <span class="line">│</span>
+<span class="line">      │</span> Agent Zero · Git Worktrees <span class="line">│      │</span> Agent Zero · Git Worktrees  <span class="line">│</span>
+<span class="line">      └────────────────────────────┘      └─────────────────────────────┘</span></div>
+
+<table>
+  <thead>
+    <tr><th>Device</th><th>Hostname</th><th>Tailscale IP</th><th>Role</th><th>Device ID</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Mac Studio M3 Ultra</td>
+      <td><code>WhiteNoises-Mac-Studio</code></td>
+      <td><code>100.114.140.33</code></td>
+      <td><span class="badge badge-hub">Hub</span></td>
+      <td><code>d1a3306b</code></td>
+    </tr>
+    <tr>
+      <td>MacBook Pro</td>
+      <td><code>vinais-juiced-up-roided-out-macbook-pro</code></td>
+      <td><code>100.66.184.42</code></td>
+      <td><span class="badge badge-spoke">Spoke</span></td>
+      <td><code>82ffa3d7</code></td>
+    </tr>
+    <tr>
+      <td>MacBook Air</td>
+      <td><code>whites-macbook-air</code></td>
+      <td><code>100.121.174.16</code></td>
+      <td><span class="badge badge-spoke">Spoke</span></td>
+      <td><code>c9d17618</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="prerequisites">&#9881; Prerequisites</h2>
+
+<h4>On the Hub (already done)</h4>
+<ul>
+  <li>SeaClip server running on <code>100.114.140.33:3001</code></li>
+  <li>Ollama running with <code>qwen3.5:35b</code> and <code>glm-4.7-flash</code></li>
+  <li>Tailscale connected</li>
+  <li>Company created: <code>4ba03a16-90db-4acc-86e4-943f943db118</code></li>
+</ul>
+
+<h4>On Each Spoke (you need)</h4>
+<ul>
+  <li>macOS with Homebrew (or Linux with apt/dnf)</li>
+  <li>Git installed</li>
+  <li>Node.js 20+ and pnpm (for the telemetry script)</li>
+  <li>Python 3.10+ (for Agent Zero)</li>
+  <li>SSH key added to GitHub (for PR workflow)</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="step1">Step 1: Install &amp; Connect Tailscale</h2>
+
+<p>Tailscale creates the encrypted mesh VPN between hub and spoke. If already installed, skip to verification.</p>
+
+<h4>macOS</h4>
+<pre><code># Install via Homebrew
+brew install --cask tailscale
+
+# Or download from: https://tailscale.com/download/mac
+
+# Start and authenticate
+open -a Tailscale
+# Click "Log in" in the menu bar icon, use your rao.vinu@ account</code></pre>
+
+<h4>Linux (Debian/Ubuntu)</h4>
+<pre><code>curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up</code></pre>
+
+<h4>Verify Connection</h4>
+<pre><code># Check you can see the hub
+tailscale status
+
+# You should see:
+# 100.114.140.33  whitenoises-mac-studio  rao.vinu@  macOS
+# (your device)                           rao.vinu@  macOS
+
+# Test connectivity to hub
+ping -c 3 100.114.140.33
+
+# Test API access
+curl -s http://100.114.140.33:3001/health
+# Should return: {"status":"ok","version":"0.1.0",...}
+
+# Test Ollama access
+curl -s http://100.114.140.33:11434/api/tags | python3 -m json.tool
+# Should show qwen3.5:35b and glm-4.7-flash</code></pre>
+
+<div class="alert">
+  <strong>Important:</strong> If <code>ping 100.114.140.33</code> fails, check that both devices are logged into the same Tailscale account (<code>rao.vinu@</code>) and that the hub's firewall allows Tailscale traffic.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="step2">Step 2: Register Device with Hub</h2>
+
+<p>Register your spoke device so the hub knows about it and can assign tasks.</p>
+
+<h4>For MacBook Pro (100.66.184.42)</h4>
+<div class="alert alert-success">Already registered! Device ID: <code>82ffa3d7-f1b1-41b1-bdf8-29f00633c88c</code></div>
+
+<h4>For MacBook Air (100.121.174.16)</h4>
+<div class="alert alert-success">Already registered! Device ID: <code>c9d17618-5f79-42fc-831b-a23efd0cf7a1</code></div>
+
+<h4>Registering a NEW spoke device</h4>
+<pre><code># Set your hub address
+HUB="http://100.114.140.33:3001"
+COMPANY_ID="4ba03a16-90db-4acc-86e4-943f943db118"
+
+# Get your Tailscale IP
+MY_IP=$(tailscale ip -4)
+MY_HOSTNAME=$(hostname)
+
+# Register with the hub
+curl -X POST "$HUB/api/companies/$COMPANY_ID/edge-devices" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"name\": \"$MY_HOSTNAME (Spoke)\",
+    \"deviceType\": \"mac\",
+    \"ipAddress\": \"$MY_IP\",
+    \"capabilities\": [\"agent-zero\", \"coding\"],
+    \"metadata\": {
+      \"hostname\": \"$MY_HOSTNAME\",
+      \"tailscaleIp\": \"$MY_IP\",
+      \"role\": \"spoke\"
+    }
+  }"
+
+# Save the returned device ID — you'll need it for all subsequent commands
+# Example response: {"id":"abc12345-...","name":"my-host (Spoke)",...}</code></pre>
+
+<h4>Save your device config</h4>
+<pre><code># Create local config file
+mkdir -p ~/.seaclip
+cat > ~/.seaclip/spoke.env << 'EOF'
+SEACLIP_HUB_URL=http://100.114.140.33:3001
+SEACLIP_COMPANY_ID=4ba03a16-90db-4acc-86e4-943f943db118
+SEACLIP_DEVICE_ID=YOUR_DEVICE_ID_HERE
+SEACLIP_OLLAMA_URL=http://100.114.140.33:11434
+EOF
+
+# Source it in your shell profile
+echo 'source ~/.seaclip/spoke.env' >> ~/.zshrc</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="step3">Step 3: Install Agent Zero</h2>
+
+<p>Agent Zero runs locally on the spoke and handles autonomous coding tasks. It connects to the hub's Ollama models over Tailscale.</p>
+
+<pre><code># Clone Agent Zero
+cd ~
+git clone https://github.com/frdel/agent-zero.git
+cd agent-zero
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt</code></pre>
+
+<h4>Configure Agent Zero to use Hub's Ollama</h4>
+<pre><code># Create/edit .env in the agent-zero directory
+cat > .env << 'EOF'
+# Point to hub's Ollama over Tailscale
+CHAT_MODEL_BASE_URL=http://100.114.140.33:11434
+CHAT_MODEL_NAME=qwen3.5:35b
+UTILITY_MODEL_BASE_URL=http://100.114.140.33:11434
+UTILITY_MODEL_NAME=glm-4.7-flash
+
+# Optional: use Claude for complex tasks (if API key available)
+# CHAT_MODEL_BASE_URL=https://api.anthropic.com
+# CHAT_MODEL_NAME=claude-sonnet-4-20250514
+# CHAT_API_KEY=sk-ant-...
+
+# Agent Zero settings
+AGENT_NAME=spoke-coder
+LOG_LEVEL=info
+EOF</code></pre>
+
+<h4>Test Agent Zero</h4>
+<pre><code># Activate venv and run
+source venv/bin/activate
+python main.py
+
+# In the Agent Zero prompt, test:
+# > List the files in the current directory
+# Should work using the hub's qwen3.5:35b model</code></pre>
+
+<div class="alert alert-info">
+  <strong>Model access:</strong> The spoke does NOT need Ollama installed locally. It uses the hub's Ollama at <code>100.114.140.33:11434</code> over Tailscale. The encrypted tunnel means model traffic stays private.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="step4">Step 4: Configure Model Access</h2>
+
+<p>Verify the spoke can reach the hub's AI models.</p>
+
+<pre><code># Test Ollama connectivity
+curl -s http://100.114.140.33:11434/api/tags | python3 -c "
+import json, sys
+models = json.load(sys.stdin).get('models', [])
+for m in models:
+    size_gb = m.get('size', 0) / 1e9
+    print(f'  {m[\"name\"]:30s} {size_gb:.1f} GB')
+"
+
+# Expected output:
+#   qwen3.5:35b                    24.1 GB
+#   glm-4.7-flash:latest           18.2 GB
+
+# Test a completion
+curl -s http://100.114.140.33:11434/api/generate -d '{
+  "model": "qwen3.5:35b",
+  "prompt": "Write a hello world in Python",
+  "stream": false
+}' | python3 -c "import json,sys; print(json.load(sys.stdin)['response'][:200])"</code></pre>
+
+<h4>Speed test (optional)</h4>
+<pre><code># Measure latency to hub
+time curl -s http://100.114.140.33:11434/api/generate -d '{
+  "model": "glm-4.7-flash",
+  "prompt": "1+1=",
+  "stream": false
+}' > /dev/null
+
+# Over Tailscale on LAN: ~50-100ms overhead
+# Over Tailscale WAN: ~200-500ms overhead</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="step5">Step 5: Start Telemetry Reporting</h2>
+
+<p>The telemetry script sends CPU/RAM/disk usage to the hub every 30 seconds, keeping your device status green on the dashboard.</p>
+
+<pre><code># Create the telemetry script
+mkdir -p ~/.seaclip
+cat > ~/.seaclip/telemetry.sh << 'SCRIPT'
+#!/bin/bash
+# SeaClip Spoke Telemetry Reporter
+# Sends system metrics to the hub every 30 seconds
+
+source ~/.seaclip/spoke.env
+
+while true; do
+  # Gather metrics (macOS)
+  CPU=$(ps -A -o %cpu | awk '{s+=$1} END {printf "%.1f", s/4}')
+  MEM=$(memory_pressure 2>/dev/null | grep "System-wide memory free percentage" | awk '{print 100 - $NF}' || echo "50")
+  DISK=$(df -h / | tail -1 | awk '{print $5}' | tr -d '%')
+  # Temperature (macOS, requires osx-cpu-temp or similar)
+  TEMP=$(which osx-cpu-temp >/dev/null 2>&1 && osx-cpu-temp 2>/dev/null | grep -o '[0-9.]*' | head -1 || echo "0")
+
+  # Send to hub
+  curl -s -X POST \
+    "$SEACLIP_HUB_URL/api/companies/$SEACLIP_COMPANY_ID/edge-devices/$SEACLIP_DEVICE_ID/telemetry" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"cpuPercent\": $CPU,
+      \"memoryPercent\": ${MEM:-50},
+      \"diskPercent\": $DISK,
+      \"temperatureCelsius\": ${TEMP:-0},
+      \"uptimeSeconds\": $(( $(date +%s) - $(sysctl -n kern.boottime | awk '{print $4}' | tr -d ',') )),
+      \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+    }" > /dev/null 2>&1
+
+  echo "[$(date '+%H:%M:%S')] Telemetry sent: CPU=${CPU}% MEM=${MEM}% DISK=${DISK}%"
+  sleep 30
+done
+SCRIPT
+chmod +x ~/.seaclip/telemetry.sh</code></pre>
+
+<h4>Run as background service</h4>
+<pre><code># Option A: Run in tmux (recommended for dev)
+tmux new-session -d -s telemetry 'bash ~/.seaclip/telemetry.sh'
+
+# Option B: Run as a launchd service (persistent across reboots)
+cat > ~/Library/LaunchAgents/com.seaclip.telemetry.plist << 'PLIST'
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+  &lt;key&gt;Label&lt;/key&gt;&lt;string&gt;com.seaclip.telemetry&lt;/string&gt;
+  &lt;key&gt;ProgramArguments&lt;/key&gt;
+  &lt;array&gt;
+    &lt;string&gt;/bin/bash&lt;/string&gt;
+    &lt;string&gt;-c&lt;/string&gt;
+    &lt;string&gt;source ~/.seaclip/spoke.env &amp;&amp; bash ~/.seaclip/telemetry.sh&lt;/string&gt;
+  &lt;/array&gt;
+  &lt;key&gt;RunAtLoad&lt;/key&gt;&lt;true/&gt;
+  &lt;key&gt;KeepAlive&lt;/key&gt;&lt;true/&gt;
+  &lt;key&gt;StandardOutPath&lt;/key&gt;&lt;string&gt;/tmp/seaclip-telemetry.log&lt;/string&gt;
+  &lt;key&gt;StandardErrorPath&lt;/key&gt;&lt;string&gt;/tmp/seaclip-telemetry.err&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+PLIST
+launchctl load ~/Library/LaunchAgents/com.seaclip.telemetry.plist</code></pre>
+
+<h4>Verify on dashboard</h4>
+<pre><code># Check your device status from the spoke
+curl -s "$SEACLIP_HUB_URL/api/spoke/$SEACLIP_DEVICE_ID/status" | python3 -m json.tool
+
+# Or visit the dashboard:
+# http://100.114.140.33:5173/edge-mesh</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="step6">Step 6: Pull Tasks from Hub</h2>
+
+<p>The hub assigns tasks to your device. You can poll for new tasks.</p>
+
+<pre><code># Check assigned tasks
+source ~/.seaclip/spoke.env
+curl -s "$SEACLIP_HUB_URL/api/spoke/$SEACLIP_DEVICE_ID/tasks" | python3 -m json.tool
+
+# Check spoke-specific tasks (git workflow tasks)
+curl -s "$SEACLIP_HUB_URL/api/spoke/$SEACLIP_DEVICE_ID/spoke-tasks" | python3 -m json.tool</code></pre>
+
+<h4>Auto-poll script</h4>
+<pre><code># Create task poller
+cat > ~/.seaclip/poll-tasks.sh << 'SCRIPT'
+#!/bin/bash
+source ~/.seaclip/spoke.env
+
+echo "Polling for tasks from hub..."
+while true; do
+  TASKS=$(curl -s "$SEACLIP_HUB_URL/api/spoke/$SEACLIP_DEVICE_ID/spoke-tasks" 2>/dev/null)
+  COUNT=$(echo "$TASKS" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('count',0))" 2>/dev/null)
+
+  if [ "$COUNT" != "0" ] && [ -n "$COUNT" ]; then
+    echo ""
+    echo "========================================="
+    echo "  $COUNT task(s) assigned!"
+    echo "========================================="
+    echo "$TASKS" | python3 -c "
+import json, sys
+data = json.load(sys.stdin).get('data', [])
+for t in data:
+    print(f\"  [{t.get('status','?')}] {t.get('title','?')}\")
+    if t.get('branch'):
+        print(f\"         branch: {t['branch']}\")
+"
+  fi
+
+  sleep 60
+done
+SCRIPT
+chmod +x ~/.seaclip/poll-tasks.sh</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="step7">Step 7: Git Worktree Workflow</h2>
+
+<p>Each task gets its own git worktree — an isolated copy of the repo so you can work on multiple tasks without branch conflicts.</p>
+
+<h4>Initial repo setup (once per spoke)</h4>
+<pre><code># Clone the main repo
+cd ~
+git clone git@github.com:t4tarzan/seaclip-v1.git seaclip-v1
+cd seaclip-v1
+
+# Create worktrees directory
+mkdir -p ~/.seaclip/worktrees</code></pre>
+
+<h4>Start working on a task</h4>
+<pre><code># When you receive a task, create a worktree for it
+TASK_BRANCH="spoke/task-123-fix-dashboard"
+
+# Create worktree
+git worktree add ~/.seaclip/worktrees/$TASK_BRANCH -b $TASK_BRANCH origin/main
+
+# Work in the worktree
+cd ~/.seaclip/worktrees/$TASK_BRANCH
+
+# Install dependencies
+pnpm install
+
+# Tell the hub you started
+source ~/.seaclip/spoke.env
+curl -s -X PATCH \
+  "$SEACLIP_HUB_URL/api/companies/$SEACLIP_COMPANY_ID/spoke-tasks/TASK_ID/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "in_progress"}'</code></pre>
+
+<h4>Use Agent Zero to work on the task</h4>
+<pre><code># From the worktree directory
+cd ~/.seaclip/worktrees/$TASK_BRANCH
+
+# Start Agent Zero pointed at this directory
+cd ~/agent-zero
+source venv/bin/activate
+python main.py
+
+# In Agent Zero, give it the task:
+# > Working directory is ~/.seaclip/worktrees/spoke/task-123-fix-dashboard
+# > Task: Fix the dashboard metric cards to show correct values
+# > The code is a React + TypeScript project using TailwindCSS</code></pre>
+
+<h4>Commit your work</h4>
+<pre><code>cd ~/.seaclip/worktrees/$TASK_BRANCH
+git add -A
+git commit -m "fix: dashboard metric cards display correct values
+
+Spoke: whites-macbook-air
+Task: SC-123"
+git push origin $TASK_BRANCH</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="step8">Step 8: Submit Pull Request</h2>
+
+<p>Once your work is done, submit a PR for the hub to review.</p>
+
+<pre><code># Push branch and create PR via GitHub CLI
+cd ~/.seaclip/worktrees/$TASK_BRANCH
+git push -u origin $TASK_BRANCH
+
+gh pr create \
+  --title "fix: dashboard metric cards" \
+  --body "## Task SC-123
+- Fixed metric card value mapping
+- Spoke: whites-macbook-air
+
+## Test
+- Dashboard loads without errors
+- All 4 metric cards show correct data"
+
+# Notify the hub
+source ~/.seaclip/spoke.env
+TASK_ID="your-task-id-here"
+
+curl -s -X POST \
+  "$SEACLIP_HUB_URL/api/companies/$SEACLIP_COMPANY_ID/pull-requests" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"spokeTaskId\": \"$TASK_ID\",
+    \"deviceId\": \"$SEACLIP_DEVICE_ID\",
+    \"title\": \"fix: dashboard metric cards\",
+    \"description\": \"Fixed metric card value mapping\",
+    \"sourceBranch\": \"$TASK_BRANCH\",
+    \"targetBranch\": \"main\"
+  }"
+
+# Update task status
+curl -s -X PATCH \
+  "$SEACLIP_HUB_URL/api/companies/$SEACLIP_COMPANY_ID/spoke-tasks/$TASK_ID/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "pr_raised"}'</code></pre>
+
+<h4>Cleanup after merge</h4>
+<pre><code># After the hub merges your PR:
+cd ~/seaclip-v1
+git worktree remove ~/.seaclip/worktrees/$TASK_BRANCH
+git branch -d $TASK_BRANCH</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="dashboard">&#9673; Hub Dashboard Access</h2>
+
+<p>From any spoke device, access the full dashboard over Tailscale:</p>
+
+<table>
+  <thead><tr><th>Service</th><th>URL</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>Dashboard (dev)</td><td><code>http://100.114.140.33:5173</code></td><td>Vite dev server with HMR</td></tr>
+    <tr><td>API Server</td><td><code>http://100.114.140.33:3001</code></td><td>SeaClip REST API</td></tr>
+    <tr><td>Ollama</td><td><code>http://100.114.140.33:11434</code></td><td>LLM inference API</td></tr>
+    <tr><td>Spoke View</td><td><code>http://100.114.140.33:5173/spoke/DEVICE_ID</code></td><td>Your device's thin-client view</td></tr>
+  </tbody>
+</table>
+
+<h4>Quick links for registered spokes</h4>
+<pre><code># MacBook Pro spoke view:
+http://100.114.140.33:5173/spoke/82ffa3d7-f1b1-41b1-bdf8-29f00633c88c
+
+# MacBook Air spoke view:
+http://100.114.140.33:5173/spoke/c9d17618-5f79-42fc-831b-a23efd0cf7a1</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="api">&#128225; API Reference</h2>
+
+<p>All endpoints use the hub base URL: <code>http://100.114.140.33:3001</code></p>
+
+<h3>Spoke Endpoints (no auth required)</h3>
+<table>
+  <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>GET</code></td><td><code>/api/spoke/:deviceId/status</code></td><td>Device health + agent summary</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/spoke/:deviceId/tasks</code></td><td>Issues assigned to device agents</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/spoke/:deviceId/jobs</code></td><td>Heartbeat jobs for device agents</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/spoke/:deviceId/spoke-tasks</code></td><td>Git workflow tasks assigned to device</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/spoke/:deviceId/feedback</code></td><td>Submit task feedback/completion</td></tr>
+  </tbody>
+</table>
+
+<h3>Company-scoped Endpoints (auth required)</h3>
+<table>
+  <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>GET</code></td><td><code>/api/companies/:id/spoke-tasks</code></td><td>List spoke tasks</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/companies/:id/spoke-tasks</code></td><td>Create spoke task</td></tr>
+    <tr><td><code>PATCH</code></td><td><code>/api/companies/:id/spoke-tasks/:taskId/status</code></td><td>Update task status</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/companies/:id/pull-requests</code></td><td>List pull requests</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/companies/:id/pull-requests</code></td><td>Submit new PR</td></tr>
+    <tr><td><code>PATCH</code></td><td><code>/api/companies/:id/pull-requests/:prId/review</code></td><td>Approve/reject PR</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/companies/:id/pull-requests/:prId/merge</code></td><td>Merge PR</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/companies/:id/edge-devices</code></td><td>Register new device</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/companies/:id/edge-devices/:id/telemetry</code></td><td>Report telemetry</td></tr>
+  </tbody>
+</table>
+
+<h3>Spoke Task Status Flow</h3>
+<pre><code>pending → assigned → in_progress → pr_raised → merged → done</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="troubleshoot">&#128295; Troubleshooting</h2>
+
+<h3>Can't reach hub (100.114.140.33)</h3>
+<ol class="steps">
+  <li>Check Tailscale is running: <code>tailscale status</code></li>
+  <li>Check you're on the same Tailnet: look for <code>rao.vinu@</code> account</li>
+  <li>Try <code>tailscale ping 100.114.140.33</code></li>
+  <li>Check hub firewall: <code>sudo pfctl -s rules</code> (macOS) — Tailscale traffic should be allowed</li>
+  <li>Restart Tailscale: <code>sudo tailscale down && sudo tailscale up</code></li>
+</ol>
+
+<h3>Ollama model not responding</h3>
+<pre><code># Check if Ollama is running on hub
+curl -s http://100.114.140.33:11434/api/tags
+
+# If connection refused, SSH to hub and restart:
+# ssh whitenoise-oc@100.114.140.33
+# ollama serve &
+
+# Check model is loaded
+curl -s http://100.114.140.33:11434/api/tags | grep qwen</code></pre>
+
+<h3>Telemetry not showing on dashboard</h3>
+<pre><code># Test telemetry endpoint manually
+source ~/.seaclip/spoke.env
+curl -v -X POST \
+  "$SEACLIP_HUB_URL/api/companies/$SEACLIP_COMPANY_ID/edge-devices/$SEACLIP_DEVICE_ID/telemetry" \
+  -H "Content-Type: application/json" \
+  -d '{"cpuPercent": 25, "memoryPercent": 60, "diskPercent": 45}'
+
+# Should return 202 with {"accepted": true, ...}
+# If 404: your device ID is wrong, re-check spoke.env</code></pre>
+
+<h3>Git worktree issues</h3>
+<pre><code># List active worktrees
+git worktree list
+
+# Prune stale worktrees
+git worktree prune
+
+# Force remove a broken worktree
+git worktree remove --force ~/.seaclip/worktrees/some-branch</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="faq">&#10067; Frequently Asked Questions</h2>
+
+<details>
+  <summary>Do I need Ollama installed on the spoke?</summary>
+  <div>
+    <p><strong>No.</strong> The spoke uses the hub's Ollama over Tailscale. This means all AI inference happens on the Mac Studio's M3 Ultra GPU. The spoke just sends HTTP requests to <code>100.114.140.33:11434</code>.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Can I use Claude Code on the spoke?</summary>
+  <div>
+    <p>Claude Code requires its own API key and runs locally. It does NOT proxy through the hub. If you have a Claude API key, install it normally on the spoke. Otherwise, use Agent Zero which routes through the hub's Ollama.</p>
+  </div>
+</details>
+
+<details>
+  <summary>How do I add a new device (Raspberry Pi, Jetson, etc.)?</summary>
+  <div>
+    <p>Same process: (1) install Tailscale, (2) register via the API with <code>deviceType</code> set to <code>raspberry_pi</code> or <code>jetson</code>, (3) start telemetry. For ARM devices, Agent Zero might need different setup but the SeaClaw C binary is designed exactly for these thin-client edge devices.</p>
+  </div>
+</details>
+
+<details>
+  <summary>What happens if the hub goes offline?</summary>
+  <div>
+    <p>The spoke loses access to AI models and can't report telemetry. However, any local work (git worktrees, code changes) is safe. When the hub comes back, telemetry resumes automatically and you can push your branches.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Can multiple spokes work on the same repo?</summary>
+  <div>
+    <p>Yes! Each spoke works in its own git worktree on a separate branch. There are no conflicts. The hub merges PRs one at a time through the dashboard.</p>
+  </div>
+</details>
+
+<details>
+  <summary>How fast is Ollama over Tailscale?</summary>
+  <div>
+    <p>On the same LAN: ~50-100ms additional latency vs local. Over WAN (different networks): 200-500ms. The qwen3.5:35b model generates ~20-30 tokens/sec on the M3 Ultra, so the network overhead is minimal compared to generation time.</p>
+  </div>
+</details>
+
+<details>
+  <summary>How do I see my device on the dashboard?</summary>
+  <div>
+    <p>Visit <code>http://100.114.140.33:5173/edge-mesh</code> to see all devices. Your device-specific view is at <code>http://100.114.140.33:5173/spoke/YOUR_DEVICE_ID</code>.</p>
+  </div>
+</details>
+
+<details>
+  <summary>What's the difference between "tasks" and "spoke tasks"?</summary>
+  <div>
+    <p><strong>Tasks</strong> (<code>/api/spoke/:id/tasks</code>) are regular issues assigned to agents on your device. <strong>Spoke tasks</strong> (<code>/api/companies/:id/spoke-tasks</code>) are the git workflow tasks specifically designed for the spoke-based PR process — they track branch, worktree, and PR status.</p>
+  </div>
+</details>
+
+<details>
+  <summary>How do I update my device's capabilities?</summary>
+  <div>
+    <pre><code>curl -X PATCH \
+  "$SEACLIP_HUB_URL/api/companies/$SEACLIP_COMPANY_ID/edge-devices/$SEACLIP_DEVICE_ID" \
+  -H "Content-Type: application/json" \
+  -d '{"capabilities": ["agent-zero", "coding", "testing"]}'</code></pre>
+  </div>
+</details>
+
+<details>
+  <summary>Can I use a different AI framework instead of Agent Zero?</summary>
+  <div>
+    <p>Absolutely. Any tool that can call an OpenAI-compatible API works. Point it at <code>http://100.114.140.33:11434/v1</code> (Ollama's OpenAI-compatible endpoint). Examples: LangChain, CrewAI, AutoGen, or even raw curl/Python scripts.</p>
+  </div>
+</details>
+
+<!-- Footer -->
+<div style="margin-top: 60px; padding: 24px 0; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 12px;">
+  <p>SeaClip Spoke Setup Guide &mdash; Generated 2026-03-09 &mdash; Hub: 100.114.140.33</p>
+  <p><a href="index.html" style="color: var(--accent);">Back to Hub Docs</a></p>
+</div>
+
+</div>
+
+<!-- Sidebar active state JS -->
+<script>
+const navLinks = document.querySelectorAll('.sidebar-nav a');
+const sections = [];
+navLinks.forEach(link => {
+  const id = link.getAttribute('href')?.replace('#', '');
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) sections.push({ id, el, link });
+  }
+});
+
+function updateActive() {
+  let current = sections[0];
+  for (const s of sections) {
+    if (s.el.getBoundingClientRect().top <= 100) current = s;
+  }
+  navLinks.forEach(l => l.classList.remove('active'));
+  if (current) current.link.classList.add('active');
+}
+
+window.addEventListener('scroll', updateActive);
+updateActive();
+</script>
+
+</body>
+</html>

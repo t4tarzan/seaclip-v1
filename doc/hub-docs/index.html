@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hub Command Center — Documentation</title>
+<style>
+/* ============================================================
+   CSS RESET & VARIABLES
+   ============================================================ */
+:root {
+  --bg: #0d0d14;
+  --bg-surface: #13131f;
+  --bg-card: #1a1a2e;
+  --bg-elevated: #222240;
+  --border: #2a2a4a;
+  --border-light: #353560;
+  --text: #e0e0f0;
+  --text-secondary: #9999bb;
+  --text-dim: #6a6a8a;
+  --accent: #89b4fa;
+  --accent-hover: #a6c8ff;
+  --green: #a6e3a1;
+  --red: #f38ba8;
+  --yellow: #f9e2af;
+  --cyan: #89dceb;
+  --magenta: #cba6f7;
+  --orange: #fab387;
+  --sidebar-w: 280px;
+  --header-h: 0px;
+  --code-bg: #f5f5f0;
+  --code-text: #1e1e2e;
+  --code-comment: #6c7086;
+  --code-keyword: #7c3aed;
+  --code-string: #16a34a;
+  --code-function: #2563eb;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 24px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 100;
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sidebar-header h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-header .subtitle {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  letter-spacing: 0.3px;
+}
+
+.sidebar-nav {
+  padding: 12px 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-nav a:hover {
+  color: var(--text);
+  background: rgba(137, 180, 250, 0.05);
+}
+
+.sidebar-nav a.active {
+  color: var(--accent);
+  background: rgba(137, 180, 250, 0.08);
+  border-left-color: var(--accent);
+}
+
+.sidebar-nav .nav-icon {
+  width: 20px;
+  text-align: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   HAMBURGER MENU (MOBILE)
+   ============================================================ */
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 200;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  font-size: 20px;
+  transition: background 0.15s;
+}
+
+.hamburger:hover {
+  background: var(--bg-elevated);
+}
+
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 90;
+}
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.main {
+  margin-left: var(--sidebar-w);
+  max-width: 820px;
+  padding: 48px 48px 120px;
+}
+
+/* ============================================================
+   SEARCH BAR
+   ============================================================ */
+.search-container {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg);
+  padding: 16px 0 12px;
+  margin-bottom: 8px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--accent);
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.search-container > div {
+  position: relative;
+}
+
+.search-results-info {
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 4px 0;
+  display: none;
+}
+
+/* ============================================================
+   PROGRESS TRACKER
+   ============================================================ */
+.progress-tracker {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 40px;
+}
+
+.progress-tracker h3 {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bar-outer {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+.section {
+  margin-bottom: 64px;
+  transition: opacity 0.3s;
+}
+
+.section.hidden-by-search {
+  display: none;
+}
+
+.section > h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section > h2 .section-icon {
+  font-size: 22px;
+}
+
+.section h3 {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 32px;
+  margin-bottom: 12px;
+}
+
+.section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+
+.section p {
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+}
+
+.section ul, .section ol {
+  margin-bottom: 16px;
+  padding-left: 24px;
+}
+
+.section li {
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+}
+
+.section li strong {
+  color: var(--text);
+}
+
+.section a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.section a:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* ============================================================
+   CALLOUT BOXES
+   ============================================================ */
+.callout {
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin: 20px 0;
+  font-size: 14px;
+  border-left: 4px solid;
+}
+
+.callout-info {
+  background: rgba(137, 180, 250, 0.08);
+  border-color: var(--accent);
+}
+
+.callout-tip {
+  background: rgba(166, 227, 161, 0.08);
+  border-color: var(--green);
+}
+
+.callout-warn {
+  background: rgba(249, 226, 175, 0.08);
+  border-color: var(--yellow);
+}
+
+.callout-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.callout-info .callout-title { color: var(--accent); }
+.callout-tip .callout-title { color: var(--green); }
+.callout-warn .callout-title { color: var(--yellow); }
+
+/* ============================================================
+   CODE BLOCKS
+   ============================================================ */
+.code-block {
+  position: relative;
+  margin: 16px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--bg-elevated);
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+}
+
+.copy-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 3px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.copy-btn:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+.copy-btn.copied {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.code-block pre {
+  padding: 16px;
+  overflow-x: auto;
+  background: var(--code-bg);
+  color: var(--code-text);
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Inline code */
+code {
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  background: var(--bg-elevated);
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 0.88em;
+  color: var(--cyan);
+}
+
+.code-block pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* ============================================================
+   ASCII DIAGRAMS
+   ============================================================ */
+.ascii-diagram {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  overflow-x: auto;
+  margin: 20px 0;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cyan);
+  white-space: pre;
+}
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13px;
+}
+
+.doc-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  color: var(--text-dim);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 11px;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+.doc-table tr:hover td {
+  background: rgba(137, 180, 250, 0.03);
+}
+
+.doc-table td:first-child {
+  color: var(--accent);
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   CHECKLIST
+   ============================================================ */
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 16px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.checklist li:hover {
+  background: rgba(137, 180, 250, 0.04);
+}
+
+.checklist input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-light);
+  border-radius: 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 1px;
+  position: relative;
+  transition: all 0.15s;
+}
+
+.checklist input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.checklist input[type="checkbox"]:checked::after {
+  content: "\2713";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #1e1e2e;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.checklist .step-content {
+  flex: 1;
+}
+
+.checklist .step-title {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.checklist .step-desc {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   KEYBOARD SHORTCUT DISPLAY
+   ============================================================ */
+kbd {
+  display: inline-block;
+  padding: 2px 7px;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  box-shadow: 0 1px 0 var(--border);
+}
+
+/* ============================================================
+   BADGES / TAGS
+   ============================================================ */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.badge-green  { background: rgba(166,227,161,0.15); color: var(--green); }
+.badge-yellow { background: rgba(249,226,175,0.15); color: var(--yellow); }
+.badge-red    { background: rgba(243,139,168,0.15); color: var(--red); }
+.badge-blue   { background: rgba(137,180,250,0.15); color: var(--accent); }
+.badge-purple { background: rgba(203,166,247,0.15); color: var(--magenta); }
+.badge-orange { background: rgba(250,179,135,0.15); color: var(--orange); }
+
+/* ============================================================
+   GRID CARDS
+   ============================================================ */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.mini-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+}
+
+.mini-card h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.mini-card p {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .overlay.active {
+    display: block;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: 24px 20px 100px;
+  }
+
+  .main {
+    padding-top: 72px;
+  }
+
+  .search-container {
+    top: 56px;
+  }
+
+  .ascii-diagram {
+    font-size: 10px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .doc-table {
+    font-size: 12px;
+  }
+
+  .doc-table td, .doc-table th {
+    padding: 8px 10px;
+  }
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.section {
+  animation: fadeIn 0.4s ease both;
+}
+
+.section:nth-child(2) { animation-delay: 0.05s; }
+.section:nth-child(3) { animation-delay: 0.1s; }
+.section:nth-child(4) { animation-delay: 0.15s; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+.sidebar::-webkit-scrollbar { width: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HAMBURGER BUTTON (MOBILE)
+     ============================================================ -->
+<button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation">&#9776;</button>
+<div class="overlay" onclick="toggleSidebar()"></div>
+
+<!-- ============================================================
+     SIDEBAR
+     ============================================================ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1>&#9678; Hub Docs</h1>
+    <div class="subtitle">Mac Studio M3 Ultra &middot; Command Center</div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <a href="#welcome"       data-section="welcome">      <span class="nav-icon">&#127968;</span> Welcome</a>
+    <a href="#quickstart"    data-section="quickstart">    <span class="nav-icon">&#9889;</span> Quick Start</a>
+    <a href="#commands"      data-section="commands">      <span class="nav-icon">&#9000;</span> Hub Commands</a>
+    <a href="#tmux"          data-section="tmux">          <span class="nav-icon">&#9635;</span> tmux Layout</a>
+    <a href="#services"      data-section="services">      <span class="nav-icon">&#9881;</span> Services</a>
+    <a href="#dashboard"     data-section="dashboard">     <span class="nav-icon">&#9673;</span> Web Dashboard</a>
+    <a href="#edge"          data-section="edge">          <span class="nav-icon">&#128225;</span> Edge Devices</a>
+    <a href="#team"          data-section="team">          <span class="nav-icon">&#128101;</span> Team Workflow</a>
+    <a href="#swarm"         data-section="swarm">         <span class="nav-icon">&#128029;</span> Agent Swarm</a>
+    <a href="#troubleshoot"  data-section="troubleshoot">  <span class="nav-icon">&#128295;</span> Troubleshooting</a>
+    <a href="#reference"     data-section="reference">     <span class="nav-icon">&#128218;</span> Reference</a>
+    <hr style="border-color:#374151;margin:12px 0">
+    <a href="spoke-setup.html" style="color:#60a5fa">     <span class="nav-icon">&#128225;</span> Spoke Setup Guide</a>
+  </nav>
+  <div class="sidebar-footer">
+    Hub Command Center v1.0<br>
+    Last updated March 2026
+  </div>
+</aside>
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<main class="main" id="mainContent">
+
+  <!-- SEARCH -->
+  <div class="search-container">
+    <div>
+      <span class="search-icon">&#128269;</span>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search docs... (e.g. 'ollama', 'tmux split', 'tailscale')" autocomplete="off">
+    </div>
+    <div class="search-results-info" id="searchInfo"></div>
+  </div>
+
+  <!-- PROGRESS TRACKER -->
+  <div class="progress-tracker" id="progressTracker">
+    <h3>&#127937; Setup Progress</h3>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar"></div>
+    </div>
+    <div class="progress-text" id="progressText">Check off steps in Quick Start to track your progress</div>
+  </div>
+
+  <!-- ============================================================
+       SECTION 1: WELCOME
+       ============================================================ -->
+  <div class="section" id="welcome">
+    <h2><span class="section-icon">&#127968;</span> Welcome to Hub Command Center</h2>
+
+    <p>Imagine an airport. Your Mac Studio is the main terminal building. Every device you own &mdash; phones, Raspberry Pis, Jetson Nanos, cameras &mdash; is a gate at that airport. Tailscale is the network of runways connecting everything. And tmux is the flight control tower, letting you see and manage every flight at once.</p>
+
+    <p>This documentation covers how to run the whole airport.</p>
+
+    <h3>What is this?</h3>
+    <p>Hub Command Center turns your Mac Studio M3 Ultra (96GB RAM) into a central hub for:</p>
+    <ul>
+      <li><strong>AI development</strong> &mdash; Run local models with Ollama, orchestrate Claude Code agents</li>
+      <li><strong>Edge device management</strong> &mdash; Connect and monitor phones, Pis, Nanos, cameras</li>
+      <li><strong>Team collaboration</strong> &mdash; Share tmux sessions, dashboards, and services over Tailscale</li>
+      <li><strong>Everything-in-one-place</strong> &mdash; One terminal, seven windows, zero tab chaos</li>
+    </ul>
+
+    <h3>Architecture</h3>
+    <div class="ascii-diagram">
+                        &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+                        &#9474;     MAC STUDIO  (The Hub)      &#9474;
+                        &#9474;     M3 Ultra &middot; 96GB RAM          &#9474;
+                        &#9474;                                    &#9474;
+                        &#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;
+                        &#9474;  &#9474; Docker &#9474; &#9474; Ollama &#9474; &#9474; Claude &#9474; &#9474;
+                        &#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;
+                        &#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;
+                        &#9474;  &#9474;   tmux: 7-window layout    &#9474; &#9474;
+                        &#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;
+                        &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+                                     &#9474;
+                          Tailscale Mesh Network
+                       &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+                       &#9474;                       &#9474;
+              &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9488;   &#9484;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+              &#9474;              &#9474;   &#9474;              &#9474;
+         &#9484;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9488; &#9484;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9488; &#9484;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9488; &#9484;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9488;
+         &#9474; Phone  &#9474; &#9474;  RPi    &#9474; &#9474; Nano  &#9474; &#9474; Camera &#9474;
+         &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
+
+    <h3>What problems does this solve?</h3>
+    <div class="card-grid">
+      <div class="mini-card">
+        <h4>&#128680; Tool Sprawl</h4>
+        <p>Instead of 47 browser tabs and 12 terminal windows, you get one tmux session with everything organized.</p>
+      </div>
+      <div class="mini-card">
+        <h4>&#128256; Context Switching</h4>
+        <p>Jump between Claude, git, Docker, and logs with a single keypress. No more "where was that terminal?"</p>
+      </div>
+      <div class="mini-card">
+        <h4>&#128065; Visibility</h4>
+        <p>The dashboard shows every service, device, and repo at a glance. Like a flight status board for your whole setup.</p>
+      </div>
+      <div class="mini-card">
+        <h4>&#128279; Device Juggling</h4>
+        <p>Tailscale connects everything. Access your hub from your phone, share with teammates, reach edge devices — all securely.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SECTION 2: QUICK START
+       ============================================================ -->
+  <div class="section" id="quickstart">
+    <h2><span class="section-icon">&#9889;</span> Quick Start</h2>
+
+    <p>You just want this working. No reading, no philosophy, just go. Here's the fastest path from zero to hub.</p>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">5-minute path</div>
+      If you already have Homebrew installed, you can be up and running in about 5 minutes. Just follow the checkboxes below in order.
+    </div>
+
+    <ul class="checklist" id="setupChecklist">
+      <li>
+        <input type="checkbox" data-step="1">
+        <div class="step-content">
+          <div class="step-title">1. Install Homebrew (if missing)</div>
+          <div class="step-desc">The package manager for macOS. Everything else installs through it.</div>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" data-step="2">
+        <div class="step-content">
+          <div class="step-title">2. Run the hub installer</div>
+          <div class="step-desc">This installs tmux, Docker, Ollama, Tailscale, Claude Code, and more.</div>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" data-step="3">
+        <div class="step-content">
+          <div class="step-title">3. Run the preflight check</div>
+          <div class="step-desc">Makes sure everything installed correctly and services are reachable.</div>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" data-step="4">
+        <div class="step-content">
+          <div class="step-title">4. Start Docker and Tailscale</div>
+          <div class="step-desc">These are GUI apps. Open them once so they run in the background.</div>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" data-step="5">
+        <div class="step-content">
+          <div class="step-title">5. Start Ollama</div>
+          <div class="step-desc">The local AI model server. It runs quietly in the background.</div>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" data-step="6">
+        <div class="step-content">
+          <div class="step-title">6. Launch the hub</div>
+          <div class="step-desc">This creates the full 7-window tmux session. You're in the airport now.</div>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" data-step="7">
+        <div class="step-content">
+          <div class="step-title">7. Open the web dashboard (optional)</div>
+          <div class="step-desc">A web UI you can view from any device on your network.</div>
+        </div>
+      </li>
+    </ul>
+
+    <h3>Commands for each step</h3>
+
+    <h4>Step 1: Homebrew</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre>
+    </div>
+
+    <h4>Step 2: Hub installer</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>~/hub/bin/hub-install.sh</code></pre>
+    </div>
+    <p>This runs <code>brew install</code> for: tmux, gitmux, git, gh, jq, node, watch, ollama, Docker, Tailscale, and Claude Code.</p>
+
+    <h4>Step 3: Preflight check</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>hub-check</code></pre>
+    </div>
+    <p>This checks every tool, service, auth token, and config file. Green checkmarks mean you're good. Red X's mean you have work to do.</p>
+
+    <h4>Step 4: Start Docker and Tailscale</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>open -a Docker
+open -a Tailscale</code></pre>
+    </div>
+
+    <h4>Step 5: Start Ollama</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>ollama serve</code></pre>
+    </div>
+
+    <h4>Step 6: Launch the hub</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>hub</code></pre>
+    </div>
+    <p>That's it. You're in. You should see the dashboard in window 1 with a big status board. Press <kbd>Ctrl</kbd>+<kbd>a</kbd> then <kbd>2</kbd> to jump to the Claude Code window.</p>
+
+    <h4>Step 7: Web dashboard (optional)</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>hub-dash</code></pre>
+    </div>
+    <p>Open <code>http://localhost:9090</code> in your browser. Or use your Mac's IP to access it from other devices.</p>
+  </div>
+
+  <!-- ============================================================
+       SECTION 3: HUB COMMANDS
+       ============================================================ -->
+  <div class="section" id="commands">
+    <h2><span class="section-icon">&#9000;</span> Hub Commands</h2>
+
+    <p>These are all the commands you get out of the box. They're shell aliases (shortcuts) defined in your <code>~/.zshrc</code> file. Think of them as speed dial buttons for the hub.</p>
+
+    <h3>Hub Commands</h3>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Command</th><th>What it does</th><th>Details</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>hub</td>
+          <td>Launch the full hub session</td>
+          <td>Creates all 7 tmux windows and attaches you. This is your main entry point.</td>
+        </tr>
+        <tr>
+          <td>hub-check</td>
+          <td>Run the preflight check</td>
+          <td>Validates all tools, services, and configs. Run this when something feels off.</td>
+        </tr>
+        <tr>
+          <td>hub-dash</td>
+          <td>Start the web dashboard</td>
+          <td>Launches the Python web server on port 9090. Access from any device on the network.</td>
+        </tr>
+        <tr>
+          <td>hub-install</td>
+          <td>Install all dependencies</td>
+          <td>Runs <code>brew install</code> for everything. Safe to re-run (it skips what's already installed).</td>
+        </tr>
+        <tr>
+          <td>dev</td>
+          <td>Quick dev session (iTerm2)</td>
+          <td>Opens a tmux session with iTerm2's control mode (<code>-CC</code>). Great for native tab/split support.</td>
+        </tr>
+        <tr>
+          <td>swarm</td>
+          <td>Start an agent swarm session</td>
+          <td>Creates a tmux session named "swarm" and launches Claude Code in it.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>tmux Aliases</h3>
+    <p>Shorter versions of common tmux commands. Because life is too short to type <code>tmux attach-session -t</code> every time.</p>
+
+    <table class="doc-table">
+      <thead>
+        <tr><th>Alias</th><th>Expands to</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>t</td><td>tmux</td><td><code>t ls</code> to list sessions</td></tr>
+        <tr><td>ta</td><td>tmux attach -t</td><td><code>ta hub</code> to reattach to hub</td></tr>
+        <tr><td>tl</td><td>tmux ls</td><td><code>tl</code> to see all sessions</td></tr>
+        <tr><td>tk</td><td>tmux kill-session -t</td><td><code>tk dev</code> to kill dev session</td></tr>
+        <tr><td>tn</td><td>tmux new -s</td><td><code>tn myproject</code> to create named session</td></tr>
+        <tr><td>devp</td><td>tmux -CC attach -t</td><td><code>devp hub</code> attach with iTerm2 control mode</td></tr>
+      </tbody>
+    </table>
+
+    <h3>tmux Keybindings Cheat Sheet</h3>
+    <p>The prefix key is <kbd>Ctrl</kbd>+<kbd>a</kbd> (not the default Ctrl+b &mdash; that's harder to reach). Press the prefix first, then the action key.</p>
+
+    <table class="doc-table">
+      <thead>
+        <tr><th>Keys</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ctrl+a |</td><td>Split pane vertically (side by side)</td></tr>
+        <tr><td>Ctrl+a -</td><td>Split pane horizontally (top and bottom)</td></tr>
+        <tr><td>Ctrl+a h/j/k/l</td><td>Navigate panes (vim-style: left/down/up/right)</td></tr>
+        <tr><td>Ctrl+a H/J/K/L</td><td>Resize panes (hold shift for bigger moves)</td></tr>
+        <tr><td>Ctrl+a 1-7</td><td>Jump to window by number</td></tr>
+        <tr><td>Ctrl+a Ctrl+h</td><td>Previous window</td></tr>
+        <tr><td>Ctrl+a Ctrl+l</td><td>Next window</td></tr>
+        <tr><td>Ctrl+a d</td><td>Detach from session (it keeps running)</td></tr>
+        <tr><td>Ctrl+a r</td><td>Reload tmux config</td></tr>
+        <tr><td>Ctrl+a Enter</td><td>Enter copy mode (scroll through history)</td></tr>
+        <tr><td>v (in copy mode)</td><td>Start selection</td></tr>
+        <tr><td>y (in copy mode)</td><td>Copy selection to clipboard</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Tip</div>
+      Mouse mode is on by default. You can click on panes to select them, scroll with your trackpad, and resize panes by dragging borders.
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SECTION 4: TMUX LAYOUT
+       ============================================================ -->
+  <div class="section" id="tmux">
+    <h2><span class="section-icon">&#9635;</span> tmux Layout Guide</h2>
+
+    <p>When you type <code>hub</code>, it creates a tmux session with 7 windows. Think of each window like a different desk in a control room. Each desk has a specific job.</p>
+
+    <h3>The 7 Windows</h3>
+    <div class="ascii-diagram">
+ &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+ &#9474;  1:dashboard  2:claude  3:git  4:services  5:network  6:logs  7:scratch  &#9474;
+ &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+
+ Window 1: DASHBOARD          Window 4: SERVICES (split into 2 panes)
+ &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+ &#9474;  hub-status.sh       &#9474;    &#9474;  Docker / services   &#9474;
+ &#9474;  (auto-refreshes)    &#9474;    &#9474;  monitor              &#9474;
+ &#9474;  every 10 seconds    &#9474;    &#9500;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9508;
+ &#9474;                      &#9474;    &#9474;  Ollama / local       &#9474;
+ &#9474;                      &#9474;    &#9474;  models               &#9474;
+ &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
+
+    <table class="doc-table">
+      <thead>
+        <tr><th>Window</th><th>Name</th><th>What it's for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>dashboard</td><td>Live status board. Shows system resources, services, network, git repos. Auto-refreshes every 10 seconds.</td></tr>
+        <tr><td>2</td><td>claude</td><td>Your main Claude Code agent. This is where you do the actual AI-assisted work.</td></tr>
+        <tr><td>3</td><td>git</td><td>Git operations. Check status, stage, commit, push, review PRs. Keep your git work separated from Claude.</td></tr>
+        <tr><td>4</td><td>services</td><td>Split into two panes. Top: Docker and service management. Bottom: Ollama and local model management.</td></tr>
+        <tr><td>5</td><td>network</td><td>Tailscale status, device monitoring, network diagnostics.</td></tr>
+        <tr><td>6</td><td>logs</td><td>Opens in <code>~/hub/logs</code>. Tail log files, debug issues, watch output.</td></tr>
+        <tr><td>7</td><td>scratch</td><td>Your "junk drawer" terminal. Quick commands, experiments, one-off scripts. No judgment here.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Commands for Each Window</h3>
+    <p>Here's what you can do in each window. Switch windows with <kbd>Ctrl</kbd>+<kbd>a</kbd>, <strong>release</strong>, then press the number.</p>
+
+    <div class="callout callout-info">
+      <div class="callout-title">Important: Two-step keys</div>
+      tmux keybindings are a <strong>two-step</strong> sequence. Press <kbd>Ctrl</kbd>+<kbd>a</kbd> together, <strong>let go of both keys</strong>, then press the next key. It's NOT all at once.
+    </div>
+
+    <h4>Window 1: Dashboard &mdash; <kbd>Ctrl+a</kbd> then <kbd>1</kbd></h4>
+    <p>Auto-refreshing status board. Just watch it. If you need to stop it: <kbd>Ctrl</kbd>+<kbd>c</kbd>, then restart with:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>watch -n 10 -c ~/hub/bin/hub-status.sh</code></pre>
+    </div>
+
+    <h4>Window 2: Claude Code &mdash; <kbd>Ctrl+a</kbd> then <kbd>2</kbd></h4>
+    <p>Your AI agent. Claude Code starts automatically. Common things to ask it:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>text</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Inside Claude Code, just type naturally:
+"Show me all open PRs"
+"Fix the bug in auth.ts and commit"
+"Create a new branch, implement JWT auth, open a PR"
+"Run the tests and fix any failures"
+"Explain what this codebase does"</code></pre>
+    </div>
+
+    <h4>Window 3: Git &amp; PRs &mdash; <kbd>Ctrl+a</kbd> then <kbd>3</kbd></h4>
+    <p>For manual git work. First <code>cd</code> into your project, then use these:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># First, go to your project
+cd ~/your-project
+
+# Basic git
+git status                        # what's changed?
+git log --oneline -10             # recent commits
+git diff                          # see changes
+git add . && git commit -m "msg"  # stage and commit
+git push                          # push to remote
+
+# GitHub PRs (via gh CLI)
+gh pr list                        # list open PRs
+gh pr view 42                     # view PR #42
+gh pr create                      # create a new PR
+gh pr checkout 42                 # checkout a PR locally
+gh pr merge 42                    # merge a PR
+gh pr review 42 --approve         # approve a PR
+
+# Branches
+git branch -a                     # list all branches
+git checkout -b new-feature       # create new branch
+git switch main                   # switch to main</code></pre>
+    </div>
+
+    <h4>Window 4: Services &mdash; <kbd>Ctrl+a</kbd> then <kbd>4</kbd></h4>
+    <p>Split into two panes (top = Docker, bottom = Ollama). Switch between panes: <kbd>Ctrl+a</kbd> then <kbd>j</kbd> (down) or <kbd>k</kbd> (up).</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># ── Top pane: Docker ──
+docker ps                                    # running containers
+docker ps -a                                 # all containers (including stopped)
+docker compose up -d                         # start services from docker-compose.yml
+docker compose down                          # stop services
+docker logs -f container_name                # follow logs
+docker stats                                 # live resource usage
+docker system prune                          # clean up unused stuff
+
+# ── Bottom pane: Ollama ──
+ollama list                                  # installed models
+ollama ps                                    # currently loaded models
+ollama run qwen3:30b-a3b                     # chat with a model
+ollama pull llama3.2                         # download a model
+ollama rm model_name                         # delete a model
+curl http://localhost:11434/api/tags | jq    # API: list models
+curl http://localhost:11434/api/generate \
+  -d '{"model":"qwen3:30b-a3b","prompt":"hello"}'  # API: generate</code></pre>
+    </div>
+
+    <h4>Window 5: Network &mdash; <kbd>Ctrl+a</kbd> then <kbd>5</kbd></h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Local network
+ipconfig getifaddr en0               # your Mac's local IP
+networksetup -getinfo Wi-Fi          # Wi-Fi details
+ping 8.8.8.8                         # test internet
+
+# Tailscale
+tailscale status                     # connected devices
+tailscale ip -4                      # your Tailscale IP
+tailscale ping device-name           # ping a device
+tailscale netcheck                   # connection diagnostics
+
+# See who's hitting your services
+lsof -i :11434                       # who's using Ollama port
+lsof -i :9090                        # who's using dashboard port</code></pre>
+    </div>
+
+    <h4>Window 6: Logs &mdash; <kbd>Ctrl+a</kbd> then <kbd>6</kbd></h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Opens in ~/hub/logs/
+ls -la                                # see available logs
+
+# Follow a log file (live updates)
+tail -f some-log-file.log
+
+# Docker container logs
+docker logs -f container_name
+
+# System logs
+log show --last 5m --predicate 'process == "ollama"'
+
+# Search logs
+grep "error" *.log</code></pre>
+    </div>
+
+    <h4>Window 7: Scratch &mdash; <kbd>Ctrl+a</kbd> then <kbd>7</kbd></h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Your junk drawer. Quick one-offs:
+hub-check                           # re-run preflight check
+hub-dash                            # start web dashboard on :9090
+ollama list                          # quick model check
+docker ps                            # quick container check
+gh pr list                           # quick PR check
+python3 -m http.server 8000          # quick file server
+curl -s http://localhost:11434/api/tags | jq  # test Ollama API</code></pre>
+    </div>
+
+    <h3>How to Navigate</h3>
+    <p>The fastest way: <kbd>Ctrl</kbd>+<kbd>a</kbd> (release) then the window number. For example, <kbd>Ctrl</kbd>+<kbd>a</kbd> (release) <kbd>2</kbd> takes you to Claude.</p>
+    <p>To go next/previous: <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Ctrl</kbd>+<kbd>l</kbd> (next) or <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Ctrl</kbd>+<kbd>h</kbd> (previous).</p>
+
+    <h3>Splitting Panes</h3>
+    <p>Any window can be split into multiple panes. Think of it like splitting a desk in half.</p>
+    <ul>
+      <li><kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>|</kbd> &mdash; Split side by side (vertical divider)</li>
+      <li><kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>-</kbd> &mdash; Split top and bottom (horizontal divider)</li>
+      <li>Navigate between panes: <kbd>Ctrl</kbd>+<kbd>a</kbd> then <kbd>h</kbd>/<kbd>j</kbd>/<kbd>k</kbd>/<kbd>l</kbd> (vim-style)</li>
+      <li>Resize panes: <kbd>Ctrl</kbd>+<kbd>a</kbd> then <kbd>H</kbd>/<kbd>J</kbd>/<kbd>K</kbd>/<kbd>L</kbd> (capital = resize)</li>
+    </ul>
+
+    <h3>iTerm2 Users: Control Mode</h3>
+    <div class="callout callout-info">
+      <div class="callout-title">iTerm2 tip</div>
+      If you use iTerm2, the hub automatically detects it and launches tmux in control mode (<code>-CC</code>). This turns every tmux window into a native iTerm2 tab, and panes become native splits. It looks and feels like a normal iTerm2 setup but with all the power of tmux underneath.
+    </div>
+    <p>To use control mode manually:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>tmux -CC attach -t hub</code></pre>
+    </div>
+
+    <h3>Dev Session (Lighter Layout)</h3>
+    <p>Don't need the full 7-window hub? The <code>start-dev.sh</code> script creates a lighter 4-window layout for project work:</p>
+    <div class="ascii-diagram">
+ start-dev.sh [project-name] [project-path]
+
+ Window 1: claude    &larr; Claude Code agent, focused on your project
+ Window 2: git       &larr; Git status and operations
+ Window 3: server    &larr; Run your dev server, watch output
+ Window 4: scratch   &larr; Quick one-offs</div>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Start a dev session for a project
+./start-dev.sh myproject ~/code/myproject
+
+# Or just use the alias (uses current dir)
+dev</code></pre>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SECTION 5: SERVICES
+       ============================================================ -->
+  <div class="section" id="services">
+    <h2><span class="section-icon">&#9881;</span> Services</h2>
+
+    <p>The hub relies on four main services. Think of them like the utilities in a building &mdash; electricity (Docker), the kitchen (Ollama), the phone system (Tailscale), and the smartest employee (Claude Code).</p>
+
+    <!-- DOCKER -->
+    <h3>&#128051; Docker</h3>
+    <p>Docker runs apps in containers (little isolated boxes). You use it for databases, web servers, dev tools &mdash; anything that needs its own environment without messing up your Mac.</p>
+
+    <h4>Start / Stop</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Start Docker (it's a GUI app on Mac)
+open -a Docker
+
+# Check if it's running
+docker info
+
+# See running containers
+docker ps
+
+# Stop all containers
+docker stop $(docker ps -q)
+
+# Nuclear option: stop Docker entirely
+osascript -e 'quit app "Docker"'</code></pre>
+    </div>
+
+    <div class="callout callout-info">
+      <div class="callout-title">Good to know</div>
+      Docker Desktop on Mac uses a lightweight Linux VM behind the scenes. It takes about 2GB of RAM when idle. If you're tight on memory, you can quit it when you don't need containers.
+    </div>
+
+    <!-- OLLAMA -->
+    <h3>&#129302; Ollama</h3>
+    <p>Ollama runs AI models locally on your Mac. No internet needed, no API costs, your data stays on your machine. With 96GB of RAM and an M3 Ultra, you can run some seriously capable models.</p>
+
+    <h4>Start / Stop</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Start the Ollama server
+ollama serve
+
+# In another terminal, pull a model
+ollama pull llama3.1
+ollama pull codellama
+ollama pull mistral
+
+# List your downloaded models
+ollama list
+
+# Chat with a model
+ollama run llama3.1
+
+# See what's loaded (API call)
+curl http://localhost:11434/api/tags | python3 -m json.tool</code></pre>
+    </div>
+
+    <p>Ollama runs on port <strong>11434</strong> by default. The hub status board checks this port to know if Ollama is alive.</p>
+
+    <!-- TAILSCALE -->
+    <h3>&#127760; Tailscale</h3>
+    <p>Tailscale creates a private network (called a mesh VPN) between all your devices. Imagine a secret tunnel system connecting your Mac, phone, Raspberry Pi, and your teammate's laptop &mdash; all encrypted, all peer-to-peer.</p>
+
+    <h4>Start / Stop</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Start Tailscale (GUI app)
+open -a Tailscale
+
+# Check status
+tailscale status
+
+# Get your Tailscale IP
+tailscale ip -4
+
+# See connected devices
+tailscale status --json | python3 -m json.tool
+
+# Share a port with your team (e.g., the dashboard)
+tailscale serve 9090</code></pre>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Why Tailscale?</div>
+      Normal networks are annoying. NAT, firewalls, dynamic IPs, port forwarding &mdash; it's all a headache. Tailscale makes every device directly reachable with a stable IP. Your phone can SSH into your Mac from a coffee shop. Your teammate can reach your dashboard from their house. It just works.
+    </div>
+
+    <!-- CLAUDE CODE -->
+    <h3>&#129504; Claude Code</h3>
+    <p>Claude Code is an AI coding agent that runs in your terminal. It can read files, write code, run commands, create git branches, and even spawn other agents. It's like having a very capable intern who never sleeps and never complains about code reviews.</p>
+
+    <h4>Basic Usage</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Start Claude Code
+claude
+
+# Start in a specific directory
+cd ~/myproject && claude
+
+# Check version
+claude --version</code></pre>
+    </div>
+
+    <h4>Model Strategy</h4>
+    <p>Claude comes in three sizes, like T-shirts. Use the right one for the job:</p>
+
+    <table class="doc-table">
+      <thead>
+        <tr><th>Model</th><th>Role</th><th>Best for</th><th>Cost</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-purple">Opus</span></td>
+          <td>The Architect</td>
+          <td>Complex design decisions, tricky debugging, system architecture</td>
+          <td>$$$</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">Sonnet</span></td>
+          <td>The Builder</td>
+          <td>Writing code, implementing features, refactoring, most daily work</td>
+          <td>$$</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">Haiku</span></td>
+          <td>The Worker</td>
+          <td>Quick edits, formatting, simple questions, bulk operations</td>
+          <td>$</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Think of it like a restaurant kitchen. Opus is the head chef who designs the menu. Sonnet is the line cook who makes the dishes. Haiku is the prep cook who chops the onions.</p>
+  </div>
+
+  <!-- ============================================================
+       SECTION 6: WEB DASHBOARD
+       ============================================================ -->
+  <div class="section" id="dashboard">
+    <h2><span class="section-icon">&#9673;</span> Web Dashboard</h2>
+
+    <p>The web dashboard is a live status page you can open in any browser. It's the "flight departures board" for your hub &mdash; shows every service, device, and repo at a glance.</p>
+
+    <h3>How to Start</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Start the dashboard
+hub-dash
+
+# Or directly:
+python3 ~/hub/dashboard/server.py</code></pre>
+    </div>
+    <p>It starts a Python web server on port <strong>9090</strong>.</p>
+
+    <h3>How to Access</h3>
+    <table class="doc-table">
+      <thead>
+        <tr><th>From</th><th>URL</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Same Mac</td><td><code>http://localhost:9090</code></td></tr>
+        <tr><td>Same WiFi</td><td><code>http://&lt;mac-local-ip&gt;:9090</code></td></tr>
+        <tr><td>Tailscale</td><td><code>http://&lt;mac-tailscale-ip&gt;:9090</code></td></tr>
+      </tbody>
+    </table>
+    <p>Not sure what your IP is? Run <code>ipconfig getifaddr en0</code> for local, or <code>tailscale ip -4</code> for Tailscale.</p>
+
+    <h3>What it Shows</h3>
+    <p>The dashboard auto-refreshes every 10 seconds and displays:</p>
+    <ul>
+      <li><strong>System stats</strong> &mdash; CPU usage, memory (out of 96GB), disk space, uptime</li>
+      <li><strong>Services</strong> &mdash; Docker (how many containers), Ollama (how many models), Tailscale (connected?), Claude Code (running?)</li>
+      <li><strong>Network</strong> &mdash; Local IP, Tailscale IP, all connected devices with online status</li>
+      <li><strong>Git repos</strong> &mdash; Name, current branch, number of uncommitted changes</li>
+      <li><strong>tmux sessions</strong> &mdash; All active sessions</li>
+      <li><strong>Quick reference</strong> &mdash; Common commands and keybindings</li>
+    </ul>
+
+    <h3>API Endpoint</h3>
+    <p>The dashboard also exposes a JSON API. You can hit it from scripts, other tools, or monitoring systems:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Get the full status as JSON
+curl http://localhost:9090/api/status | python3 -m json.tool</code></pre>
+    </div>
+    <p>This returns everything: system stats, service statuses, device list, repo info, and tmux sessions. Handy for building your own integrations.</p>
+  </div>
+
+  <!-- ============================================================
+       SECTION 7: EDGE DEVICES
+       ============================================================ -->
+  <div class="section" id="edge">
+    <h2><span class="section-icon">&#128225;</span> Edge Devices</h2>
+
+    <p>Edge devices are any computer or gadget that lives "out there" &mdash; not on your desk, but still part of your network. Phones, Raspberry Pis, Jetson Nanos, security cameras, sensors. Your Mac Studio is the brain; these are the hands and eyes.</p>
+
+    <h3>Connecting via Tailscale</h3>
+    <p>Every device connects to your hub through Tailscale. Once connected, they can talk to each other as if they're on the same local network &mdash; even if one is at home and the other is at a coffee shop.</p>
+
+    <h4>Raspberry Pi</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash — on the Pi</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Install Tailscale
+curl -fsSL https://tailscale.com/install.sh | sh
+
+# Connect to your network
+sudo tailscale up
+
+# Verify connection
+tailscale status
+
+# Now you can SSH from your Mac:
+# ssh pi@&lt;pi-tailscale-ip&gt;</code></pre>
+    </div>
+
+    <h4>iPhone / Android</h4>
+    <ol>
+      <li>Install the Tailscale app from the App Store / Play Store</li>
+      <li>Sign in with the same account you use on your Mac</li>
+      <li>Toggle the VPN on</li>
+      <li>Now you can access <code>http://&lt;mac-tailscale-ip&gt;:9090</code> from your phone's browser to view the dashboard</li>
+    </ol>
+
+    <h4>Jetson Nano</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash — on the Jetson</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Install Tailscale (same as any Linux)
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up
+
+# Run inference on the edge, report back to hub
+# The Nano handles the ML, the Mac stores the results</code></pre>
+    </div>
+
+    <h4>IP Cameras</h4>
+    <p>Many IP cameras can't run Tailscale directly. Instead, put a Raspberry Pi on the same network as the camera, install Tailscale on the Pi, and use the Pi as a bridge. The Pi grabs the camera's RTSP stream and forwards it to your hub.</p>
+
+    <h3>Use Cases</h3>
+    <div class="card-grid">
+      <div class="mini-card">
+        <h4>&#128247; Monitoring</h4>
+        <p>Camera feeds piped through Pis. View from your Mac or phone via Tailscale. Store recordings centrally.</p>
+      </div>
+      <div class="mini-card">
+        <h4>&#129302; Edge Inference</h4>
+        <p>Run lightweight models on Jetson Nanos for real-time detection. Send results to your Mac for aggregation.</p>
+      </div>
+      <div class="mini-card">
+        <h4>&#128200; Data Collection</h4>
+        <p>Sensors on Pis send data to your hub. Your Mac processes, stores, and visualizes it. No cloud needed.</p>
+      </div>
+      <div class="mini-card">
+        <h4>&#128241; Mobile Access</h4>
+        <p>Check your hub dashboard from your phone anywhere in the world. Tailscale makes it feel like you're on the same WiFi.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SECTION 8: TEAM WORKFLOW
+       ============================================================ -->
+  <div class="section" id="team">
+    <h2><span class="section-icon">&#128101;</span> Team Workflow</h2>
+
+    <p>Your hub isn't just for you. Team members can connect to it, share sessions, and collaborate in real time. Think of it like a shared control room &mdash; everyone can see the same screens.</p>
+
+    <h3>How Team Members Connect</h3>
+    <ol>
+      <li>They install Tailscale and join your network (you invite them from the Tailscale admin console)</li>
+      <li>They SSH into your Mac Studio using the Tailscale IP</li>
+      <li>They attach to a shared tmux session</li>
+    </ol>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>bash — teammate's machine</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># SSH into the hub
+ssh youruser@100.x.x.x
+
+# Attach to the same tmux session (shared view!)
+tmux attach -t hub
+
+# Or view the dashboard from their browser
+open http://100.x.x.x:9090</code></pre>
+    </div>
+
+    <h3>Shared tmux Sessions</h3>
+    <p>When two people attach to the same tmux session, they see the exact same thing. It's like pair programming but with zero screen sharing lag. You can also create separate sessions for parallel work:</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Create a session for a specific task
+tn feature-auth    # teammate works on auth
+tn feature-ui      # you work on UI
+
+# List all active sessions
+tl</code></pre>
+    </div>
+
+    <h3>Git Workflow</h3>
+    <p>Claude Code can manage your git workflow end to end. Here's the pattern that works well with teams:</p>
+    <ol>
+      <li>Create a branch for the feature/fix</li>
+      <li>Let Claude Code do the work in the <code>claude</code> window</li>
+      <li>Review changes in the <code>git</code> window</li>
+      <li>Claude Code can create the PR directly using the GitHub CLI (<code>gh</code>)</li>
+      <li>Team reviews the PR in GitHub</li>
+    </ol>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># In the Claude window, you might say:
+# "Create a new branch called fix-login-bug, fix the login
+#  validation issue, and create a PR with a good description."
+#
+# Claude Code will:
+# 1. git checkout -b fix-login-bug
+# 2. Edit the files
+# 3. git add, git commit
+# 4. gh pr create --title "Fix login validation" --body "..."</code></pre>
+    </div>
+
+    <h3>Communication Patterns</h3>
+    <p>With the hub setup, teams typically work like this:</p>
+    <ul>
+      <li><strong>Synchronous</strong> &mdash; Both in the same tmux session, pair programming. One types, both see it.</li>
+      <li><strong>Asynchronous</strong> &mdash; Leave Claude Code running a task. Teammate checks dashboard later to see status. Review PRs when ready.</li>
+      <li><strong>Hybrid</strong> &mdash; Quick Slack/Discord message: "check window 3, I left you something." Teammate SSHs in and sees it.</li>
+    </ul>
+  </div>
+
+  <!-- ============================================================
+       SECTION 9: AGENT SWARM
+       ============================================================ -->
+  <div class="section" id="swarm">
+    <h2><span class="section-icon">&#128029;</span> Agent Swarm Guide</h2>
+
+    <p>An agent swarm is when you ask Claude Code to split work across multiple agents. Instead of one agent doing everything sequentially, you get a team of specialists working in parallel. It's like having an entire dev team instead of one developer.</p>
+
+    <h3>What is a Swarm?</h3>
+    <p>Normally, Claude Code is one agent in one terminal. A swarm means multiple Claude Code instances running at the same time, each in its own tmux pane or window, each working on a different piece of the puzzle.</p>
+
+    <div class="callout callout-info">
+      <div class="callout-title">How it works</div>
+      You tell the "lead" agent what you want. It plans the work, splits it into subtasks, and spawns helper agents for each one. Each helper works independently, then the lead combines the results. Like an orchestra conductor directing different sections.
+    </div>
+
+    <h3>Starting a Swarm</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Quick start with the swarm alias
+swarm</code></pre>
+    </div>
+
+    <h3>Model Cost Strategy</h3>
+    <p>Not every task needs the most powerful (and expensive) model. Use the right tool for the job:</p>
+
+    <div class="ascii-diagram">
+ Cost Strategy:
+
+ &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+ &#9474;                                             &#9474;
+ &#9474;   OPUS (Architect)     $$$$                  &#9474;
+ &#9474;   Plans the work, makes big decisions        &#9474;
+ &#9474;                                             &#9474;
+ &#9474;       &#9474;                                      &#9474;
+ &#9474;       &#9474; delegates to                          &#9474;
+ &#9474;       v                                      &#9474;
+ &#9474;                                             &#9474;
+ &#9474;   SONNET (Builder)     $$                    &#9474;
+ &#9474;   Writes the code, implements features       &#9474;
+ &#9474;                                             &#9474;
+ &#9474;       &#9474;                                      &#9474;
+ &#9474;       &#9474; delegates to                          &#9474;
+ &#9474;       v                                      &#9474;
+ &#9474;                                             &#9474;
+ &#9474;   HAIKU (Worker)       $                     &#9474;
+ &#9474;   Tests, formats, repetitive tasks           &#9474;
+ &#9474;                                             &#9474;
+ &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
+
+    <h3>Example Prompts</h3>
+
+    <h4>Full-stack feature</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>prompt</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>Build a user authentication system. Split it into:
+1. Backend API routes (auth, tokens, middleware)
+2. Database schema and migrations
+3. Frontend login/signup components
+4. Tests for all of the above
+
+Use subagents for each piece. Work in parallel where possible.</code></pre>
+    </div>
+
+    <h4>Codebase refactor</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>prompt</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>Refactor the src/ directory:
+- Agent 1: Convert all class components to functional components
+- Agent 2: Update all imports to use the new path aliases
+- Agent 3: Add TypeScript types to all untyped functions
+- Agent 4: Write missing tests
+
+Don't break anything. Run the test suite when done.</code></pre>
+    </div>
+
+    <h4>Bug investigation</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>prompt</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>Users are reporting slow page loads. Investigate:
+- Agent 1: Profile the API endpoints, find slow queries
+- Agent 2: Check the frontend bundle size and loading waterfall
+- Agent 3: Review recent commits for performance regressions
+
+Report findings and suggest fixes.</code></pre>
+    </div>
+
+    <h3>Best Practices</h3>
+    <ul>
+      <li><strong>Be specific about boundaries.</strong> Tell each agent exactly which files or directories to work in. "Agent 1 works in <code>src/api/</code>, Agent 2 works in <code>src/ui/</code>." This prevents merge conflicts.</li>
+      <li><strong>Use Sonnet for most work.</strong> Only escalate to Opus when you need architectural decisions or complex debugging. Use Haiku for formatting, linting, and simple edits.</li>
+      <li><strong>Check in after each phase.</strong> Don't let agents run for 30 minutes without reviewing. Check their output, correct course if needed.</li>
+      <li><strong>Keep a scratch window open.</strong> Window 7 is your friend. Use it to verify what agents are doing &mdash; check git status, run tests, look at files.</li>
+    </ul>
+  </div>
+
+  <!-- ============================================================
+       SECTION 10: TROUBLESHOOTING
+       ============================================================ -->
+  <div class="section" id="troubleshoot">
+    <h2><span class="section-icon">&#128295;</span> Troubleshooting</h2>
+
+    <p>Something broke? Don't panic. The airport has emergency procedures. Here are the most common issues and how to fix them.</p>
+
+    <h3>Step Zero: Run the Preflight Check</h3>
+    <p>Before debugging anything specific, run this. It checks everything at once:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>hub-check</code></pre>
+    </div>
+    <p>Green checkmarks = good. Red X = problem. Yellow warning = works but not ideal.</p>
+
+    <h3>"Service Won't Start" Checklist</h3>
+    <div class="callout callout-warn">
+      <div class="callout-title">Docker won't start?</div>
+      <ol>
+        <li>Is the Docker app actually open? <code>open -a Docker</code></li>
+        <li>Wait 30 seconds. Docker is slow to start on Mac.</li>
+        <li>Check: <code>docker info</code>. If it says "Cannot connect," Docker Desktop isn't fully started yet.</li>
+        <li>Still stuck? Quit Docker, reopen it. Sometimes it just needs a restart.</li>
+      </ol>
+    </div>
+
+    <div class="callout callout-warn">
+      <div class="callout-title">Ollama won't start?</div>
+      <ol>
+        <li>Is something else using port 11434? <code>lsof -i :11434</code></li>
+        <li>Try: <code>ollama serve</code> in a terminal and read the error message.</li>
+        <li>Kill and restart: <code>pkill ollama && ollama serve</code></li>
+      </ol>
+    </div>
+
+    <div class="callout callout-warn">
+      <div class="callout-title">Tailscale won't connect?</div>
+      <ol>
+        <li>Is the Tailscale app open? <code>open -a Tailscale</code></li>
+        <li>Check: <code>tailscale status</code>. Look for errors.</li>
+        <li>Log in again: <code>tailscale login</code></li>
+        <li>Check your network. Tailscale needs internet to coordinate (but traffic flows peer-to-peer after that).</li>
+      </ol>
+    </div>
+
+    <h3>"Can't Connect From Device" Checklist</h3>
+    <ol>
+      <li>Is the device on Tailscale? Check <code>tailscale status</code> on both machines.</li>
+      <li>Can you ping the hub? <code>ping &lt;hub-tailscale-ip&gt;</code></li>
+      <li>Is the service running on the hub? Check the dashboard or run <code>hub-check</code>.</li>
+      <li>Is the port accessible? The dashboard runs on 9090. <code>curl http://&lt;hub-ip&gt;:9090</code></li>
+      <li>Firewall blocking? macOS sometimes blocks incoming connections. Check System Settings > Network > Firewall.</li>
+    </ol>
+
+    <h3>How to Reset Everything</h3>
+    <p>The nuclear option. When nothing else works, tear it all down and rebuild:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># Kill all tmux sessions
+tmux kill-server
+
+# Stop all Docker containers
+docker stop $(docker ps -q) 2>/dev/null
+
+# Kill Ollama
+pkill ollama
+
+# Now start fresh
+hub</code></pre>
+    </div>
+
+    <h3>Logs Location</h3>
+    <table class="doc-table">
+      <thead>
+        <tr><th>What</th><th>Where</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Hub logs</td><td><code>~/hub/logs/</code></td></tr>
+        <tr><td>Docker logs</td><td><code>docker logs &lt;container-name&gt;</code></td></tr>
+        <tr><td>Ollama logs</td><td>The terminal where you ran <code>ollama serve</code></td></tr>
+        <tr><td>Tailscale logs</td><td><code>tailscale bugreport</code></td></tr>
+        <tr><td>tmux history</td><td>Scroll up in any pane (mouse or <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Enter</kbd> then scroll)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============================================================
+       SECTION 11: REFERENCE
+       ============================================================ -->
+  <div class="section" id="reference">
+    <h2><span class="section-icon">&#128218;</span> Reference</h2>
+
+    <h3>File Paths</h3>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Path</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>~/hub/bin/hub-start.sh</td><td>Creates the 7-window tmux hub session</td></tr>
+        <tr><td>~/hub/bin/hub-status.sh</td><td>Terminal dashboard (run by <code>watch</code> in window 1)</td></tr>
+        <tr><td>~/hub/bin/hub-preflight.sh</td><td>Validates all tools, services, auth, and configs</td></tr>
+        <tr><td>~/hub/bin/hub-install.sh</td><td>Installs all dependencies via Homebrew + npm</td></tr>
+        <tr><td>~/hub/dashboard/server.py</td><td>Web dashboard server (Python, port 9090)</td></tr>
+        <tr><td>~/hub/logs/</td><td>Hub log files directory</td></tr>
+        <tr><td>~/hub/config/services.json</td><td>Hub services configuration (optional)</td></tr>
+        <tr><td>~/.tmux.conf</td><td>tmux configuration (prefix, keybindings, theme, plugins)</td></tr>
+        <tr><td>~/.zshrc</td><td>Shell aliases and PATH setup for hub commands</td></tr>
+        <tr><td>~/start-dev.sh</td><td>Lightweight 4-window dev session launcher</td></tr>
+        <tr><td>~/.claude/settings.json</td><td>Claude Code settings</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Port Numbers</h3>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Port</th><th>Service</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>9090</td><td>Hub Web Dashboard</td><td>Python HTTP server, accessible from LAN and Tailscale</td></tr>
+        <tr><td>11434</td><td>Ollama API</td><td>Local AI model server. <code>curl http://localhost:11434/api/tags</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Environment Variables</h3>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Variable</th><th>Purpose</th><th>Set in</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PATH</td><td>Includes <code>~/hub/bin</code>, <code>~/.local/bin</code>, <code>/opt/homebrew/bin</code></td><td>~/.zshrc</td></tr>
+        <tr><td>TERM_PROGRAM</td><td>Detected by hub-start.sh to enable iTerm2 control mode</td><td>Automatic (set by terminal app)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>tmux Plugins</h3>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Plugin</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>tpm</td><td>tmux Plugin Manager. Manages the other plugins.</td></tr>
+        <tr><td>tmux-sensible</td><td>Sensible default settings everyone agrees on.</td></tr>
+        <tr><td>tmux-resurrect</td><td>Save and restore tmux sessions across reboots. Your layout survives a restart.</td></tr>
+        <tr><td>tmux-continuum</td><td>Auto-saves your session every 15 minutes. Works with resurrect.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Useful One-Liners</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code># What's using the most CPU right now?
+top -l 1 -o cpu | head -20
+
+# How much RAM is free?
+memory_pressure
+
+# What's listening on what port?
+lsof -iTCP -sTCP:LISTEN -n -P
+
+# Which Ollama models do I have?
+ollama list
+
+# What's my Tailscale IP?
+tailscale ip -4
+
+# How many Docker containers are running?
+docker ps -q | wc -l
+
+# What branches exist in a repo?
+git -C ~/shrirama branch -a
+
+# Kill all tmux sessions (careful!)
+tmux kill-server
+
+# Re-source your shell config after editing .zshrc
+source ~/.zshrc</code></pre>
+    </div>
+  </div>
+
+</main>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+(function() {
+  // ── COPY BUTTON ──────────────────────────────────────────────
+  window.copyCode = function(btn) {
+    var pre = btn.closest('.code-block').querySelector('pre');
+    var text = pre.textContent;
+    navigator.clipboard.writeText(text).then(function() {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    }).catch(function() {
+      // Fallback for file:// protocol where clipboard API may not work
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch(e) {
+        btn.textContent = 'Failed';
+        setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+      }
+      document.body.removeChild(ta);
+    });
+  };
+
+  // ── SIDEBAR ACTIVE STATE ON SCROLL ───────────────────────────
+  var sections = document.querySelectorAll('.section');
+  var navLinks = document.querySelectorAll('.sidebar-nav a');
+
+  function updateActiveNav() {
+    var scrollPos = window.scrollY + 100;
+    var current = '';
+
+    sections.forEach(function(section) {
+      if (section.offsetTop <= scrollPos) {
+        current = section.id;
+      }
+    });
+
+    navLinks.forEach(function(link) {
+      link.classList.remove('active');
+      if (link.getAttribute('data-section') === current) {
+        link.classList.add('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateActiveNav);
+  updateActiveNav();
+
+  // Close sidebar on nav click (mobile)
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function() {
+      if (window.innerWidth <= 900) {
+        closeSidebar();
+      }
+    });
+  });
+
+  // ── MOBILE SIDEBAR TOGGLE ───────────────────────────────────
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.querySelector('.overlay');
+
+  window.toggleSidebar = function() {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  };
+
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  }
+
+  // ── SEARCH / FILTER ─────────────────────────────────────────
+  var searchInput = document.getElementById('searchInput');
+  var searchInfo = document.getElementById('searchInfo');
+
+  searchInput.addEventListener('input', function() {
+    var query = this.value.toLowerCase().trim();
+
+    if (!query) {
+      sections.forEach(function(s) { s.classList.remove('hidden-by-search'); });
+      searchInfo.style.display = 'none';
+      return;
+    }
+
+    var visible = 0;
+    sections.forEach(function(section) {
+      var text = section.textContent.toLowerCase();
+      if (text.indexOf(query) !== -1) {
+        section.classList.remove('hidden-by-search');
+        visible++;
+      } else {
+        section.classList.add('hidden-by-search');
+      }
+    });
+
+    searchInfo.style.display = 'block';
+    searchInfo.textContent = visible + ' section' + (visible !== 1 ? 's' : '') + ' matching "' + this.value + '"';
+  });
+
+  // ── PROGRESS TRACKER ────────────────────────────────────────
+  var checklist = document.getElementById('setupChecklist');
+  var progressBar = document.getElementById('progressBar');
+  var progressText = document.getElementById('progressText');
+  var totalSteps = checklist.querySelectorAll('input[type="checkbox"]').length;
+
+  function updateProgress() {
+    var checked = checklist.querySelectorAll('input[type="checkbox"]:checked').length;
+    var pct = Math.round((checked / totalSteps) * 100);
+    progressBar.style.width = pct + '%';
+
+    if (checked === 0) {
+      progressText.textContent = 'Check off steps in Quick Start to track your progress';
+    } else if (checked === totalSteps) {
+      progressText.textContent = 'All done! Your hub is fully set up.';
+      progressBar.style.background = 'linear-gradient(90deg, #a6e3a1, #89dceb)';
+    } else {
+      progressText.textContent = checked + ' of ' + totalSteps + ' steps complete (' + pct + '%)';
+    }
+
+    // Save to localStorage
+    var states = [];
+    checklist.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
+      states.push(cb.checked);
+    });
+    try { localStorage.setItem('hub-setup-progress', JSON.stringify(states)); } catch(e) {}
+  }
+
+  // Load saved state
+  try {
+    var saved = JSON.parse(localStorage.getItem('hub-setup-progress'));
+    if (saved && saved.length === totalSteps) {
+      checklist.querySelectorAll('input[type="checkbox"]').forEach(function(cb, i) {
+        cb.checked = saved[i];
+      });
+    }
+  } catch(e) {}
+
+  checklist.addEventListener('change', updateProgress);
+  updateProgress();
+
+  // ── KEYBOARD SHORTCUT: / to focus search ────────────────────
+  document.addEventListener('keydown', function(e) {
+    if (e.key === '/' && document.activeElement !== searchInput) {
+      e.preventDefault();
+      searchInput.focus();
+    }
+    if (e.key === 'Escape' && document.activeElement === searchInput) {
+      searchInput.value = '';
+      searchInput.dispatchEvent(new Event('input'));
+      searchInput.blur();
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
