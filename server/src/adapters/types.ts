@@ -15,6 +15,46 @@ export interface AdapterExecuteContext {
   context: Record<string, unknown>;
 }
 
+/**
+ * OpenAI adapter configuration
+ */
+export interface OpenAIAdapterConfig {
+  apiKey?: string;
+  baseUrl?: string;
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+}
+
+/**
+ * Anthropic adapter configuration
+ */
+export interface AnthropicAdapterConfig {
+  apiKey?: string;
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+}
+
+/**
+ * OpenRouter adapter configuration
+ */
+export interface OpenRouterAdapterConfig {
+  apiKey?: string;
+  model?: string;
+  httpReferer?: string;
+  xTitle?: string;
+}
+
+/**
+ * LiteLLM adapter configuration
+ */
+export interface LiteLLMAdapterConfig {
+  baseUrl: string;
+  model?: string;
+  apiKey?: string;
+}
+
 export interface AdapterExecuteResult {
   output?: string;
   inputTokens?: number;

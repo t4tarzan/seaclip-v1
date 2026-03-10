@@ -68,9 +68,20 @@ git clone https://github.com/your-org/seaclip.git
 cd seaclip
 pnpm install
 pnpm build
+
+# Set up CLI globally (one-time)
+pnpm setup
+source ~/.bashrc
+cd cli && pnpm link --global && cd ..
+
+# Run onboarding (optional)
 seaclip onboard
-seaclip run
+
+# Start dev server + UI
+pnpm dev
 ```
+
+The server runs at `http://localhost:3001` (API) and UI at `http://localhost:3100` (Vite dev server with proxy to API).
 
 ### Option C — Docker Compose
 

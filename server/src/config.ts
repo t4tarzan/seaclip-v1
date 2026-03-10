@@ -7,6 +7,10 @@ export interface Config {
   databaseUrl: string;
   serveUi: boolean;
   ollamaBaseUrl: string;
+  openaiApiKey: string;
+  anthropicApiKey: string;
+  openrouterApiKey: string;
+  litellmBaseUrl: string;
   telegramBotToken: string;
   heartbeatSchedulerEnabled: boolean;
   heartbeatSchedulerIntervalMs: number;
@@ -58,6 +62,10 @@ export function loadConfig(): Config {
       "pglite://.seaclip/data",
     serveUi: parseBool(process.env.SERVE_UI, false),
     ollamaBaseUrl: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434",
+    openaiApiKey: process.env.OPENAI_API_KEY ?? "",
+    anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? "",
+    openrouterApiKey: process.env.OPENROUTER_API_KEY ?? "",
+    litellmBaseUrl: process.env.LITELLM_BASE_URL ?? "",
     telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
     heartbeatSchedulerEnabled: parseBool(
       process.env.HEARTBEAT_SCHEDULER_ENABLED,

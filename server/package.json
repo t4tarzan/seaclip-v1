@@ -8,6 +8,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
     "@electric-sql/pglite": "^0.3.15",
     "@seaclip/adapter-utils": "workspace:*",
     "@seaclip/db": "workspace:*",
@@ -18,9 +19,11 @@
     "drizzle-orm": "^0.39.0",
     "express": "^5.0.0",
     "jsonwebtoken": "^9.0.0",
+    "openai": "^4.67.0",
     "pino": "^9.0.0",
     "pino-pretty": "^11.0.0",
     "postgres": "^3.4.5",
+    "tiktoken": "^1.0.17",
     "ws": "^8.18.0",
     "zod": "^3.24.0"
   },
