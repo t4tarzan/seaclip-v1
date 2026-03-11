@@ -1,6 +1,7 @@
 import { seaclawAdapter } from "./seaclaw/index.js";
 import { ollamaLocalAdapter } from "./ollama-local/index.js";
 import { agentZeroAdapter } from "./agent-zero/index.js";
+import { externalAgentAdapter } from "./external-agent/index.js";
 import { telegramBridgeAdapter } from "./telegram-bridge/index.js";
 import { processAdapter } from "./process/index.js";
 import { httpAdapter } from "./http/index.js";
@@ -20,6 +21,7 @@ const adaptersByType = new Map<string, ServerAdapterModule>([
   ["openrouter", openrouterAdapter],
   ["litellm", litellmAdapter],
   ["agent_zero", agentZeroAdapter],
+  ["external_agent", externalAgentAdapter],
   ["telegram_bridge", telegramBridgeAdapter],
   ["process", processAdapter],
   ["http", httpAdapter],

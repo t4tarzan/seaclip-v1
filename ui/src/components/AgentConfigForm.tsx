@@ -22,6 +22,7 @@ const ADAPTER_TYPES: { value: AdapterType; label: string; description: string }[
   { value: "anthropic", label: "Anthropic", description: "Claude 3.5 Sonnet, Haiku" },
   { value: "gemini", label: "Google Gemini", description: "Gemini 2.0 Flash, Pro" },
   { value: "ollama", label: "Ollama (Local)", description: "Local models via Ollama" },
+  { value: "external_agent", label: "External Agent", description: "Agent Zero, OpenClaw, or any autonomous agent" },
   { value: "custom", label: "Custom", description: "Custom adapter endpoint" },
 ];
 
@@ -44,6 +45,13 @@ const ADAPTER_CONFIG_FIELDS: Record<AdapterType, { key: string; label: string; p
   ollama: [
     { key: "model", label: "Model", placeholder: "llama3.2" },
     { key: "baseUrl", label: "Base URL", placeholder: "http://localhost:11434" },
+  ],
+  external_agent: [
+    { key: "baseUrl", label: "Agent URL", placeholder: "http://187.77.185.88:50001" },
+    { key: "apiKey", label: "API Key", placeholder: "your-api-key", type: "password" },
+    { key: "protocol", label: "Protocol", placeholder: "https" },
+    { key: "authType", label: "Auth Type", placeholder: "api-key" },
+    { key: "messageFormat", label: "Message Format", placeholder: "agent-zero" },
   ],
   custom: [
     { key: "endpoint", label: "Endpoint URL", placeholder: "https://..." },
