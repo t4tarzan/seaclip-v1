@@ -76,7 +76,7 @@ export function AgentConfigForm({
     initial.budgetCents != null ? String(initial.budgetCents / 100) : "10"
   );
   const [configFields, setConfigFields] = useState<Record<string, string>>(() => {
-    const config = initial.config ?? {};
+    const config = (initial as any).adapterConfig ?? initial.config ?? {};
     return Object.fromEntries(
       Object.entries(config).map(([k, v]) => [k, String(v)])
     );
@@ -86,9 +86,9 @@ export function AgentConfigForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const config: Record<string, unknown> = {};
+    const adapterConfig: Record<string, unknown> = {};
     currentFields.forEach(({ key }) => {
-      if (configFields[key]) config[key] = configFields[key];
+      if (configFields[key]) adapterConfig[key] = configFields[key];
     });
 
     onSubmit({
@@ -97,8 +97,8 @@ export function AgentConfigForm({
       title,
       adapterType,
       budgetCents: Math.round(parseFloat(budgetCents || "0") * 100),
-      config,
-    });
+      adapterConfig,
+    } as any);
   };
 
   const updateConfigField = (key: string, value: string) => {

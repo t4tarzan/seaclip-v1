@@ -127,52 +127,93 @@ export async function invokeAgent(
   try {
     const adapter = getServerAdapter(agent.adapterType);
 
-    const execContext = {
-      agentId: agent.id,
-      companyId: agent.companyId,
-      runId,
-      adapterConfig: agent.adapterConfig,
-      systemPrompt: agent.systemPrompt,
-      model: agent.model,
-      timeoutMs: agent.timeoutMs,
-      triggeredBy: heartbeatCtx.triggeredBy,
-      manual: heartbeatCtx.manual,
-      context: heartbeatCtx.context ?? {},
-    };
+    // For external agents and non-manual heartbeats, use health check instead of full execution
+    const isHealthCheckOnly = agent.adapterType === "external_agent" && !heartbeatCtx.manual;
 
-    const adapterResult = await adapter.execute(execContext);
+    if (isHealthCheckOnly) {
+      // Use testEnvironment for lightweight health check
+      logger.debug({ agentId: agent.id }, "Running health check for external agent");
+      const healthResult = await adapter.testEnvironment(agent.adapterConfig);
+      
+      const finishedAt = new Date().toISOString();
+      const durationMs = Date.now() - startMs;
 
-    const finishedAt = new Date().toISOString();
-    const durationMs = Date.now() - startMs;
+      if (healthResult.ok) {
+        result = {
+          agentId: agent.id,
+          companyId: agent.companyId,
+          runId,
+          success: true,
+          output: `Health check passed: ${healthResult.message}`,
+          inputTokens: 0,
+          outputTokens: 0,
+          costUsd: 0,
+          durationMs,
+          triggeredBy: heartbeatCtx.triggeredBy,
+          startedAt,
+          finishedAt,
+          adapterType: agent.adapterType,
+          metadata: { healthCheck: true, ...healthResult },
+        };
 
-    result = {
-      agentId: agent.id,
-      companyId: agent.companyId,
-      runId,
-      success: true,
-      output: adapterResult.output,
-      inputTokens: adapterResult.inputTokens ?? 0,
-      outputTokens: adapterResult.outputTokens ?? 0,
-      costUsd: adapterResult.costUsd ?? 0,
-      durationMs,
-      triggeredBy: heartbeatCtx.triggeredBy,
-      startedAt,
-      finishedAt,
-      adapterType: agent.adapterType,
-      metadata: adapterResult.metadata ?? {},
-    };
+        await agentsService.recordHeartbeat(agent.id, 0);
 
-    await agentsService.recordHeartbeat(agent.id, result.costUsd);
-
-    logger.info(
-      {
+        logger.info(
+          { agentId: agent.id, runId, durationMs },
+          "Agent health check succeeded",
+        );
+      } else {
+        throw new Error(`Health check failed: ${healthResult.message}`);
+      }
+    } else {
+      // Full execution for manual invocations or non-external agents
+      const execContext = {
         agentId: agent.id,
+        companyId: agent.companyId,
         runId,
+        adapterConfig: agent.adapterConfig,
+        systemPrompt: agent.systemPrompt,
+        model: agent.model,
+        timeoutMs: agent.timeoutMs,
+        triggeredBy: heartbeatCtx.triggeredBy,
+        manual: heartbeatCtx.manual,
+        context: heartbeatCtx.context ?? {},
+      };
+
+      const adapterResult = await adapter.execute(execContext);
+
+      const finishedAt = new Date().toISOString();
+      const durationMs = Date.now() - startMs;
+
+      result = {
+        agentId: agent.id,
+        companyId: agent.companyId,
+        runId,
+        success: true,
+        output: adapterResult.output,
+        inputTokens: adapterResult.inputTokens ?? 0,
+        outputTokens: adapterResult.outputTokens ?? 0,
+        costUsd: adapterResult.costUsd ?? 0,
         durationMs,
-        costUsd: result.costUsd,
-      },
-      "Agent heartbeat succeeded",
-    );
+        triggeredBy: heartbeatCtx.triggeredBy,
+        startedAt,
+        finishedAt,
+        adapterType: agent.adapterType,
+        metadata: adapterResult.metadata ?? {},
+      };
+
+      await agentsService.recordHeartbeat(agent.id, result.costUsd);
+
+      logger.info(
+        {
+          agentId: agent.id,
+          runId,
+          durationMs,
+          costUsd: result.costUsd,
+        },
+        "Agent heartbeat succeeded",
+      );
+    }
   } catch (err) {
     const finishedAt = new Date().toISOString();
     const durationMs = Date.now() - startMs;
