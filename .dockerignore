@@ -40,6 +40,15 @@ docs
 *.swp
 *.swo
 
+# Marketing site source (deployed separately on Vercel)
+# Note: site/package.json is still needed for pnpm workspace resolution
+site/src
+site/public
+site/dist
+
+# Local data directory
+.seaclip
+
 # CI/CD
 .github
 .circleci

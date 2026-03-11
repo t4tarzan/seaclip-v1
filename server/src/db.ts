@@ -77,6 +77,10 @@ export function getPglite(): PGlite | null {
   return _pglite;
 }
 
+export function getSql(): ReturnType<typeof postgres> | null {
+  return _sql;
+}
+
 export async function closeDb(): Promise<void> {
   if (_pglite) {
     await _pglite.close();

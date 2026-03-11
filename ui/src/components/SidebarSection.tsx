@@ -15,20 +15,20 @@ export function SidebarSection({ label, defaultOpen = true, children }: SidebarS
     <div className="group">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-1.5 w-full"
+        className="flex items-center gap-1.5 px-3 py-2 w-full"
       >
         <ChevronRight
           size={10}
           className={cn(
-            "text-[#6b7280]/60 transition-transform opacity-0 group-hover:opacity-100",
+            "text-[var(--text-muted)]/60 transition-transform opacity-0 group-hover:opacity-100",
             open && "rotate-90",
           )}
         />
-        <span className="text-[10px] font-medium uppercase tracking-widest font-mono text-[#6b7280]/60">
+        <span className="text-[10px] font-medium uppercase tracking-widest font-mono text-[var(--text-muted)]/60">
           {label}
         </span>
       </button>
-      {open && <div className="flex flex-col gap-0.5 mt-0.5">{children}</div>}
+      {open && <div className="flex flex-col gap-1 mt-0.5">{children}</div>}
     </div>
   );
 }

@@ -42,20 +42,20 @@ export default function Activity() {
   });
 
   return (
-    <div className="p-6 flex flex-col gap-5 animate-fade-in">
+    <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <h2 className="text-[18px] font-bold text-[#f9fafb]">Activity Log</h2>
-          <p className="text-[12px] text-[#6b7280] mt-0.5">
+          <h2 className="text-[18px] font-bold text-[var(--text-primary)]">Activity Log</h2>
+          <p className="text-[12px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>
             {total.toLocaleString()} total events
           </p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="w-64">
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <div style={{ width: 256 }}>
           <Input
             icon={<Search size={12} />}
             placeholder="Search activity..."
@@ -63,8 +63,8 @@ export default function Activity() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <Filter size={11} className="text-[#6b7280]" />
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <Filter size={11} className="text-[var(--text-muted)]" />
           {ACTION_TYPES.map((action) => (
             <button
               key={action}
@@ -72,8 +72,8 @@ export default function Activity() {
               className={cn(
                 "px-2 py-1 text-[10px] rounded font-medium transition-colors",
                 actionFilter === action
-                  ? "bg-[#374151] text-[#f9fafb]"
-                  : "text-[#6b7280] hover:text-[#9ca3af] hover:bg-[#1f2937]"
+                  ? "bg-[var(--border)] text-[var(--text-primary)]"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface)]"
               )}
             >
               {action === "all" ? "All" : action}
@@ -83,20 +83,20 @@ export default function Activity() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}>
         {isLoading ? (
           <SkeletonTable rows={10} cols={5} />
         ) : filteredEvents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-[13px] font-medium text-[#9ca3af]">No activity found</p>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", textAlign: "center" }}>
+            <p className="text-[13px] font-medium text-[var(--text-secondary)]">No activity found</p>
             {(search || actionFilter !== "all") && (
-              <p className="text-[11px] text-[#6b7280] mt-1">
+              <p className="text-[11px] text-[var(--text-muted)]" style={{ marginTop: 4 }}>
                 Try adjusting your filters
               </p>
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div style={{ overflowX: "auto" }}>
             <table className="data-table">
               <thead>
                 <tr>
@@ -119,11 +119,11 @@ export default function Activity() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-[11px] text-[#6b7280]">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <p className="text-[11px] text-[var(--text-muted)]">
             Page {page} of {totalPages} · {total.toLocaleString()} events
           </p>
-          <div className="flex items-center gap-2">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Button
               variant="outline"
               size="sm"
@@ -135,7 +135,7 @@ export default function Activity() {
             </Button>
 
             {/* Page numbers */}
-            <div className="flex items-center gap-1">
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 const pageNum = page <= 3 ? i + 1 : page - 2 + i;
                 if (pageNum > totalPages) return null;
@@ -144,11 +144,12 @@ export default function Activity() {
                     key={pageNum}
                     onClick={() => setPage(pageNum)}
                     className={cn(
-                      "w-7 h-7 rounded text-[11px] font-medium transition-colors",
+                      "text-[11px] font-medium transition-colors",
                       page === pageNum
-                        ? "bg-[#20808D] text-white"
-                        : "text-[#9ca3af] hover:bg-[#374151]"
+                        ? "bg-[var(--primary)] text-white"
+                        : "text-[var(--text-secondary)] hover:bg-[var(--border)]"
                     )}
+                    style={{ width: 28, height: 28, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}
                   >
                     {pageNum}
                   </button>

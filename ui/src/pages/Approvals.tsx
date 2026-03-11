@@ -23,35 +23,35 @@ function ApprovalCard({ approval, onApprove, onReject, isResolving }: ApprovalCa
   return (
     <div
       className={cn(
-        "bg-[#1f2937] border rounded-xl p-4 flex flex-col gap-3",
-        isPending ? "border-[#374151]" : "border-[#374151]/50 opacity-70"
+        isPending ? "border-[var(--border)]" : "border-[var(--border)]/50 opacity-70"
       )}
+      style={{ backgroundColor: "var(--surface)", borderWidth: 1, borderStyle: "solid", borderRadius: "var(--radius-lg)", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div
             className={cn(
-              "w-7 h-7 rounded-lg flex items-center justify-center",
               isPending
-                ? "bg-[#eab308]/15 border border-[#eab308]/25"
+                ? "bg-[var(--warning)]/15 border border-[var(--warning)]/25"
                 : approval.status === "approved"
-                ? "bg-[#22c55e]/15 border border-[#22c55e]/25"
-                : "bg-[#ef4444]/15 border border-[#ef4444]/25"
+                ? "bg-[var(--success)]/15 border border-[var(--success)]/25"
+                : "bg-[var(--error)]/15 border border-[var(--error)]/25"
             )}
+            style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}
           >
             {isPending ? (
-              <Clock size={13} className="text-[#eab308]" />
+              <Clock size={13} className="text-[var(--warning)]" />
             ) : approval.status === "approved" ? (
-              <Check size={13} className="text-[#22c55e]" />
+              <Check size={13} className="text-[var(--success)]" />
             ) : (
-              <X size={13} className="text-[#ef4444]" />
+              <X size={13} className="text-[var(--error)]" />
             )}
           </div>
           <div>
-            <p className="text-[13px] font-semibold text-[#f9fafb]">{approval.type}</p>
-            <p className="text-[10px] text-[#6b7280]">
-              by <span className="text-[#9ca3af]">{approval.requesterName}</span>
+            <p className="text-[13px] font-semibold text-[var(--text-primary)]">{approval.type}</p>
+            <p className="text-[10px] text-[var(--text-muted)]">
+              by <span className="text-[var(--text-secondary)]">{approval.requesterName}</span>
               {" · "}
               {timeAgo(approval.createdAt)}
             </p>
@@ -61,34 +61,34 @@ function ApprovalCard({ approval, onApprove, onReject, isResolving }: ApprovalCa
       </div>
 
       {/* Payload preview */}
-      <div className="bg-[#111827] border border-[#374151] rounded-lg p-3">
-        <p className="text-[9px] font-semibold text-[#6b7280] uppercase tracking-wider mb-1.5">
+      <div style={{ backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 8, padding: 12 }}>
+        <p className="text-[9px] font-semibold text-[var(--text-muted)] uppercase tracking-wider" style={{ marginBottom: 6 }}>
           Payload
         </p>
-        <pre className="text-[11px] text-[#9ca3af] overflow-x-auto leading-relaxed whitespace-pre-wrap">
+        <pre className="text-[11px] text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap" style={{ overflowX: "auto" }}>
           {truncate(JSON.stringify(approval.payload, null, 2), 400)}
         </pre>
       </div>
 
       {/* Resolved info */}
       {!isPending && approval.resolvedBy && (
-        <div className="text-[11px] text-[#6b7280]">
+        <div className="text-[11px] text-[var(--text-muted)]">
           {approval.status === "approved" ? "Approved" : "Rejected"} by{" "}
-          <span className="text-[#9ca3af]">{approval.resolvedBy}</span>
+          <span className="text-[var(--text-secondary)]">{approval.resolvedBy}</span>
           {approval.resolvedAt && ` · ${timeAgo(approval.resolvedAt)}`}
           {approval.reason && (
-            <span className="block mt-0.5 text-[#9ca3af]">Reason: {approval.reason}</span>
+            <span className="text-[var(--text-secondary)]" style={{ display: "block", marginTop: 2 }}>Reason: {approval.reason}</span>
           )}
         </div>
       )}
 
       {/* Actions */}
       {isPending && onApprove && onReject && (
-        <div className="flex gap-2 pt-1">
+        <div style={{ display: "flex", gap: 8, paddingTop: 4 }}>
           <Button
             variant="ghost"
             size="sm"
-            className="flex-1 border border-[#ef4444]/25 text-[#f87171] hover:bg-[#ef4444]/10"
+            className="flex-1 border border-[var(--error)]/25 text-[var(--error)] hover:bg-[var(--error)]/10"
             icon={<X size={11} />}
             onClick={onReject}
             loading={isResolving}
@@ -132,26 +132,26 @@ export default function Approvals() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-3">
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
       </div>
     );
   }
 
   return (
-    <div className="p-6 flex flex-col gap-5 animate-fade-in">
+    <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <h2 className="text-[18px] font-bold text-[#f9fafb]">Approvals</h2>
-          <p className="text-[12px] text-[#6b7280] mt-0.5">
+          <h2 className="text-[18px] font-bold text-[var(--text-primary)]">Approvals</h2>
+          <p className="text-[12px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>
             {pending.length} pending · {resolved.length} resolved
           </p>
         </div>
         {pending.length > 0 && (
-          <div className="flex items-center gap-1.5 bg-[#eab308]/10 border border-[#eab308]/25 rounded-lg px-3 py-1.5">
-            <AlertTriangle size={12} className="text-[#eab308]" />
-            <span className="text-[11px] font-semibold text-[#fbbf24]">
+          <div className="bg-[var(--warning)]/10 border border-[var(--warning)]/25" style={{ display: "flex", alignItems: "center", gap: 6, borderRadius: 8, padding: "6px 12px" }}>
+            <AlertTriangle size={12} className="text-[var(--warning)]" />
+            <span className="text-[11px] font-semibold text-[var(--warning)]">
               {pending.length} need{pending.length === 1 ? "s" : ""} review
             </span>
           </div>
@@ -163,7 +163,7 @@ export default function Approvals() {
           <TabsTrigger value="pending">
             Pending
             {pending.length > 0 && (
-              <span className="ml-1.5 bg-[#eab308]/20 text-[#fbbf24] text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-[var(--warning)]/20 text-[var(--warning)] text-[9px] font-bold px-1.5 py-0.5 rounded-full">
                 {pending.length}
               </span>
             )}
@@ -173,19 +173,19 @@ export default function Approvals() {
 
         <TabsContent value="pending">
           {pending.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-[#22c55e]/10 border border-[#22c55e]/25 flex items-center justify-center">
-                <CheckSquare size={22} className="text-[#22c55e]" />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", textAlign: "center", gap: 12 }}>
+              <div className="bg-[var(--success)]/10 border border-[var(--success)]/25" style={{ width: 48, height: 48, borderRadius: "var(--radius-lg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <CheckSquare size={22} className="text-[var(--success)]" />
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-[#9ca3af]">All caught up!</p>
-                <p className="text-[11px] text-[#6b7280] mt-0.5">
+                <p className="text-[13px] font-semibold text-[var(--text-secondary)]">All caught up!</p>
+                <p className="text-[11px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>
                   No pending approvals right now.
                 </p>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-3 mt-1">
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
               {pending.map((approval) => (
                 <ApprovalCard
                   key={approval.id}
@@ -201,11 +201,11 @@ export default function Approvals() {
 
         <TabsContent value="history">
           {resolved.length === 0 ? (
-            <div className="text-center py-12 text-[12px] text-[#6b7280]">
+            <div className="text-[12px] text-[var(--text-muted)]" style={{ textAlign: "center", padding: "48px 0" }}>
               No resolved approvals yet.
             </div>
           ) : (
-            <div className="flex flex-col gap-3 mt-1">
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
               {resolved.map((approval) => (
                 <ApprovalCard key={approval.id} approval={approval} />
               ))}

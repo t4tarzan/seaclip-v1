@@ -17,9 +17,9 @@ export default function ApprovalDetail() {
 
   if (!approval) {
     return (
-      <div className="p-6 flex flex-col items-center justify-center gap-3 py-20">
-        <CheckSquare size={32} className="text-[#374151]" />
-        <p className="text-[13px] text-[#9ca3af]">Approval not found</p>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "80px 0" }}>
+        <CheckSquare size={32} className="text-[var(--border)]" />
+        <p className="text-[13px] text-[var(--text-secondary)]">Approval not found</p>
         <Button variant="ghost" size="sm" onClick={() => navigate("/approvals")}>
           Back to Approvals
         </Button>
@@ -38,56 +38,56 @@ export default function ApprovalDetail() {
   };
 
   return (
-    <div className="p-6 flex flex-col gap-5 animate-fade-in max-w-3xl">
+    <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 768 }} className="animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <Button variant="ghost" size="sm" icon={<ArrowLeft size={14} />} onClick={() => navigate("/approvals")} />
         <div>
-          <h2 className="text-[18px] font-bold text-[#f9fafb]">Approval Request</h2>
-          <p className="text-[12px] text-[#6b7280] mt-0.5">
+          <h2 className="text-[18px] font-bold text-[var(--text-primary)]">Approval Request</h2>
+          <p className="text-[12px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>
             {approval.type} · requested {timeAgo(approval.createdAt)}
           </p>
         </div>
-        <div className="ml-auto">
+        <div style={{ marginLeft: "auto" }}>
           <StatusBadge type="approval" value={approval.status} />
         </div>
       </div>
 
       {/* Details card */}
-      <div className="bg-[#1f2937] border border-[#374151] rounded-xl p-5 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
           <div>
-            <label className="text-[10px] text-[#6b7280] uppercase tracking-wider font-medium">Type</label>
-            <p className="text-[13px] text-[#f9fafb] mt-0.5">{approval.type}</p>
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Type</label>
+            <p className="text-[13px] text-[var(--text-primary)]" style={{ marginTop: 2 }}>{approval.type}</p>
           </div>
           <div>
-            <label className="text-[10px] text-[#6b7280] uppercase tracking-wider font-medium">Requester</label>
-            <p className="text-[13px] text-[#f9fafb] mt-0.5">{approval.requesterName}</p>
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Requester</label>
+            <p className="text-[13px] text-[var(--text-primary)]" style={{ marginTop: 2 }}>{approval.requesterName}</p>
           </div>
           <div>
-            <label className="text-[10px] text-[#6b7280] uppercase tracking-wider font-medium">Status</label>
-            <div className="mt-1">
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Status</label>
+            <div style={{ marginTop: 4 }}>
               <StatusBadge type="approval" value={approval.status} />
             </div>
           </div>
           <div>
-            <label className="text-[10px] text-[#6b7280] uppercase tracking-wider font-medium">Created</label>
-            <p className="text-[13px] text-[#9ca3af] mt-0.5">
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Created</label>
+            <p className="text-[13px] text-[var(--text-secondary)]" style={{ marginTop: 2 }}>
               {new Date(approval.createdAt).toLocaleString()}
             </p>
           </div>
         </div>
 
         {approval.resolvedBy && (
-          <div className="border-t border-[#374151] pt-4 grid grid-cols-2 gap-4">
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16, display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
             <div>
-              <label className="text-[10px] text-[#6b7280] uppercase tracking-wider font-medium">Resolved By</label>
-              <p className="text-[13px] text-[#f9fafb] mt-0.5">{approval.resolvedBy}</p>
+              <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Resolved By</label>
+              <p className="text-[13px] text-[var(--text-primary)]" style={{ marginTop: 2 }}>{approval.resolvedBy}</p>
             </div>
             {approval.resolvedAt && (
               <div>
-                <label className="text-[10px] text-[#6b7280] uppercase tracking-wider font-medium">Resolved At</label>
-                <p className="text-[13px] text-[#9ca3af] mt-0.5">
+                <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Resolved At</label>
+                <p className="text-[13px] text-[var(--text-secondary)]" style={{ marginTop: 2 }}>
                   {new Date(approval.resolvedAt).toLocaleString()}
                 </p>
               </div>
@@ -96,17 +96,26 @@ export default function ApprovalDetail() {
         )}
 
         {approval.reason && (
-          <div className="border-t border-[#374151] pt-4">
-            <label className="text-[10px] text-[#6b7280] uppercase tracking-wider font-medium">Reason</label>
-            <p className="text-[13px] text-[#d1d5db] mt-1">{approval.reason}</p>
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Reason</label>
+            <p className="text-[13px] text-[var(--text-secondary)]" style={{ marginTop: 4 }}>{approval.reason}</p>
           </div>
         )}
 
         {/* Payload */}
         {Object.keys(approval.payload).length > 0 && (
-          <div className="border-t border-[#374151] pt-4">
-            <label className="text-[10px] text-[#6b7280] uppercase tracking-wider font-medium">Payload</label>
-            <pre className="mt-2 bg-[#111827] rounded-lg p-3 text-[11px] text-[#9ca3af] font-mono overflow-x-auto">
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Payload</label>
+            <pre
+              style={{
+                marginTop: 8,
+                backgroundColor: "var(--bg-alt)",
+                borderRadius: 8,
+                padding: 12,
+                overflowX: "auto",
+              }}
+              className="text-[11px] text-[var(--text-secondary)] font-mono"
+            >
               {JSON.stringify(approval.payload, null, 2)}
             </pre>
           </div>
@@ -115,7 +124,7 @@ export default function ApprovalDetail() {
 
       {/* Actions */}
       {isPending && (
-        <div className="flex items-center gap-3">
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Button
             variant="primary"
             size="sm"

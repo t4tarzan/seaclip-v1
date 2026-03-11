@@ -25,34 +25,34 @@ export default function ProjectDetail() {
   );
 
   return (
-    <div className="p-6 flex flex-col gap-5 animate-fade-in">
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }} className="animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <Button variant="ghost" size="sm" icon={<ArrowLeft size={14} />} onClick={() => navigate(-1)} />
-        <div className="flex items-center gap-2.5 flex-1">
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
           {project && (
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: `${project.color}20`, borderColor: `${project.color}40`, borderWidth: 1 }}
+              style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: `${project.color}20`, borderColor: `${project.color}40`, borderWidth: 1 }}
             >
               <FolderKanban size={14} style={{ color: project.color }} />
             </div>
           )}
           <div>
-            <h2 className="text-[18px] font-bold text-[#f9fafb]">
+            <h2 className="text-[18px] font-bold text-[var(--text-primary)]">
               {project?.name ?? "Project"}
             </h2>
-            <p className="text-[12px] text-[#6b7280] mt-0.5">
+            <p className="text-[12px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>
               {issues.length} issue{issues.length !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1 bg-[#111827] rounded-lg p-0.5 border border-[#374151]">
+        <div style={{ display: "flex", alignItems: "center", gap: 4, borderRadius: 8, padding: 2, border: "1px solid var(--border)" }} className="bg-[var(--bg-alt)]">
           <button
             onClick={() => { setViewMode("list"); localStorage.setItem("projectDetail.viewMode", "list"); }}
+            style={{ padding: 6, borderRadius: 4 }}
             className={cn(
-              "p-1.5 rounded transition-colors",
-              viewMode === "list" ? "bg-[#1f2937] text-[#f9fafb]" : "text-[#6b7280] hover:text-[#9ca3af]",
+              "transition-colors",
+              viewMode === "list" ? "bg-[var(--surface)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]",
             )}
             title="List view"
           >
@@ -60,9 +60,10 @@ export default function ProjectDetail() {
           </button>
           <button
             onClick={() => { setViewMode("board"); localStorage.setItem("projectDetail.viewMode", "board"); }}
+            style={{ padding: 6, borderRadius: 4 }}
             className={cn(
-              "p-1.5 rounded transition-colors",
-              viewMode === "board" ? "bg-[#1f2937] text-[#f9fafb]" : "text-[#6b7280] hover:text-[#9ca3af]",
+              "transition-colors",
+              viewMode === "board" ? "bg-[var(--surface)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]",
             )}
             title="Board view"
           >
@@ -73,14 +74,14 @@ export default function ProjectDetail() {
 
       {/* Issues */}
       {isLoading ? (
-        <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
           <SkeletonTable rows={6} cols={4} />
         </div>
       ) : issues.length === 0 ? (
-        <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <CircleDot size={24} className="text-[#374151] mb-3" />
-            <p className="text-[13px] text-[#9ca3af]">No issues in this project</p>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", textAlign: "center" }}>
+            <CircleDot size={24} className="text-[var(--border)]" style={{ marginBottom: 12 }} />
+            <p className="text-[13px] text-[var(--text-secondary)]">No issues in this project</p>
           </div>
         </div>
       ) : viewMode === "board" ? (
@@ -92,8 +93,8 @@ export default function ProjectDetail() {
           }}
         />
       ) : (
-        <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
             <table className="data-table">
               <thead>
                 <tr>
@@ -108,14 +109,14 @@ export default function ProjectDetail() {
                 {issues.map((issue) => (
                   <tr
                     key={issue.id}
-                    className="hover:bg-[#263244] transition-colors cursor-pointer"
+                    className="hover:bg-[var(--surface-raised)] transition-colors cursor-pointer"
                     onClick={() => navigate(`/issues/${issue.id}`)}
                   >
                     <td>
-                      <span className="text-[11px] text-[#6b7280] font-mono">{issue.identifier}</span>
+                      <span className="text-[11px] text-[var(--text-muted)] font-mono">{issue.identifier}</span>
                     </td>
                     <td>
-                      <p className="text-[12px] font-semibold text-[#f9fafb]">{issue.title}</p>
+                      <p className="text-[12px] font-semibold text-[var(--text-primary)]">{issue.title}</p>
                     </td>
                     <td>
                       <StatusBadge type="issue" value={issue.status} />
@@ -124,7 +125,7 @@ export default function ProjectDetail() {
                       <StatusBadge type="priority" value={issue.priority} />
                     </td>
                     <td>
-                      <span className="text-[11px] text-[#9ca3af]">{timeAgo(issue.updatedAt)}</span>
+                      <span className="text-[11px] text-[var(--text-secondary)]">{timeAgo(issue.updatedAt)}</span>
                     </td>
                   </tr>
                 ))}

@@ -18,10 +18,10 @@ import type { Goal, GoalStatus } from "../lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 
 const STATUS_COLORS: Record<GoalStatus, { bg: string; text: string; label: string }> = {
-  draft: { bg: "bg-[#374151]", text: "text-[#9ca3af]", label: "Draft" },
-  active: { bg: "bg-[#20808D]/20", text: "text-[#06b6d4]", label: "Active" },
-  achieved: { bg: "bg-[#22c55e]/20", text: "text-[#22c55e]", label: "Achieved" },
-  abandoned: { bg: "bg-[#ef4444]/20", text: "text-[#ef4444]", label: "Abandoned" },
+  draft: { bg: "bg-[var(--border)]", text: "text-[var(--text-secondary)]", label: "Draft" },
+  active: { bg: "bg-[var(--primary)]/20", text: "text-[var(--accent)]", label: "Active" },
+  achieved: { bg: "bg-[var(--success)]/20", text: "text-[var(--success)]", label: "Achieved" },
+  abandoned: { bg: "bg-[var(--error)]/20", text: "text-[var(--error)]", label: "Abandoned" },
 };
 
 const STATUS_TABS: { key: "all" | GoalStatus; label: string }[] = [
@@ -35,26 +35,28 @@ const STATUS_TABS: { key: "all" | GoalStatus; label: string }[] = [
 function ProgressBar({ metricType, metricCurrent, metricTarget }: Pick<Goal, "metricType" | "metricCurrent" | "metricTarget">) {
   if (metricType === "boolean") {
     return (
-      <div className="flex items-center gap-1.5">
-        <div className={cn("w-3 h-3 rounded-full border-2", metricCurrent >= 1 ? "bg-[#22c55e] border-[#22c55e]" : "border-[#374151]")} />
-        <span className="text-[10px] text-[#9ca3af]">{metricCurrent >= 1 ? "Complete" : "Incomplete"}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div className={cn("border-2", metricCurrent >= 1 ? "bg-[var(--success)] border-[var(--success)]" : "border-[var(--border)]")} style={{ width: 12, height: 12, borderRadius: 9999 }} />
+        <span className="text-[10px] text-[var(--text-secondary)]">{metricCurrent >= 1 ? "Complete" : "Incomplete"}</span>
       </div>
     );
   }
   const target = metricTarget ?? 100;
   const pct = Math.min(100, Math.round((metricCurrent / target) * 100));
   return (
-    <div className="flex items-center gap-2 flex-1 max-w-[160px]">
-      <div className="flex-1 h-1.5 bg-[#111827] rounded-full overflow-hidden">
+    <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, maxWidth: 160 }}>
+      <div style={{ flex: 1, height: 6, backgroundColor: "var(--bg-alt)", borderRadius: 9999, overflow: "hidden" }}>
         <div
-          className="h-full rounded-full transition-all duration-500"
+          className="transition-all duration-500"
           style={{
+            height: "100%",
+            borderRadius: 9999,
             width: `${pct}%`,
-            backgroundColor: pct >= 100 ? "#22c55e" : "#20808D",
+            backgroundColor: pct >= 100 ? "var(--success)" : "var(--primary)",
           }}
         />
       </div>
-      <span className="text-[10px] text-[#9ca3af] font-mono w-8 text-right">{pct}%</span>
+      <span className="text-[10px] text-[var(--text-secondary)] font-mono" style={{ width: 32, textAlign: "right" }}>{pct}%</span>
     </div>
   );
 }
@@ -75,28 +77,27 @@ function GoalTreeNode({
   return (
     <div>
       <div
-        className={cn(
-          "flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-[#1a2132] transition-colors group",
-          depth > 0 && "ml-6"
-        )}
+        className="hover:bg-[#1a2132] transition-colors group"
+        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 8, marginLeft: depth > 0 ? 24 : 0 }}
       >
         {hasChildren ? (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="p-0.5 rounded text-[#6b7280] hover:text-[#f9fafb]"
+            className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+            style={{ padding: 2, borderRadius: 4 }}
           >
             {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           </button>
         ) : (
-          <span className="w-[18px]" />
+          <span style={{ width: 18 }} />
         )}
-        <div className="w-7 h-7 rounded-lg bg-[#20808D]/15 border border-[#20808D]/25 flex items-center justify-center flex-shrink-0">
-          <Target size={12} className="text-[#20808D]" />
+        <div className="bg-[var(--primary)]/15 border border-[var(--primary)]/25" style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Target size={12} className="text-[var(--primary)]" />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[12px] font-semibold text-[#f9fafb] truncate">{goal.title}</p>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p className="text-[12px] font-semibold text-[var(--text-primary)] truncate">{goal.title}</p>
           {goal.description && (
-            <p className="text-[10px] text-[#6b7280] truncate">{goal.description}</p>
+            <p className="text-[10px] text-[var(--text-muted)] truncate">{goal.description}</p>
           )}
         </div>
         <ProgressBar metricType={goal.metricType} metricCurrent={goal.metricCurrent} metricTarget={goal.metricTarget} />
@@ -104,13 +105,13 @@ function GoalTreeNode({
           {colors.label}
         </span>
         {goal.targetDate && (
-          <span className="text-[10px] text-[#6b7280] flex-shrink-0">
+          <span className="text-[10px] text-[var(--text-muted)]" style={{ flexShrink: 0 }}>
             {new Date(goal.targetDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </span>
         )}
       </div>
       {hasChildren && expanded && (
-        <div className="border-l border-[#374151] ml-[21px]">
+        <div style={{ borderLeft: "1px solid var(--border)", marginLeft: 21 }}>
           {children.map((child) => (
             <GoalTreeNode key={child.id} goal={child} children={[]} depth={depth + 1} />
           ))}
@@ -132,16 +133,16 @@ export default function Goals() {
   const childrenOf = (parentId: string) => filteredGoals.filter((g) => g.parentGoalId === parentId);
 
   return (
-    <div className="p-6 flex flex-col gap-5 animate-fade-in">
+    <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
         <div>
-          <h2 className="text-[18px] font-bold text-[#f9fafb]">Goals</h2>
-          <p className="text-[12px] text-[#6b7280] mt-0.5">
+          <h2 className="text-[18px] font-bold text-[var(--text-primary)]">Goals</h2>
+          <p className="text-[12px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>
             {goals.length} goal{goals.length !== 1 ? "s" : ""} — track objectives and key results
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Button
             variant="ghost"
             size="sm"
@@ -157,7 +158,7 @@ export default function Goals() {
       </div>
 
       {/* Status Tabs */}
-      <div className="flex items-center gap-1.5">
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         {STATUS_TABS.map((s) => (
           <button
             key={s.key}
@@ -165,8 +166,8 @@ export default function Goals() {
             className={cn(
               "px-2.5 py-1 text-[11px] rounded-md font-medium transition-colors",
               tab === s.key
-                ? "bg-[#20808D]/20 text-[#06b6d4] border border-[#20808D]/30"
-                : "text-[#9ca3af] hover:text-[#f9fafb] hover:bg-[#1f2937] border border-transparent"
+                ? "bg-[var(--primary)]/20 text-[var(--accent)] border border-[var(--primary)]/30"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] border border-transparent"
             )}
           >
             {s.label}
@@ -175,22 +176,22 @@ export default function Goals() {
       </div>
 
       {/* Goal Tree */}
-      <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}>
         {isLoading ? (
-          <div className="p-4 space-y-3">
+          <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
             {[1, 2, 3].map((i) => (
               <SkeletonCard key={i} />
             ))}
           </div>
         ) : rootGoals.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-12 h-12 rounded-xl bg-[#374151] flex items-center justify-center mb-3">
-              <Target size={24} className="text-[#6b7280]" />
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", textAlign: "center" }}>
+            <div style={{ width: 48, height: 48, borderRadius: "var(--radius-lg)", backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+              <Target size={24} className="text-[var(--text-muted)]" />
             </div>
-            <p className="text-[13px] font-medium text-[#9ca3af]">
+            <p className="text-[13px] font-medium text-[var(--text-secondary)]">
               {tab !== "all" ? "No goals match this filter" : "No goals yet"}
             </p>
-            <p className="text-[11px] text-[#6b7280] mt-1">
+            <p className="text-[11px] text-[var(--text-muted)]" style={{ marginTop: 4 }}>
               Create goals to track company objectives and link them to issues
             </p>
             {tab === "all" && (
@@ -200,7 +201,7 @@ export default function Goals() {
             )}
           </div>
         ) : (
-          <div className="p-2 flex flex-col gap-0.5">
+          <div style={{ padding: 8, display: "flex", flexDirection: "column", gap: 2 }}>
             {rootGoals.map((goal) => (
               <GoalTreeNode key={goal.id} goal={goal} children={childrenOf(goal.id)} depth={0} />
             ))}
@@ -254,26 +255,28 @@ function NewGoalDialog({
           <DialogTitle>New Goal</DialogTitle>
           <DialogDescription>Create a goal to track an objective.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <label className="text-[11px] text-[#9ca3af] font-medium mb-1 block">Title</label>
+            <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>Title</label>
             <Input placeholder="Goal title" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div>
-            <label className="text-[11px] text-[#9ca3af] font-medium mb-1 block">Description</label>
+            <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>Description</label>
             <textarea
-              className="w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-[12px] text-[#f9fafb] placeholder:text-[#6b7280] focus:outline-none focus:border-[#20808D] resize-none"
+              className="w-full text-[12px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--primary)]"
+              style={{ backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 12px", resize: "none" }}
               rows={3}
               placeholder="Optional description..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
             <div>
-              <label className="text-[11px] text-[#9ca3af] font-medium mb-1 block">Status</label>
+              <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>Status</label>
               <select
-                className="w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-[12px] text-[#f9fafb] focus:outline-none focus:border-[#20808D]"
+                className="w-full text-[12px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
+                style={{ backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 12px" }}
                 value={status}
                 onChange={(e) => setStatus(e.target.value as GoalStatus)}
               >
@@ -282,9 +285,10 @@ function NewGoalDialog({
               </select>
             </div>
             <div>
-              <label className="text-[11px] text-[#9ca3af] font-medium mb-1 block">Parent Goal</label>
+              <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>Parent Goal</label>
               <select
-                className="w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-[12px] text-[#f9fafb] focus:outline-none focus:border-[#20808D]"
+                className="w-full text-[12px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
+                style={{ backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 12px" }}
                 value={parentGoalId}
                 onChange={(e) => setParentGoalId(e.target.value)}
               >

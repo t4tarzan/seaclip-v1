@@ -17,18 +17,18 @@ interface FilterBarProps {
 }
 
 const STATUS_OPTIONS: { value: IssueStatus; label: string; color: string }[] = [
-  { value: "backlog", label: "Backlog", color: "#6b7280" },
-  { value: "todo", label: "Todo", color: "#eab308" },
-  { value: "in_progress", label: "In Progress", color: "#20808D" },
-  { value: "in_review", label: "In Review", color: "#06b6d4" },
-  { value: "done", label: "Done", color: "#22c55e" },
+  { value: "backlog", label: "Backlog", color: "var(--text-muted)" },
+  { value: "todo", label: "Todo", color: "var(--warning)" },
+  { value: "in_progress", label: "In Progress", color: "var(--primary)" },
+  { value: "in_review", label: "In Review", color: "var(--accent)" },
+  { value: "done", label: "Done", color: "var(--success)" },
 ];
 
 const PRIORITY_OPTIONS: { value: IssuePriority; label: string; color: string }[] = [
-  { value: "urgent", label: "Urgent", color: "#ef4444" },
+  { value: "urgent", label: "Urgent", color: "var(--error)" },
   { value: "high", label: "High", color: "#f97316" },
-  { value: "medium", label: "Medium", color: "#eab308" },
-  { value: "low", label: "Low", color: "#6b7280" },
+  { value: "medium", label: "Medium", color: "var(--warning)" },
+  { value: "low", label: "Low", color: "var(--text-muted)" },
 ];
 
 function FilterChip({
@@ -51,8 +51,8 @@ function FilterChip({
         "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all",
         "border",
         active
-          ? "bg-[#20808D]/15 border-[#20808D]/40 text-[#f9fafb]"
-          : "bg-[#1f2937] border-[#374151] text-[#9ca3af] hover:text-[#f9fafb] hover:border-[#4b5563]"
+          ? "bg-[var(--primary)]/15 border-[var(--primary)]/40 text-[var(--text-primary)]"
+          : "bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-hover)]"
       )}
     >
       {color && (
@@ -63,7 +63,7 @@ function FilterChip({
       )}
       {label}
       {active && onClear && (
-        <X size={10} className="ml-0.5 text-[#9ca3af] hover:text-[#f9fafb]" />
+        <X size={10} className="ml-0.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)]" />
       )}
     </button>
   );
@@ -78,7 +78,7 @@ function FilterGroup({
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#6b7280] mr-1">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mr-1">
         {label}
       </span>
       {children}
@@ -140,7 +140,7 @@ export function FilterBar({
         ))}
       </FilterGroup>
 
-      <div className="w-px h-4 bg-[#374151]" />
+      <div className="w-px h-4 bg-[var(--border)]" />
 
       {/* Priority filters */}
       <FilterGroup label="Priority">
@@ -159,7 +159,7 @@ export function FilterBar({
       {/* Assignee filters (only show if there are assignees) */}
       {assignees.length > 0 && (
         <>
-          <div className="w-px h-4 bg-[#374151]" />
+          <div className="w-px h-4 bg-[var(--border)]" />
           <FilterGroup label="Assignee">
             {assignees.map((name) => (
               <FilterChip
@@ -177,10 +177,10 @@ export function FilterBar({
       {/* Clear all */}
       {hasActiveFilters && (
         <>
-          <div className="w-px h-4 bg-[#374151]" />
+          <div className="w-px h-4 bg-[var(--border)]" />
           <button
             onClick={clearAll}
-            className="text-[11px] text-[#6b7280] hover:text-[#f9fafb] transition-colors"
+            className="text-[11px] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
           >
             Clear all
           </button>

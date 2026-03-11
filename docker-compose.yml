@@ -11,8 +11,10 @@ services:
       interval: 2s
       timeout: 5s
       retries: 30
-    ports:
-      - "5432:5432"
+    # Port not exposed to host — use existing local Postgres for dev.
+    # Uncomment below to expose on a different port if needed:
+    # ports:
+    #   - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -20,7 +22,7 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "3100:3100"
+      - "4200:3100"
     environment:
       DATABASE_URL: postgres://seaclip:seaclip@db:5432/seaclip
       PORT: "3100"
@@ -33,6 +35,14 @@ services:
       TELEGRAM_CHAT_ID: "${TELEGRAM_CHAT_ID:-}"
       SEACLIP_DEPLOYMENT_MODE: "${SEACLIP_DEPLOYMENT_MODE:-local_trusted}"
       JWT_SECRET: "${JWT_SECRET:-change-me-in-production}"
+      CORS_ORIGINS: "${CORS_ORIGINS:-localhost:3100}"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3100/health').then(r=>{if(!r.ok)throw 1}).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     volumes:
       - seaclip-data:/seaclip
     depends_on:

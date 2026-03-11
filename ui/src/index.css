@@ -1,35 +1,72 @@
 @import "tailwindcss";
 
 /* ============================================
-   SeaClip Design Tokens — Dark Navy Theme
+   Override Tailwind v4 theme defaults
+   Must use @theme to win specificity
+   ============================================ */
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, Cambria, serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+/* ============================================
+   SeaClip Design Tokens — Dark Ocean Theme
+   Aligned with seaclip.tech marketing site
    ============================================ */
 :root {
-  --bg: #0a0f1a;
-  --surface: #111827;
-  --card: #1f2937;
-  --card-hover: #263244;
-  --border: #374151;
-  --border-subtle: #1f2937;
-  --primary: #20808D;
-  --primary-hover: #25919f;
-  --primary-muted: rgba(32, 128, 141, 0.15);
-  --accent: #06b6d4;
-  --accent-muted: rgba(6, 182, 212, 0.15);
-  --success: #22c55e;
-  --success-muted: rgba(34, 197, 94, 0.15);
-  --warning: #eab308;
-  --warning-muted: rgba(234, 179, 8, 0.15);
-  --error: #ef4444;
-  --error-muted: rgba(239, 68, 68, 0.15);
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
-  --sidebar-width: 240px;
-  --sidebar-collapsed-width: 64px;
+  /* Backgrounds */
+  --bg: #0a0e17;
+  --bg-alt: #111827;
+  --surface: #1a2233;
+  --surface-raised: #243044;
+  --card: #1a2233;
+  --card-hover: #243044;
+
+  /* Borders */
+  --border: #2a3a52;
+  --border-subtle: #1a2233;
+  --border-hover: #3a4f6e;
+
+  /* Brand / Accent — cyan-sky spectrum */
+  --primary: #38bdf8;
+  --primary-hover: #22d3ee;
+  --primary-muted: rgba(56, 189, 248, 0.15);
+  --accent: #22d3ee;
+  --accent-muted: rgba(34, 211, 238, 0.15);
+  --accent-glow: rgba(56, 189, 248, 0.15);
+
+  /* Semantic */
+  --success: #34d399;
+  --success-muted: rgba(52, 211, 153, 0.15);
+  --warning: #fbbf24;
+  --warning-muted: rgba(251, 191, 36, 0.15);
+  --error: #f87171;
+  --error-muted: rgba(248, 113, 113, 0.15);
+
+  /* Text */
+  --text-primary: #f0f4f8;
+  --text-secondary: #b0bec5;
+  --text-muted: #6b7a8d;
+
+  /* Layout */
   --header-height: 56px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.15);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+
 }
 
 /* ============================================
@@ -51,8 +88,8 @@ html {
 body {
   background-color: var(--bg);
   color: var(--text-primary);
-  font-family: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  line-height: 1.5;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -64,19 +101,68 @@ body {
 }
 
 /* ============================================
-   Typography Scale
+   Typography Scale — Instrument Serif headings
    ============================================ */
-h1 { font-size: 1.75rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.025em; }
-h2 { font-size: 1.375rem; font-weight: 600; line-height: 1.3; letter-spacing: -0.02em; }
-h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; }
-h4 { font-size: 1rem; font-weight: 600; line-height: 1.4; }
-h5 { font-size: 0.875rem; font-weight: 600; line-height: 1.5; }
-h6 { font-size: 0.75rem; font-weight: 600; line-height: 1.5; letter-spacing: 0.05em; text-transform: uppercase; }
+h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
 
-p { font-size: 0.875rem; line-height: 1.6; color: var(--text-secondary); }
+h2 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(1.375rem, 2.5vw, 1.875rem);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+h3 {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+h4 {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+h5 {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+h6 {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+p {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
 
 code, pre {
-  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8125rem;
 }
 
@@ -86,7 +172,7 @@ code, pre {
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
 
 /* ============================================
    Focus Styles
@@ -109,16 +195,42 @@ code, pre {
    Links
    ============================================ */
 a {
-  color: var(--accent);
+  color: var(--primary);
   text-decoration: none;
-  transition: color 150ms ease;
+  transition: color var(--transition-fast);
 }
-a:hover { color: #22d3ee; }
+a:hover { color: var(--accent); }
 
 /* ============================================
-   Transitions
+   Glassmorphism utilities
    ============================================ */
-.transition-all { transition: all 150ms ease; }
+.glass {
+  background: rgba(10, 14, 23, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(42, 58, 82, 0.5);
+}
+
+.glass-surface {
+  background: rgba(26, 34, 51, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+.glass-card {
+  background: rgba(26, 34, 51, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  transition: all var(--transition-base);
+}
+
+.glass-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
 
 /* ============================================
    Custom Utilities
@@ -129,6 +241,9 @@ a:hover { color: #22d3ee; }
 .text-secondary-color { color: var(--text-secondary); }
 .text-muted-color { color: var(--text-muted); }
 .border-default { border-color: var(--border); }
+.glow-accent { box-shadow: var(--shadow-glow); }
+.font-serif { font-family: var(--font-serif); }
+.font-mono { font-family: var(--font-mono); }
 
 /* ============================================
    Pulse Animation for online status
@@ -189,7 +304,7 @@ a:hover { color: #22d3ee; }
    ============================================ */
 .nav-item-active {
   background: var(--primary-muted);
-  color: var(--accent);
+  color: var(--primary);
   border-right: 2px solid var(--primary);
 }
 
@@ -197,7 +312,7 @@ a:hover { color: #22d3ee; }
    Animations
    ============================================ */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -210,9 +325,15 @@ a:hover { color: #22d3ee; }
   to { transform: rotate(360deg); }
 }
 
-.animate-fade-in { animation: fade-in 200ms ease forwards; }
-.animate-slide-in { animation: slide-in-right 200ms ease forwards; }
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.1); }
+  50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.2); }
+}
+
+.animate-fade-in { animation: fade-in 300ms ease forwards; }
+.animate-slide-in { animation: slide-in-right 250ms ease forwards; }
 .animate-spin { animation: spin 1s linear infinite; }
+.animate-glow { animation: glow-pulse 3s ease-in-out infinite; }
 
 /* ============================================
    Shimmer for skeletons
@@ -223,7 +344,7 @@ a:hover { color: #22d3ee; }
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg, var(--card) 25%, var(--card-hover) 50%, var(--card) 75%);
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-raised) 50%, var(--surface) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -236,15 +357,16 @@ a:hover { color: #22d3ee; }
   border-collapse: collapse;
 }
 .data-table th {
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
   padding: 10px 12px;
   text-align: left;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-alt);
   position: sticky;
   top: 0;
   z-index: 1;
@@ -257,7 +379,7 @@ a:hover { color: #22d3ee; }
   vertical-align: middle;
 }
 .data-table tr:hover td {
-  background: rgba(255,255,255,0.02);
+  background: rgba(56, 189, 248, 0.03);
   cursor: pointer;
 }
 
@@ -265,7 +387,7 @@ a:hover { color: #22d3ee; }
    Code blocks
    ============================================ */
 pre {
-  background: var(--surface);
+  background: var(--bg-alt);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 12px 16px;
@@ -273,4 +395,14 @@ pre {
   font-size: 0.8125rem;
   line-height: 1.6;
   color: var(--text-primary);
+}
+
+/* ============================================
+   Badge / mono labels
+   ============================================ */
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
 }

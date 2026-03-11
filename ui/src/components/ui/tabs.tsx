@@ -11,7 +11,7 @@ export function TabsList({
     <RadixTabs.List
       className={cn(
         "inline-flex items-center gap-0.5",
-        "bg-[#111827] border border-[#374151] rounded-[7px] p-0.5",
+        "bg-[var(--bg-alt)] border border-[var(--border)] rounded-[var(--radius-md)] p-1",
         className
       )}
       {...props}
@@ -27,13 +27,13 @@ export function TabsTrigger({
     <RadixTabs.Trigger
       className={cn(
         "inline-flex items-center justify-center gap-1.5",
-        "rounded-[5px] px-3 h-7",
-        "text-[12px] font-medium text-[#9ca3af]",
+        "rounded-[var(--radius-sm)] px-3.5 h-8",
+        "text-[13px] font-medium text-[var(--text-muted)]",
         "transition-all duration-150",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#20808D]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
         "disabled:pointer-events-none disabled:opacity-50",
-        "data-[state=active]:bg-[#1f2937] data-[state=active]:text-[#f9fafb] data-[state=active]:shadow-sm",
-        "hover:text-[#f9fafb]",
+        "data-[state=active]:bg-[var(--surface)] data-[state=active]:text-[var(--text-primary)] data-[state=active]:shadow-sm",
+        "hover:text-[var(--text-primary)]",
         className
       )}
       {...props}
@@ -48,7 +48,7 @@ export function TabsContent({
   return (
     <RadixTabs.Content
       className={cn(
-        "mt-3 focus-visible:outline-none",
+        "mt-4 focus-visible:outline-none",
         "data-[state=inactive]:hidden",
         className
       )}

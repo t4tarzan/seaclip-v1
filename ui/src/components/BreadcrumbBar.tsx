@@ -38,17 +38,17 @@ export function BreadcrumbBar() {
   if (crumbs.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] border-b border-[#374151]/50 bg-[#111827]">
-      <Link to="/" className="text-[#6b7280] hover:text-[#9ca3af] transition-colors">
+    <div className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] border-b border-[var(--border)]/50 bg-[var(--bg-alt)]">
+      <Link to="/" className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
         <Home size={11} />
       </Link>
       {crumbs.map((crumb, i) => (
         <React.Fragment key={crumb.path}>
-          <ChevronRight size={10} className="text-[#374151]" />
+          <ChevronRight size={10} className="text-[var(--border)]" />
           {i === crumbs.length - 1 ? (
-            <span className="text-[#9ca3af] font-medium">{crumb.label}</span>
+            <span className="text-[var(--text-secondary)] font-medium">{crumb.label}</span>
           ) : (
-            <Link to={crumb.path} className="text-[#6b7280] hover:text-[#9ca3af] transition-colors">
+            <Link to={crumb.path} className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
               {crumb.label}
             </Link>
           )}

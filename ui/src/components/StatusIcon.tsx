@@ -1,15 +1,15 @@
 import type { IssueStatus } from "../lib/types";
 
 const colors: Record<IssueStatus, string> = {
-  backlog: "#6b7280",
-  todo: "#eab308",
-  in_progress: "#20808D",
-  in_review: "#06b6d4",
-  done: "#22c55e",
+  backlog: "var(--text-muted)",
+  todo: "var(--warning)",
+  in_progress: "var(--primary)",
+  in_review: "var(--accent)",
+  done: "var(--success)",
 };
 
 export function StatusIcon({ status }: { status: string }) {
-  const color = colors[status as IssueStatus] ?? "#6b7280";
+  const color = colors[status as IssueStatus] ?? "var(--text-muted)";
   return (
     <div
       className="w-2.5 h-2.5 rounded-full flex-shrink-0"

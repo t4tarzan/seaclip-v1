@@ -77,21 +77,21 @@ export default function SpokeView() {
   // Status color indicator
   const statusColor =
     status?.status === "online"
-      ? "bg-[#22c55e]"
+      ? "bg-[var(--success)]"
       : status?.status === "degraded"
-        ? "bg-[#eab308]"
-        : "bg-[#ef4444]";
+        ? "bg-[var(--warning)]"
+        : "bg-[var(--error)]";
 
   return (
-    <div className="p-4 sm:p-6 flex flex-col gap-5 animate-fade-in max-w-3xl mx-auto">
+    <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 768, margin: "0 auto" }} className="animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className={cn("w-3 h-3 rounded-full flex-shrink-0", statusColor)} />
-        <div className="min-w-0">
-          <h2 className="text-[18px] font-bold text-[#f9fafb] truncate">
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className={cn("rounded-full", statusColor)} style={{ width: 12, height: 12, flexShrink: 0 }} />
+        <div style={{ minWidth: 0 }}>
+          <h2 className="text-[18px] font-bold text-[var(--text-primary)] truncate">
             {statusLoading ? "Loading..." : status?.name ?? "Unknown Device"}
           </h2>
-          <p className="text-[11px] text-[#6b7280]">
+          <p className="text-[11px] text-[var(--text-muted)]">
             {status?.deviceType ?? ""} {status?.location ? `· ${status.location}` : ""}
             {status?.lastSeenAt
               ? ` · Last seen ${new Date(status.lastSeenAt).toLocaleString()}`
@@ -104,7 +104,7 @@ export default function SpokeView() {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }} className="sm:grid-cols-4">
         <MetricCard
           label="Agents"
           value={status?.agents.total ?? 0}
@@ -137,16 +137,16 @@ export default function SpokeView() {
 
       {/* Assigned Tasks */}
       <div>
-        <h3 className="text-[14px] font-semibold text-[#f9fafb] mb-2">Assigned Tasks</h3>
-        <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
+        <h3 className="text-[14px] font-semibold text-[var(--text-primary)]" style={{ marginBottom: 8 }}>Assigned Tasks</h3>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
           {tasksLoading ? (
             <SkeletonTable rows={4} cols={3} />
           ) : tasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <p className="text-[13px] text-[#9ca3af]">No tasks assigned</p>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 0" }} className="text-center">
+              <p className="text-[13px] text-[var(--text-secondary)]">No tasks assigned</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div style={{ overflowX: "auto" }}>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -159,11 +159,11 @@ export default function SpokeView() {
                   {tasks.map((task) => (
                     <tr key={task.id}>
                       <td>
-                        <span className="text-[12px] text-[#f9fafb] font-medium">
+                        <span className="text-[12px] text-[var(--text-primary)] font-medium">
                           {task.title}
                         </span>
                         {task.identifier && (
-                          <span className="text-[10px] text-[#6b7280] ml-1.5">
+                          <span className="text-[10px] text-[var(--text-muted)]" style={{ marginLeft: 6 }}>
                             {task.identifier}
                           </span>
                         )}
@@ -185,16 +185,16 @@ export default function SpokeView() {
 
       {/* Heartbeat Jobs */}
       <div>
-        <h3 className="text-[14px] font-semibold text-[#f9fafb] mb-2">Heartbeat Jobs</h3>
-        <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
+        <h3 className="text-[14px] font-semibold text-[var(--text-primary)]" style={{ marginBottom: 8 }}>Heartbeat Jobs</h3>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
           {jobsLoading ? (
             <SkeletonTable rows={3} cols={3} />
           ) : jobs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <p className="text-[13px] text-[#9ca3af]">No heartbeat jobs</p>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 0" }} className="text-center">
+              <p className="text-[13px] text-[var(--text-secondary)]">No heartbeat jobs</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div style={{ overflowX: "auto" }}>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -207,11 +207,11 @@ export default function SpokeView() {
                   {jobs.map((job) => (
                     <tr key={job.agentId}>
                       <td>
-                        <span className="text-[12px] text-[#f9fafb] font-medium">
+                        <span className="text-[12px] text-[var(--text-primary)] font-medium">
                           {job.agentName}
                         </span>
                         {job.heartbeatCron && (
-                          <span className="text-[10px] text-[#6b7280] ml-1.5">
+                          <span className="text-[10px] text-[var(--text-muted)]" style={{ marginLeft: 6 }}>
                             {job.heartbeatCron}
                           </span>
                         )}
@@ -219,7 +219,7 @@ export default function SpokeView() {
                       <td>
                         <StatusBadge type="agent" value={job.status as any} />
                       </td>
-                      <td className="text-[11px] text-[#9ca3af]">
+                      <td className="text-[11px] text-[var(--text-secondary)]">
                         {job.lastRunAt
                           ? new Date(job.lastRunAt).toLocaleString()
                           : "Never"}
@@ -235,22 +235,22 @@ export default function SpokeView() {
 
       {/* Spoke Git Tasks */}
       <div>
-        <h3 className="text-[14px] font-semibold text-[#f9fafb] mb-2 flex items-center gap-2">
-          <GitBranch size={14} className="text-[#20808D]" />
+        <h3 style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }} className="text-[14px] font-semibold text-[var(--text-primary)]">
+          <GitBranch size={14} className="text-[var(--primary)]" />
           Spoke Tasks
         </h3>
-        <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
           {gitTasksLoading ? (
             <SkeletonTable rows={3} cols={4} />
           ) : gitTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <p className="text-[13px] text-[#9ca3af]">No git tasks assigned</p>
-              <p className="text-[11px] text-[#6b7280] mt-1">
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 0" }} className="text-center">
+              <p className="text-[13px] text-[var(--text-secondary)]">No git tasks assigned</p>
+              <p className="text-[11px] text-[var(--text-muted)]" style={{ marginTop: 4 }}>
                 Tasks will appear here when assigned from the hub
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div style={{ overflowX: "auto" }}>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -264,17 +264,17 @@ export default function SpokeView() {
                   {gitTasks.map((gt) => (
                     <tr key={gt.id}>
                       <td>
-                        <span className="text-[12px] text-[#f9fafb] font-medium">
+                        <span className="text-[12px] text-[var(--text-primary)] font-medium">
                           {gt.title}
                         </span>
                         {gt.repoUrl && (
-                          <span className="text-[10px] text-[#6b7280] ml-1.5 truncate">
+                          <span className="text-[10px] text-[var(--text-muted)] truncate" style={{ marginLeft: 6 }}>
                             {gt.repoUrl}
                           </span>
                         )}
                       </td>
                       <td>
-                        <span className="text-[11px] text-[#9ca3af] font-mono">
+                        <span className="text-[11px] text-[var(--text-secondary)] font-mono">
                           {gt.branch ?? "—"}
                         </span>
                       </td>
@@ -305,15 +305,16 @@ export default function SpokeView() {
 
       {/* Feedback Form */}
       <div>
-        <h3 className="text-[14px] font-semibold text-[#f9fafb] mb-2">Submit Feedback</h3>
-        <div className="bg-[#1f2937] border border-[#374151] rounded-xl p-4 space-y-3">
+        <h3 className="text-[14px] font-semibold text-[var(--text-primary)]" style={{ marginBottom: 8 }}>Submit Feedback</h3>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <label className="text-[11px] text-[#9ca3af] font-medium mb-1 block">
+            <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>
               Task
             </label>
             {tasks.length > 0 ? (
               <select
-                className="w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-[12px] text-[#f9fafb] focus:outline-none focus:border-[#20808D]"
+                style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px" }}
+                className="text-[12px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
                 value={feedbackIssueId}
                 onChange={(e) => setFeedbackIssueId(e.target.value)}
               >
@@ -333,18 +334,19 @@ export default function SpokeView() {
             )}
           </div>
           <div>
-            <label className="text-[11px] text-[#9ca3af] font-medium mb-1 block">
+            <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>
               Comment
             </label>
             <textarea
-              className="w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-[12px] text-[#f9fafb] placeholder:text-[#6b7280] focus:outline-none focus:border-[#20808D] resize-none"
+              style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px", resize: "none" }}
+              className="text-[12px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--primary)]"
               rows={3}
               placeholder="Describe the result or feedback..."
               value={feedbackComment}
               onChange={(e) => setFeedbackComment(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Button
               size="sm"
               icon={<Send size={12} />}
@@ -354,12 +356,12 @@ export default function SpokeView() {
               {feedbackMutation.isPending ? "Sending..." : "Submit"}
             </Button>
             {feedbackSent && (
-              <span className="text-[11px] text-[#22c55e] font-medium">
+              <span className="text-[11px] text-[var(--success)] font-medium">
                 Feedback submitted
               </span>
             )}
             {feedbackMutation.isError && (
-              <span className="text-[11px] text-[#ef4444] font-medium">
+              <span className="text-[11px] text-[var(--error)] font-medium">
                 Failed to submit
               </span>
             )}

@@ -42,16 +42,16 @@ export default function Agents() {
   });
 
   return (
-    <div className="p-6 flex flex-col gap-5 animate-fade-in">
+    <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
         <div>
-          <h2 className="text-[18px] font-bold text-[#f9fafb]">Agents</h2>
-          <p className="text-[12px] text-[#6b7280] mt-0.5">
+          <h2 className="text-[18px] font-bold text-[var(--text-primary)]">Agents</h2>
+          <p className="text-[12px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>
             {agents.length} agent{agents.length !== 1 ? "s" : ""} configured
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Button
             variant="ghost"
             size="sm"
@@ -72,8 +72,8 @@ export default function Agents() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="w-60">
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <div style={{ width: 240 }}>
           <Input
             icon={<Search size={12} />}
             placeholder="Search agents..."
@@ -82,7 +82,7 @@ export default function Agents() {
           />
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {(["all", "running", "idle", "error", "offline", "paused"] as const).map((s) => (
             <button
               key={s}
@@ -90,8 +90,8 @@ export default function Agents() {
               className={cn(
                 "px-2.5 py-1 text-[11px] rounded-md font-medium transition-colors",
                 statusFilter === s
-                  ? "bg-[#20808D]/20 text-[#06b6d4] border border-[#20808D]/30"
-                  : "text-[#9ca3af] hover:text-[#f9fafb] hover:bg-[#1f2937] border border-transparent"
+                  ? "bg-[var(--primary)]/20 text-[var(--accent)] border border-[var(--primary)]/30"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] border border-transparent"
               )}
             >
               {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
@@ -99,8 +99,8 @@ export default function Agents() {
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 ml-auto">
-          <span className="text-[10px] text-[#6b7280] uppercase tracking-wide">Adapter:</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
+          <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide">Adapter:</span>
           {(["all", "openai", "anthropic", "gemini", "ollama", "custom"] as const).map((a) => (
             <button
               key={a}
@@ -108,8 +108,8 @@ export default function Agents() {
               className={cn(
                 "px-2 py-1 text-[10px] rounded font-medium transition-colors",
                 adapterFilter === a
-                  ? "bg-[#374151] text-[#f9fafb]"
-                  : "text-[#6b7280] hover:text-[#9ca3af]"
+                  ? "bg-[var(--border)] text-[var(--text-primary)]"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
               )}
             >
               {a === "all" ? "All" : ADAPTER_LABELS[a]}
@@ -119,21 +119,21 @@ export default function Agents() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}>
         {isLoading ? (
           <SkeletonTable rows={6} cols={6} />
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-12 h-12 rounded-xl bg-[#374151] flex items-center justify-center mb-3">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5">
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", textAlign: "center" }}>
+            <div style={{ width: 48, height: 48, borderRadius: "var(--radius-lg)", backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
                 <rect x="2" y="3" width="20" height="14" rx="2" />
                 <path d="M8 21h8M12 17v4" />
               </svg>
             </div>
-            <p className="text-[13px] font-medium text-[#9ca3af]">
+            <p className="text-[13px] font-medium text-[var(--text-secondary)]">
               {search || statusFilter !== "all" ? "No agents match your filters" : "No agents yet"}
             </p>
-            <p className="text-[11px] text-[#6b7280] mt-1">
+            <p className="text-[11px] text-[var(--text-muted)]" style={{ marginTop: 4 }}>
               {search || statusFilter !== "all"
                 ? "Try adjusting your search or filters"
                 : "Create your first agent to get started"}
@@ -150,7 +150,7 @@ export default function Agents() {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div style={{ overflowX: "auto" }}>
             <table className="data-table">
               <thead>
                 <tr>
@@ -167,17 +167,17 @@ export default function Agents() {
                   <tr
                     key={agent.id}
                     onClick={() => navigate(`/agents/${agent.id}`)}
-                    className="cursor-pointer hover:bg-[#263244] transition-colors"
+                    className="cursor-pointer hover:bg-[var(--surface-raised)] transition-colors"
                   >
                     <td>
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-[#20808D]/15 border border-[#20808D]/25 flex items-center justify-center text-[#20808D] text-[10px] font-bold flex-shrink-0">
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div className="text-[var(--primary)] text-[10px] font-bold" style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: "rgba(var(--primary-rgb), 0.15)", border: "1px solid rgba(var(--primary-rgb), 0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           {agent.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-[12px] font-semibold text-[#f9fafb]">{agent.name}</p>
+                          <p className="text-[12px] font-semibold text-[var(--text-primary)]">{agent.name}</p>
                           {agent.title && (
-                            <p className="text-[10px] text-[#6b7280] truncate max-w-[180px]">
+                            <p className="text-[10px] text-[var(--text-muted)] truncate" style={{ maxWidth: 180 }}>
                               {agent.title}
                             </p>
                           )}
@@ -185,12 +185,12 @@ export default function Agents() {
                       </div>
                     </td>
                     <td>
-                      <span className="text-[11px] bg-[#374151] text-[#9ca3af] px-2 py-0.5 rounded font-medium">
+                      <span className="text-[11px] bg-[var(--border)] text-[var(--text-secondary)] px-2 py-0.5 rounded font-medium">
                         {agent.role}
                       </span>
                     </td>
                     <td>
-                      <span className="text-[11px] text-[#9ca3af]">
+                      <span className="text-[11px] text-[var(--text-secondary)]">
                         {ADAPTER_LABELS[agent.adapterType]}
                       </span>
                     </td>
@@ -199,14 +199,16 @@ export default function Agents() {
                     </td>
                     <td>
                       <div>
-                        <p className="text-[12px] text-[#f9fafb]">
+                        <p className="text-[12px] text-[var(--text-primary)]">
                           {formatCents(agent.spentCents)}
-                          <span className="text-[#6b7280]"> / {formatCents(agent.budgetCents)}</span>
+                          <span className="text-[var(--text-muted)]"> / {formatCents(agent.budgetCents)}</span>
                         </p>
-                        <div className="h-1 w-16 bg-[#374151] rounded-full mt-1 overflow-hidden">
+                        <div style={{ height: 4, width: 64, backgroundColor: "var(--border)", borderRadius: 9999, marginTop: 4, overflow: "hidden" }}>
                           <div
-                            className="h-full bg-[#20808D] rounded-full"
                             style={{
+                              height: "100%",
+                              backgroundColor: "var(--primary)",
+                              borderRadius: 9999,
                               width: `${agent.budgetCents > 0 ? Math.min(100, (agent.spentCents / agent.budgetCents) * 100) : 0}%`,
                             }}
                           />
@@ -214,7 +216,7 @@ export default function Agents() {
                       </div>
                     </td>
                     <td>
-                      <span className="text-[11px] text-[#9ca3af]">
+                      <span className="text-[11px] text-[var(--text-secondary)]">
                         {agent.lastHeartbeatAt ? timeAgo(agent.lastHeartbeatAt) : "Never"}
                       </span>
                     </td>

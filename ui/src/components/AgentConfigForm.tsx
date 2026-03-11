@@ -124,7 +124,7 @@ export function AgentConfigForm({
       />
 
       <div>
-        <label className="block text-[11px] font-medium text-[#9ca3af] uppercase tracking-wide mb-1">
+        <label className="block text-[11px] font-medium text-[var(--text-secondary)] uppercase tracking-wide mb-1">
           Adapter Type
         </label>
         <Select
@@ -138,7 +138,7 @@ export function AgentConfigForm({
             {ADAPTER_TYPES.map((a) => (
               <SelectItem key={a.value} value={a.value}>
                 <span className="font-medium">{a.label}</span>
-                <span className="ml-2 text-[#6b7280] text-[10px]">{a.description}</span>
+                <span className="ml-2 text-[var(--text-muted)] text-[10px]">{a.description}</span>
               </SelectItem>
             ))}
           </SelectContent>
@@ -146,8 +146,8 @@ export function AgentConfigForm({
       </div>
 
       {/* Adapter-specific config fields */}
-      <div className="bg-[#111827] rounded-lg border border-[#374151] p-3 flex flex-col gap-3">
-        <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider">
+      <div className="bg-[var(--bg-alt)] rounded-[var(--radius-md)] border border-[var(--border)] p-3 flex flex-col gap-3">
+        <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">
           {ADAPTER_TYPES.find((a) => a.value === adapterType)?.label} Config
         </p>
         {currentFields.map((field) => (
