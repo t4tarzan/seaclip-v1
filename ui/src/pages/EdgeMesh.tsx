@@ -65,7 +65,7 @@ function MeshCanvas({
 
   const connectionStyle = (quality: MeshConnection["quality"]) => {
     if (quality === "healthy")
-      return { stroke: "#20808D", strokeDasharray: "none", opacity: 0.5 };
+      return { stroke: "#38bdf8", strokeDasharray: "none", opacity: 0.5 };
     if (quality === "degraded")
       return { stroke: "#eab308", strokeDasharray: "6 4", opacity: 0.6 };
     return { stroke: "#374151", strokeDasharray: "3 5", opacity: 0.4 };
@@ -74,7 +74,7 @@ function MeshCanvas({
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
-      className="w-full h-full"
+      style={{ width: "100%", height: "100%" }}
       aria-label="Edge mesh network visualization"
     >
       {/* Background grid */}
@@ -95,8 +95,8 @@ function MeshCanvas({
           />
         </pattern>
         <radialGradient id="hub-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#20808D" stopOpacity="0.15" />
-          <stop offset="100%" stopColor="#20808D" stopOpacity="0" />
+          <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
         </radialGradient>
       </defs>
 
@@ -150,7 +150,7 @@ function MeshCanvas({
         );
       })}
 
-      {/* Spoke device nodes (foreign objects for HTML rendering) */}
+      {/* Spoke device nodes (foreign object for HTML rendering) */}
       {spokes.map((device, idx) => {
         const pos = getPosition(idx, spokes.length, RADIUS, CX, CY);
         const nodeW = 76;
@@ -215,33 +215,45 @@ function DeviceDetailPanel({
   const tele = device.telemetry;
 
   return (
-    <div className="bg-[#1f2937] border-l border-[#374151] w-80 flex-shrink-0 flex flex-col animate-slide-in overflow-y-auto">
+    <div
+      style={{
+        backgroundColor: "var(--surface)",
+        borderLeft: "1px solid var(--border)",
+        width: 320,
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+        overflowY: "auto",
+      }}
+      className="animate-slide-in"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-[#374151]">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 16, borderBottom: "1px solid var(--border)" }}>
         <div>
-          <h3 className="text-[13px] font-semibold text-[#f9fafb]">{device.name}</h3>
-          <p className="text-[10px] text-[#6b7280] mt-0.5">{device.hostname}</p>
+          <h3 className="text-[13px] font-semibold text-[var(--text-primary)]">{device.name}</h3>
+          <p className="text-[10px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>{device.hostname}</p>
         </div>
         <button
           onClick={onClose}
-          className="p-1 rounded text-[#6b7280] hover:text-[#f9fafb] hover:bg-[#374151] transition-colors"
+          style={{ padding: 4, borderRadius: 4 }}
+          className="text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors"
         >
           <X size={14} />
         </button>
       </div>
 
-      <div className="p-4 flex flex-col gap-4">
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
         {/* Status */}
-        <div className="flex items-center justify-between">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <StatusBadge type="device" value={device.status} />
-          <span className="text-[10px] text-[#6b7280]">
+          <span className="text-[10px] text-[var(--text-muted)]">
             Last seen: {timeAgo(device.lastSeenAt)}
           </span>
         </div>
 
         {/* Telemetry */}
-        <div className="flex flex-col gap-3">
-          <h4 className="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wider">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <h4 className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
             Telemetry
           </h4>
 
@@ -250,72 +262,74 @@ function DeviceDetailPanel({
             { label: "Memory", value: tele.memoryPercent, icon: <HardDrive size={11} />, unit: "%" },
             { label: "Disk", value: tele.diskPercent, icon: <HardDrive size={11} />, unit: "%" },
           ].map(({ label, value, icon, unit }) => (
-            <div key={label} className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-[11px] text-[#9ca3af]">
+            <div key={label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }} className="text-[11px] text-[var(--text-secondary)]">
                   {icon}
                   {label}
                 </div>
-                <span className="text-[11px] font-mono text-[#f9fafb]">
+                <span className="text-[11px] font-mono text-[var(--text-primary)]">
                   {value.toFixed(1)}{unit}
                 </span>
               </div>
-              <div className="h-1.5 w-full bg-[#374151] rounded-full overflow-hidden">
+              <div style={{ height: 6, width: "100%", backgroundColor: "var(--border)", borderRadius: 9999, overflow: "hidden" }}>
                 <div
-                  className="h-full rounded-full transition-all duration-500"
+                  className="transition-all duration-500"
                   style={{
+                    height: "100%",
+                    borderRadius: 9999,
                     width: `${Math.min(100, value)}%`,
                     backgroundColor:
-                      value > 85 ? "#ef4444" : value > 65 ? "#eab308" : "#20808D",
+                      value > 85 ? "var(--error)" : value > 65 ? "var(--warning)" : "var(--primary)",
                   }}
                 />
               </div>
             </div>
           ))}
 
-          <div className="grid grid-cols-2 gap-3 mt-1">
-            <div className="bg-[#111827] rounded-lg p-2.5">
-              <div className="flex items-center gap-1.5 text-[10px] text-[#6b7280] mb-1">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginTop: 4 }}>
+            <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 8, padding: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }} className="text-[10px] text-[var(--text-muted)]">
                 <Thermometer size={10} /> Temperature
               </div>
               <p
                 className={cn(
                   "text-[16px] font-bold",
                   tele.temperatureCelsius > 80
-                    ? "text-[#ef4444]"
+                    ? "text-[var(--error)]"
                     : tele.temperatureCelsius > 65
-                    ? "text-[#eab308]"
-                    : "text-[#22c55e]"
+                    ? "text-[var(--warning)]"
+                    : "text-[var(--success)]"
                 )}
               >
                 {tele.temperatureCelsius.toFixed(1)}°C
               </p>
             </div>
-            <div className="bg-[#111827] rounded-lg p-2.5">
-              <div className="flex items-center gap-1.5 text-[10px] text-[#6b7280] mb-1">
+            <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 8, padding: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }} className="text-[10px] text-[var(--text-muted)]">
                 <Activity size={10} /> Tasks
               </div>
-              <p className="text-[16px] font-bold text-[#f9fafb]">
+              <p className="text-[16px] font-bold text-[var(--text-primary)]">
                 {tele.tasksProcessed.toLocaleString()}
               </p>
             </div>
           </div>
 
           {/* Network */}
-          <div className="bg-[#111827] rounded-lg p-2.5">
-            <div className="flex items-center gap-1.5 text-[10px] text-[#6b7280] mb-2">
+          <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 8, padding: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }} className="text-[10px] text-[var(--text-muted)]">
               <Wifi size={10} /> Network
             </div>
-            <div className="flex gap-4">
+            <div style={{ display: "flex", gap: 16 }}>
               <div>
-                <p className="text-[9px] text-[#6b7280]">↓ RX</p>
-                <p className="text-[11px] font-mono text-[#f9fafb]">
+                <p className="text-[9px] text-[var(--text-muted)]">↓ RX</p>
+                <p className="text-[11px] font-mono text-[var(--text-primary)]">
                   {formatBytes(tele.networkRxBps)}/s
                 </p>
               </div>
               <div>
-                <p className="text-[9px] text-[#6b7280]">↑ TX</p>
-                <p className="text-[11px] font-mono text-[#f9fafb]">
+                <p className="text-[9px] text-[var(--text-muted)]">↑ TX</p>
+                <p className="text-[11px] font-mono text-[var(--text-primary)]">
                   {formatBytes(tele.networkTxBps)}/s
                 </p>
               </div>
@@ -323,9 +337,9 @@ function DeviceDetailPanel({
           </div>
 
           {/* Uptime */}
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-[#6b7280]">Uptime</span>
-            <span className="text-[#9ca3af] font-mono">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }} className="text-[11px]">
+            <span className="text-[var(--text-muted)]">Uptime</span>
+            <span className="text-[var(--text-secondary)] font-mono">
               {Math.floor(tele.uptime / 86400)}d{" "}
               {Math.floor((tele.uptime % 86400) / 3600)}h{" "}
               {Math.floor((tele.uptime % 3600) / 60)}m
@@ -335,9 +349,12 @@ function DeviceDetailPanel({
 
         {/* Assigned Agent */}
         {device.assignedAgentName && (
-          <div className="bg-[#20808D]/10 border border-[#20808D]/25 rounded-lg p-3">
-            <p className="text-[10px] text-[#6b7280] mb-1">Assigned Agent</p>
-            <p className="text-[12px] font-semibold text-[#06b6d4]">
+          <div
+            style={{ borderRadius: 8, padding: 12 }}
+            className="bg-[var(--primary)]/10 border border-[var(--primary)]/25"
+          >
+            <p className="text-[10px] text-[var(--text-muted)]" style={{ marginBottom: 4 }}>Assigned Agent</p>
+            <p className="text-[12px] font-semibold text-[var(--accent)]">
               {device.assignedAgentName}
             </p>
           </div>
@@ -345,22 +362,22 @@ function DeviceDetailPanel({
 
         {/* Location */}
         {device.location && (
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-[#6b7280]">Location</span>
-            <span className="text-[#9ca3af]">{device.location}</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }} className="text-[11px]">
+            <span className="text-[var(--text-muted)]">Location</span>
+            <span className="text-[var(--text-secondary)]">{device.location}</span>
           </div>
         )}
 
         {/* IP */}
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-[#6b7280]">IP Address</span>
-          <span className="text-[#9ca3af] font-mono">{device.ipAddress}</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }} className="text-[11px]">
+          <span className="text-[var(--text-muted)]">IP Address</span>
+          <span className="text-[var(--text-secondary)] font-mono">{device.ipAddress}</span>
         </div>
 
         {/* Registered */}
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-[#6b7280]">Registered</span>
-          <span className="text-[#9ca3af]">{timeAgo(device.registeredAt)}</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }} className="text-[11px]">
+          <span className="text-[var(--text-muted)]">Registered</span>
+          <span className="text-[var(--text-secondary)]">{timeAgo(device.registeredAt)}</span>
         </div>
       </div>
     </div>
@@ -380,26 +397,45 @@ export default function EdgeMesh() {
 
   if (isLoading) {
     return (
-      <div className="p-6 flex flex-col gap-4">
-        <div className="grid grid-cols-4 gap-3">
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           {[1, 2, 3, 4].map((i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
-        <div className="h-96 bg-[#1f2937] border border-[#374151] rounded-xl skeleton-shimmer" />
+        <div
+          style={{
+            height: 384,
+            backgroundColor: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+          }}
+          className="skeleton-shimmer"
+        />
       </div>
     );
   }
 
   if (!mesh) {
     return (
-      <div className="p-6 flex flex-col items-center justify-center py-20 text-center gap-4">
-        <div className="w-14 h-14 rounded-xl bg-[#1f2937] border border-[#374151] flex items-center justify-center">
-          <Network size={28} className="text-[#374151]" />
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0", textAlign: "center", gap: 16 }}>
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 12,
+            backgroundColor: "var(--surface)",
+            border: "1px solid var(--border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Network size={28} className="text-[var(--border)]" />
         </div>
         <div>
-          <p className="text-[14px] font-semibold text-[#9ca3af]">No Edge Mesh Data</p>
-          <p className="text-[12px] text-[#6b7280] mt-1">
+          <p className="text-[14px] font-semibold text-[var(--text-secondary)]">No Edge Mesh Data</p>
+          <p className="text-[12px] text-[var(--text-muted)]" style={{ marginTop: 4 }}>
             Register edge devices to visualize your mesh network.
           </p>
         </div>
@@ -411,32 +447,45 @@ export default function EdgeMesh() {
   }
 
   const statusSummary = [
-    { label: "Online", count: mesh.onlineCount, color: "#22c55e" },
-    { label: "Degraded", count: mesh.degradedCount, color: "#eab308" },
-    { label: "Offline", count: mesh.offlineCount, color: "#6b7280" },
-    { label: "Processing", count: mesh.totalTasksProcessing, color: "#20808D" },
+    { label: "Online", count: mesh.onlineCount, color: "var(--success)" },
+    { label: "Degraded", count: mesh.degradedCount, color: "var(--warning)" },
+    { label: "Offline", count: mesh.offlineCount, color: "var(--text-muted)" },
+    { label: "Processing", count: mesh.totalTasksProcessing, color: "var(--primary)" },
   ];
 
   return (
-    <div className="flex flex-col h-full animate-fade-in">
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }} className="animate-fade-in">
       {/* Top bar */}
-      <div className="flex items-center gap-4 px-6 py-3 border-b border-[#374151] bg-[#111827] flex-wrap">
-        <div className="flex items-center gap-4 flex-wrap flex-1">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          padding: "12px 24px",
+          borderBottom: "1px solid var(--border)",
+          backgroundColor: "var(--bg-alt)",
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", flex: 1 }}>
           {statusSummary.map(({ label, count, color }) => (
-            <div key={label} className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-              <span className="text-[12px] text-[#9ca3af]">{label}:</span>
-              <span className="text-[12px] font-bold text-[#f9fafb]">{count}</span>
+            <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 9999, backgroundColor: color }} />
+              <span className="text-[12px] text-[var(--text-secondary)]">{label}:</span>
+              <span className="text-[12px] font-bold text-[var(--text-primary)]">{count}</span>
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <div className={cn(
-            "flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded",
-            isFetching
-              ? "text-[#20808D] bg-[#20808D]/10"
-              : "text-[#6b7280]"
-          )}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div
+            style={{ padding: "4px 8px", borderRadius: 4 }}
+            className={cn(
+              "flex items-center gap-1 text-[10px] font-medium",
+              isFetching
+                ? "text-[var(--primary)] bg-[var(--primary)]/10"
+                : "text-[var(--text-muted)]"
+            )}
+          >
             <RefreshCw size={9} className={isFetching ? "animate-spin" : ""} />
             {isFetching ? "Refreshing..." : "Auto-refresh 5s"}
           </div>
@@ -455,16 +504,16 @@ export default function EdgeMesh() {
       </div>
 
       {/* Canvas + Detail Panel */}
-      <div className="flex flex-1 min-h-0">
+      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         {/* Mesh Canvas */}
-        <div className="flex-1 bg-[#0a0f1a] overflow-hidden relative">
+        <div style={{ flex: 1, backgroundColor: "var(--bg)", overflow: "hidden", position: "relative" }}>
           {mesh.devices.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center gap-3">
-              <Network size={40} className="text-[#1f2937]" />
-              <p className="text-[13px] text-[#6b7280]">No devices in mesh</p>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center", gap: 12 }}>
+              <Network size={40} className="text-[var(--surface)]" />
+              <p className="text-[13px] text-[var(--text-muted)]">No devices in mesh</p>
             </div>
           ) : (
-            <div className="w-full h-full flex items-center justify-center p-4">
+            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
               <MeshCanvas
                 devices={mesh.devices}
                 connections={mesh.connections}
@@ -476,16 +525,29 @@ export default function EdgeMesh() {
           )}
 
           {/* Legend */}
-          <div className="absolute bottom-4 left-4 bg-[#111827]/90 backdrop-blur border border-[#374151] rounded-lg p-3 flex flex-col gap-2">
-            <p className="text-[9px] font-semibold text-[#6b7280] uppercase tracking-wider">
+          <div
+            style={{
+              position: "absolute",
+              bottom: 16,
+              left: 16,
+              border: "1px solid var(--border)",
+              borderRadius: 8,
+              padding: 12,
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+            className="bg-[var(--bg-alt)]/90 backdrop-blur"
+          >
+            <p className="text-[9px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">
               Connection Quality
             </p>
             {[
-              { label: "Healthy", dash: "solid", color: "#20808D" },
+              { label: "Healthy", dash: "solid", color: "#38bdf8" },
               { label: "Degraded", dash: "dashed", color: "#eab308" },
               { label: "Offline", dash: "dotted", color: "#374151" },
             ].map(({ label, dash, color }) => (
-              <div key={label} className="flex items-center gap-2">
+              <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <svg width="28" height="8" viewBox="0 0 28 8">
                   <line
                     x1="0" y1="4" x2="28" y2="4"
@@ -496,7 +558,7 @@ export default function EdgeMesh() {
                     }
                   />
                 </svg>
-                <span className="text-[10px] text-[#9ca3af]">{label}</span>
+                <span className="text-[10px] text-[var(--text-secondary)]">{label}</span>
               </div>
             ))}
           </div>

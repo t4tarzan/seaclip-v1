@@ -15,22 +15,22 @@ const actorIcons: Record<ActivityEvent["actorType"], React.ElementType> = {
 };
 
 const actionColors: Record<string, string> = {
-  created: "text-[#22c55e]",
-  updated: "text-[#06b6d4]",
-  deleted: "text-[#ef4444]",
-  started: "text-[#20808D]",
-  completed: "text-[#22c55e]",
-  failed: "text-[#ef4444]",
-  approved: "text-[#22c55e]",
-  rejected: "text-[#ef4444]",
-  invoked: "text-[#eab308]",
-  heartbeat: "text-[#6b7280]",
-  registered: "text-[#20808D]",
+  created: "text-[var(--success)]",
+  updated: "text-[var(--accent)]",
+  deleted: "text-[var(--error)]",
+  started: "text-[var(--primary)]",
+  completed: "text-[var(--success)]",
+  failed: "text-[var(--error)]",
+  approved: "text-[var(--success)]",
+  rejected: "text-[var(--error)]",
+  invoked: "text-[var(--warning)]",
+  heartbeat: "text-[var(--text-muted)]",
+  registered: "text-[var(--primary)]",
 };
 
 function getActionColor(action: string): string {
   const key = Object.keys(actionColors).find((k) => action.toLowerCase().includes(k));
-  return key ? actionColors[key] : "text-[#9ca3af]";
+  return key ? actionColors[key] : "text-[var(--text-secondary)]";
 }
 
 function getActionIcon(action: string): React.ElementType {
@@ -57,21 +57,21 @@ export function ActivityRow({ event, compact = false }: ActivityRowProps) {
   if (compact) {
     return (
       <div className="flex items-start gap-2.5 py-2">
-        <div className="w-6 h-6 rounded-full bg-[#374151] flex items-center justify-center flex-shrink-0 mt-0.5">
-          <ActorIcon size={11} className="text-[#9ca3af]" />
+        <div className="w-6 h-6 rounded-full bg-[var(--border)] flex items-center justify-center flex-shrink-0 mt-0.5">
+          <ActorIcon size={11} className="text-[var(--text-secondary)]" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] text-[#d1d5db] leading-relaxed">
-            <span className="font-medium text-[#f9fafb]">{actorName}</span>{" "}
+          <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+            <span className="font-medium text-[var(--text-primary)]">{actorName}</span>{" "}
             <span className={cn("font-medium", actionColor)}>{action}</span>{" "}
-            <span className="text-[#9ca3af]">{entityType}</span>{" "}
-            <span className="font-medium text-[#f9fafb] truncate">{entityName}</span>
+            <span className="text-[var(--text-secondary)]">{entityType}</span>{" "}
+            <span className="font-medium text-[var(--text-primary)] truncate">{entityName}</span>
           </p>
           {detail && (
-            <p className="text-[10px] text-[#6b7280] truncate mt-0.5">{detail}</p>
+            <p className="text-[10px] text-[var(--text-muted)] truncate mt-0.5">{detail}</p>
           )}
         </div>
-        <span className="text-[10px] text-[#6b7280] flex-shrink-0 mt-0.5">
+        <span className="text-[10px] text-[var(--text-muted)] flex-shrink-0 mt-0.5">
           {timeAgo(createdAt)}
         </span>
       </div>
@@ -81,7 +81,7 @@ export function ActivityRow({ event, compact = false }: ActivityRowProps) {
   return (
     <tr className="group hover:bg-[#1a2132] transition-colors">
       <td className="px-3 py-2.5 whitespace-nowrap">
-        <span className="text-[11px] text-[#9ca3af] font-mono">
+        <span className="text-[11px] text-[var(--text-secondary)] font-mono">
           {new Date(createdAt).toLocaleTimeString("en-US", {
             hour: "2-digit",
             minute: "2-digit",
@@ -89,7 +89,7 @@ export function ActivityRow({ event, compact = false }: ActivityRowProps) {
           })}
         </span>
         <br />
-        <span className="text-[10px] text-[#6b7280]">
+        <span className="text-[10px] text-[var(--text-muted)]">
           {new Date(createdAt).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -98,12 +98,12 @@ export function ActivityRow({ event, compact = false }: ActivityRowProps) {
       </td>
       <td className="px-3 py-2.5">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-[#374151] flex items-center justify-center flex-shrink-0">
-            <ActorIcon size={11} className="text-[#9ca3af]" />
+          <div className="w-6 h-6 rounded-full bg-[var(--border)] flex items-center justify-center flex-shrink-0">
+            <ActorIcon size={11} className="text-[var(--text-secondary)]" />
           </div>
           <div>
-            <p className="text-[12px] font-medium text-[#f9fafb]">{actorName}</p>
-            <p className="text-[10px] text-[#6b7280] capitalize">{event.actorType}</p>
+            <p className="text-[12px] font-medium text-[var(--text-primary)]">{actorName}</p>
+            <p className="text-[10px] text-[var(--text-muted)] capitalize">{event.actorType}</p>
           </div>
         </div>
       </td>
@@ -116,11 +116,11 @@ export function ActivityRow({ event, compact = false }: ActivityRowProps) {
         </div>
       </td>
       <td className="px-3 py-2.5">
-        <p className="text-[12px] text-[#f9fafb] capitalize">{entityType}</p>
-        <p className="text-[10px] text-[#9ca3af]">{entityName}</p>
+        <p className="text-[12px] text-[var(--text-primary)] capitalize">{entityType}</p>
+        <p className="text-[10px] text-[var(--text-secondary)]">{entityName}</p>
       </td>
       <td className="px-3 py-2.5 max-w-[280px]">
-        <p className="text-[11px] text-[#6b7280] truncate">{detail ?? "—"}</p>
+        <p className="text-[11px] text-[var(--text-muted)] truncate">{detail ?? "—"}</p>
       </td>
     </tr>
   );

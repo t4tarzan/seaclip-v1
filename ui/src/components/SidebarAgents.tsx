@@ -7,11 +7,11 @@ import { cn } from "../lib/utils";
 import type { Agent, AgentStatus } from "../lib/types";
 
 const STATUS_COLORS: Record<AgentStatus, string> = {
-  running: "bg-[#22c55e]",
-  idle: "bg-[#06b6d4]",
-  error: "bg-[#ef4444]",
-  offline: "bg-[#6b7280]",
-  paused: "bg-[#eab308]",
+  running: "bg-[var(--success)]",
+  idle: "bg-[var(--accent)]",
+  error: "bg-[var(--error)]",
+  offline: "bg-[var(--text-muted)]",
+  paused: "bg-[var(--warning)]",
 };
 
 interface SidebarAgentsProps {
@@ -41,11 +41,11 @@ export function SidebarAgents({ collapsed, onNewAgent }: SidebarAgentsProps) {
           <ChevronRight
             size={10}
             className={cn(
-              "text-[#6b7280]/60 transition-transform opacity-0 group-hover:opacity-100",
+              "text-[var(--text-muted)]/60 transition-transform opacity-0 group-hover:opacity-100",
               open && "rotate-90",
             )}
           />
-          <span className="text-[10px] font-medium uppercase tracking-widest font-mono text-[#6b7280]/60">
+          <span className="text-[10px] font-medium uppercase tracking-widest font-mono text-[var(--text-muted)]/60">
             Agents
           </span>
         </button>
@@ -55,7 +55,7 @@ export function SidebarAgents({ collapsed, onNewAgent }: SidebarAgentsProps) {
               e.stopPropagation();
               onNewAgent();
             }}
-            className="flex items-center justify-center h-4 w-4 rounded text-[#6b7280]/60 hover:text-[#f9fafb] hover:bg-[#1f2937] transition-colors"
+            className="flex items-center justify-center h-4 w-4 rounded text-[var(--text-muted)]/60 hover:text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
             aria-label="New agent"
           >
             <Plus size={10} />
@@ -66,10 +66,10 @@ export function SidebarAgents({ collapsed, onNewAgent }: SidebarAgentsProps) {
       {open && (
         <div className="flex flex-col gap-0.5 mt-0.5">
           {visibleAgents.length === 0 && (
-            <p className="px-3 py-1 text-[10px] text-[#6b7280]">No agents</p>
+            <p className="px-3 py-1 text-[10px] text-[var(--text-muted)]">No agents</p>
           )}
           {visibleAgents.map((agent: Agent) => {
-            const statusColor = STATUS_COLORS[agent.status] ?? "bg-[#6b7280]";
+            const statusColor = STATUS_COLORS[agent.status] ?? "bg-[var(--text-muted)]";
             const isRunning = agent.status === "running";
 
             return (
@@ -80,13 +80,13 @@ export function SidebarAgents({ collapsed, onNewAgent }: SidebarAgentsProps) {
                   cn(
                     "flex items-center gap-2.5 px-3 py-1.5 text-[13px] font-medium transition-colors mx-1 rounded-md",
                     isActive
-                      ? "bg-[#20808D]/15 text-[#f9fafb]"
-                      : "text-[#9ca3af] hover:bg-[#1f2937] hover:text-[#f9fafb]",
+                      ? "bg-[var(--primary)]/15 text-[var(--text-primary)]"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)]",
                   )
                 }
               >
-                <div className="w-5 h-5 rounded-md bg-[#20808D]/15 border border-[#20808D]/25 flex items-center justify-center flex-shrink-0">
-                  <Bot size={10} className="text-[#20808D]" />
+                <div className="w-5 h-5 rounded-md bg-[var(--primary)]/15 border border-[var(--primary)]/25 flex items-center justify-center flex-shrink-0">
+                  <Bot size={10} className="text-[var(--primary)]" />
                 </div>
                 <span className="flex-1 truncate text-[12px]">{agent.name}</span>
                 <span className="flex items-center gap-1 shrink-0">

@@ -13,21 +13,21 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   default:
-    "bg-[#1f2937] text-[#f9fafb] border border-[#374151] hover:bg-[#263244] hover:border-[#4b5563]",
+    "bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface-raised)] hover:border-[var(--border-hover)]",
   primary:
-    "bg-[#20808D] text-white border border-[#20808D] hover:bg-[#25919f] hover:border-[#25919f] shadow-sm",
+    "bg-[var(--primary)] text-[var(--bg)] border border-[var(--primary)] hover:bg-[var(--primary-hover)] hover:border-[var(--primary-hover)] shadow-sm font-semibold",
   ghost:
-    "bg-transparent text-[#9ca3af] hover:bg-[#1f2937] hover:text-[#f9fafb] border border-transparent",
+    "bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)] border border-transparent",
   destructive:
-    "bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/30 hover:bg-[#ef4444]/20 hover:border-[#ef4444]/50",
+    "bg-[var(--error-muted)] text-[var(--error)] border border-[var(--error)]/30 hover:bg-[var(--error)]/20 hover:border-[var(--error)]/50",
   outline:
-    "bg-transparent text-[#f9fafb] border border-[#374151] hover:bg-[#1f2937] hover:border-[#4b5563]",
+    "bg-transparent text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface)] hover:border-[var(--primary)]",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "h-7 px-2.5 text-[11px] gap-1.5 rounded-[5px]",
-  md: "h-8 px-3 text-[12px] gap-2 rounded-[6px]",
-  lg: "h-10 px-4 text-[13px] gap-2 rounded-[7px]",
+  sm: "h-7 px-2.5 text-[11px] gap-1.5 rounded-[var(--radius-sm)]",
+  md: "h-8 px-3.5 text-[12px] gap-2 rounded-[var(--radius-sm)]",
+  lg: "h-10 px-5 text-[13px] gap-2 rounded-[var(--radius-md)]",
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -49,10 +49,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          "inline-flex items-center justify-center font-medium transition-all duration-150",
+          "inline-flex items-center justify-center font-medium",
+          "transition-all duration-[var(--transition-fast)]",
           "disabled:opacity-50 disabled:cursor-not-allowed",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#20808D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0f1a]",
-          "select-none",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]",
+          "select-none cursor-pointer",
           variantStyles[variant],
           sizeStyles[size],
           className

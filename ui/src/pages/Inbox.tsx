@@ -98,32 +98,36 @@ export default function Inbox() {
   ];
 
   return (
-    <div className="p-6 flex flex-col gap-5 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }} className="animate-fade-in">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <h2 className="text-[18px] font-bold text-[#f9fafb]">Inbox</h2>
-          <p className="text-[12px] text-[#6b7280] mt-0.5">
+          <h2 className="text-[18px] font-bold text-[var(--text-primary)]">Inbox</h2>
+          <p className="text-[12px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>
             {items.length} item{items.length !== 1 ? "s" : ""} needing your attention
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1.5">
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 6 }}
             className={cn(
-              "px-2.5 py-1 text-[11px] rounded-md font-medium transition-colors flex items-center gap-1.5",
+              "text-[11px] font-medium transition-colors",
               tab === t.key
-                ? "bg-[#20808D]/20 text-[#06b6d4] border border-[#20808D]/30"
-                : "text-[#9ca3af] hover:text-[#f9fafb] hover:bg-[#1f2937] border border-transparent"
+                ? "bg-[var(--primary)]/20 text-[var(--accent)] border border-[var(--primary)]/30"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] border border-transparent"
             )}
           >
             {t.label}
             {t.count > 0 && (
-              <span className="bg-[#374151] text-[#9ca3af] text-[9px] px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
+              <span
+                style={{ padding: "2px 6px", borderRadius: 9999, minWidth: 16, textAlign: "center" }}
+                className="bg-[var(--border)] text-[var(--text-secondary)] text-[9px]"
+              >
                 {t.count}
               </span>
             )}
@@ -132,44 +136,46 @@ export default function Inbox() {
       </div>
 
       {/* Items */}
-      <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
         {isLoading ? (
-          <div className="p-4 space-y-3">
+          <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
             {[1, 2, 3].map((i) => (
               <SkeletonCard key={i} />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-12 h-12 rounded-xl bg-[#374151] flex items-center justify-center mb-3">
-              <Check size={24} className="text-[#22c55e]" />
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", textAlign: "center" }}>
+            <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+              <Check size={24} className="text-[var(--success)]" />
             </div>
-            <p className="text-[13px] font-medium text-[#9ca3af]">All caught up!</p>
-            <p className="text-[11px] text-[#6b7280] mt-1">
+            <p className="text-[13px] font-medium text-[var(--text-secondary)]">All caught up!</p>
+            <p className="text-[11px] text-[var(--text-muted)]" style={{ marginTop: 4 }}>
               No pending items in your inbox
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-[#374151]/50">
+          <div className="divide-y divide-[var(--border)]/50">
             {filtered.map((item) => {
               const Icon = item.icon;
               return (
                 <button
                   key={item.id}
                   onClick={() => navigate(item.route)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#263244] transition-colors group/item"
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", textAlign: "left" }}
+                  className="hover:bg-[var(--surface-raised)] transition-colors group/item"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[#374151] flex items-center justify-center flex-shrink-0">
-                    <Icon size={14} className="text-[#9ca3af]" />
+                  <div style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Icon size={14} className="text-[var(--text-secondary)]" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-[#f9fafb] truncate">{item.title}</p>
-                    <p className="text-[10px] text-[#6b7280] truncate">{item.description}</p>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className="text-[12px] font-semibold text-[var(--text-primary)] truncate">{item.title}</p>
+                    <p className="text-[10px] text-[var(--text-muted)] truncate">{item.description}</p>
                   </div>
-                  <span className="text-[10px] text-[#6b7280] flex-shrink-0">{timeAgo(item.time)}</span>
+                  <span className="text-[10px] text-[var(--text-muted)]" style={{ flexShrink: 0 }}>{timeAgo(item.time)}</span>
                   <button
                     onClick={(e) => { e.stopPropagation(); dismiss(item.id); }}
-                    className="p-1 rounded text-[#6b7280] hover:text-[#f9fafb] hover:bg-[#374151] transition-colors flex-shrink-0 opacity-0 group-hover/item:opacity-100"
+                    style={{ padding: 4, flexShrink: 0, borderRadius: 4 }}
+                    className="text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors opacity-0 group-hover/item:opacity-100"
                     title="Dismiss"
                   >
                     <X size={12} />

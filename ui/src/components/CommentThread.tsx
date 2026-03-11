@@ -26,11 +26,11 @@ export function CommentThread({ issueId }: CommentThreadProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <MessageSquare size={14} className="text-[#6b7280]" />
-        <h4 className="text-[13px] font-semibold text-[#f9fafb]">
+        <MessageSquare size={14} className="text-[var(--text-muted)]" />
+        <h4 className="text-[13px] font-semibold text-[var(--text-primary)]">
           Comments
           {comments.length > 0 && (
-            <span className="ml-1.5 text-[11px] text-[#6b7280] font-normal">
+            <span className="ml-1.5 text-[11px] text-[var(--text-muted)] font-normal">
               {comments.length}
             </span>
           )}
@@ -44,33 +44,33 @@ export function CommentThread({ issueId }: CommentThreadProps) {
               <div className="w-7 h-7 rounded-full skeleton-shimmer flex-shrink-0" />
               <div className="flex-1 flex flex-col gap-1.5">
                 <div className="h-3 w-24 skeleton-shimmer rounded" />
-                <div className="h-12 skeleton-shimmer rounded-lg" />
+                <div className="h-12 skeleton-shimmer rounded-[var(--radius-md)]" />
               </div>
             </div>
           ))}
         </div>
       ) : comments.length === 0 ? (
-        <div className="text-center py-8 text-[12px] text-[#6b7280]">
+        <div className="text-center py-8 text-[12px] text-[var(--text-muted)]">
           No comments yet. Be the first to comment.
         </div>
       ) : (
         <div className="flex flex-col gap-4">
           {comments.map((comment) => (
             <div key={comment.id} className="flex gap-3">
-              <div className="w-7 h-7 rounded-full bg-[#374151] flex items-center justify-center text-[11px] font-semibold text-[#9ca3af] flex-shrink-0">
+              <div className="w-7 h-7 rounded-full bg-[var(--border)] flex items-center justify-center text-[11px] font-semibold text-[var(--text-secondary)] flex-shrink-0">
                 {comment.authorName.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-[12px] font-semibold text-[#f9fafb]">
+                  <span className="text-[12px] font-semibold text-[var(--text-primary)]">
                     {comment.authorName}
                   </span>
-                  <span className="text-[10px] text-[#6b7280]">
+                  <span className="text-[10px] text-[var(--text-muted)]">
                     {timeAgo(comment.createdAt)}
                   </span>
                 </div>
-                <div className="bg-[#111827] border border-[#374151] rounded-lg p-3">
-                  <p className="text-[12px] text-[#d1d5db] whitespace-pre-wrap leading-relaxed">
+                <div className="bg-[var(--bg-alt)] border border-[var(--border)] rounded-[var(--radius-md)] p-3">
+                  <p className="text-[12px] text-[var(--text-secondary)] whitespace-pre-wrap leading-relaxed">
                     {comment.body}
                   </p>
                 </div>
@@ -94,7 +94,7 @@ export function CommentThread({ issueId }: CommentThreadProps) {
           }}
         />
         <div className="flex items-center justify-between">
-          <p className="text-[10px] text-[#6b7280]">⌘+Enter to submit</p>
+          <p className="text-[10px] text-[var(--text-muted)]">⌘+Enter to submit</p>
           <Button
             type="submit"
             variant="primary"

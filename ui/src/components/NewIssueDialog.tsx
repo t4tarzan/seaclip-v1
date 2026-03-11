@@ -85,7 +85,7 @@ export function NewIssueDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-medium text-[#9ca3af] uppercase tracking-wide mb-1">
+              <label className="block text-[11px] font-medium text-[var(--text-secondary)] uppercase tracking-wide mb-1">
                 Status
               </label>
               <Select
@@ -105,7 +105,7 @@ export function NewIssueDialog({
               </Select>
             </div>
             <div>
-              <label className="block text-[11px] font-medium text-[#9ca3af] uppercase tracking-wide mb-1">
+              <label className="block text-[11px] font-medium text-[var(--text-secondary)] uppercase tracking-wide mb-1">
                 Priority
               </label>
               <Select

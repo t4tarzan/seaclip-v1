@@ -45,7 +45,7 @@ export function SkeletonCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "bg-[#1f2937] border border-[#374151] rounded-xl p-4",
+        "bg-[var(--card)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5",
         className
       )}
     >
@@ -64,13 +64,13 @@ export function SkeletonCard({ className }: { className?: string }) {
 export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
     <div className="w-full">
-      <div className="flex gap-4 px-3 py-2.5 border-b border-[#374151]">
+      <div className="flex gap-4 px-3 py-2.5 border-b border-[var(--border)]">
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={i} height={10} className="flex-1" />
         ))}
       </div>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex gap-4 px-3 py-3 border-b border-[#1f2937]">
+        <div key={i} className="flex gap-4 px-3 py-3 border-b border-[var(--border-subtle)]">
           {Array.from({ length: cols }).map((_, j) => (
             <Skeleton key={j} height={12} className={j === 0 ? "flex-1 w-1/3" : "flex-1"} />
           ))}

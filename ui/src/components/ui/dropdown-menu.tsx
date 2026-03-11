@@ -19,9 +19,9 @@ export function DropdownMenuContent({
       <RadixDropdown.Content
         sideOffset={sideOffset}
         className={cn(
-          "z-50 min-w-[160px] overflow-hidden",
-          "bg-[#1f2937] border border-[#374151] rounded-lg shadow-xl",
-          "p-1",
+          "z-50 min-w-[180px] overflow-hidden",
+          "glass-surface rounded-[var(--radius-md)] shadow-xl",
+          "p-1.5",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -43,9 +43,9 @@ export function DropdownMenuItem({
     <RadixDropdown.Item
       className={cn(
         "relative flex cursor-default select-none items-center gap-2",
-        "rounded-[5px] px-2 py-1.5",
-        "text-[12px] text-[#f9fafb]",
-        "focus:bg-[#374151] focus:text-[#f9fafb] focus:outline-none",
+        "rounded-[var(--radius-sm)] px-2.5 py-2",
+        "text-[13px] text-[var(--text-primary)]",
+        "focus:bg-[var(--surface-raised)] focus:text-[var(--text-primary)] focus:outline-none",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         "transition-colors",
         inset && "pl-7",
@@ -66,9 +66,9 @@ export function DropdownMenuCheckboxItem({
     <RadixDropdown.CheckboxItem
       className={cn(
         "relative flex cursor-default select-none items-center gap-2",
-        "rounded-[5px] py-1.5 pl-7 pr-2",
-        "text-[12px] text-[#f9fafb]",
-        "focus:bg-[#374151] focus:outline-none",
+        "rounded-[var(--radius-sm)] py-2 pl-7 pr-2.5",
+        "text-[13px] text-[var(--text-primary)]",
+        "focus:bg-[var(--surface-raised)] focus:outline-none",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
       )}
@@ -94,9 +94,9 @@ export function DropdownMenuRadioItem({
     <RadixDropdown.RadioItem
       className={cn(
         "relative flex cursor-default select-none items-center gap-2",
-        "rounded-[5px] py-1.5 pl-7 pr-2",
-        "text-[12px] text-[#f9fafb]",
-        "focus:bg-[#374151] focus:outline-none",
+        "rounded-[var(--radius-sm)] py-2 pl-7 pr-2.5",
+        "text-[13px] text-[var(--text-primary)]",
+        "focus:bg-[var(--surface-raised)] focus:outline-none",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
       )}
@@ -120,10 +120,11 @@ export function DropdownMenuLabel({
   return (
     <RadixDropdown.Label
       className={cn(
-        "px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#6b7280]",
+        "px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]",
         inset && "pl-7",
         className
       )}
+      style={{ fontFamily: "var(--font-mono)" }}
       {...props}
     />
   );
@@ -135,7 +136,7 @@ export function DropdownMenuSeparator({
 }: RadixDropdown.DropdownMenuSeparatorProps & { className?: string }) {
   return (
     <RadixDropdown.Separator
-      className={cn("my-1 h-px bg-[#374151]", className)}
+      className={cn("my-1.5 h-px bg-[var(--border)]", className)}
       {...props}
     />
   );
@@ -151,10 +152,10 @@ export function DropdownMenuSubTrigger({
     <RadixDropdown.SubTrigger
       className={cn(
         "flex cursor-default select-none items-center gap-2",
-        "rounded-[5px] px-2 py-1.5",
-        "text-[12px] text-[#f9fafb]",
-        "focus:bg-[#374151] focus:outline-none",
-        "data-[state=open]:bg-[#374151]",
+        "rounded-[var(--radius-sm)] px-2.5 py-2",
+        "text-[13px] text-[var(--text-primary)]",
+        "focus:bg-[var(--surface-raised)] focus:outline-none",
+        "data-[state=open]:bg-[var(--surface-raised)]",
         inset && "pl-7",
         className
       )}
@@ -174,8 +175,8 @@ export function DropdownMenuSubContent({
     <RadixDropdown.SubContent
       className={cn(
         "z-50 min-w-[8rem] overflow-hidden",
-        "bg-[#1f2937] border border-[#374151] rounded-lg shadow-xl",
-        "p-1",
+        "glass-surface rounded-[var(--radius-md)] shadow-xl",
+        "p-1.5",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         className

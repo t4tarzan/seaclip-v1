@@ -111,10 +111,10 @@ export function CommandPalette() {
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh]">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-      <div className="relative w-full max-w-[520px] bg-[#1f2937] border border-[#374151] rounded-xl shadow-2xl overflow-hidden animate-fade-in">
+      <div className="relative w-full max-w-[520px] bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-2xl overflow-hidden animate-fade-in">
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-[#374151]">
-          <Search size={16} className="text-[#6b7280] flex-shrink-0" />
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)]">
+          <Search size={16} className="text-[var(--text-muted)] flex-shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -122,9 +122,9 @@ export function CommandPalette() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleInputKeyDown}
-            className="flex-1 bg-transparent text-[13px] text-[#f9fafb] placeholder:text-[#6b7280] focus:outline-none"
+            className="flex-1 bg-transparent text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
           />
-          <kbd className="text-[10px] text-[#6b7280] bg-[#111827] border border-[#374151] rounded px-1.5 py-0.5 font-mono">
+          <kbd className="text-[10px] text-[var(--text-muted)] bg-[var(--bg-alt)] border border-[var(--border)] rounded px-1.5 py-0.5 font-mono">
             ESC
           </kbd>
         </div>
@@ -133,7 +133,7 @@ export function CommandPalette() {
         <div className="max-h-[320px] overflow-y-auto py-2">
           {filtered.length === 0 ? (
             <div className="px-4 py-6 text-center">
-              <p className="text-[12px] text-[#6b7280]">No results for "{query}"</p>
+              <p className="text-[12px] text-[var(--text-muted)]">No results for "{query}"</p>
             </div>
           ) : (
             filtered.map((cmd, i) => {
@@ -145,25 +145,25 @@ export function CommandPalette() {
                   onMouseEnter={() => setSelectedIndex(i)}
                   className={cn(
                     "w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors",
-                    i === selectedIndex ? "bg-[#20808D]/15" : "hover:bg-[#111827]"
+                    i === selectedIndex ? "bg-[var(--primary)]/15" : "hover:bg-[var(--bg-alt)]"
                   )}
                 >
                   <div
                     className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
+                      "w-8 h-8 rounded-[var(--radius-md)] flex items-center justify-center flex-shrink-0",
                       i === selectedIndex
-                        ? "bg-[#20808D]/20 text-[#06b6d4]"
-                        : "bg-[#374151] text-[#9ca3af]"
+                        ? "bg-[var(--primary)]/20 text-[var(--accent)]"
+                        : "bg-[var(--border)] text-[var(--text-secondary)]"
                     )}
                   >
                     <Icon size={14} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={cn("text-[12px] font-medium", i === selectedIndex ? "text-[#f9fafb]" : "text-[#d1d5db]")}>
+                    <p className={cn("text-[12px] font-medium", i === selectedIndex ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]")}>
                       {cmd.label}
                     </p>
                     {cmd.description && (
-                      <p className="text-[10px] text-[#6b7280] truncate">{cmd.description}</p>
+                      <p className="text-[10px] text-[var(--text-muted)] truncate">{cmd.description}</p>
                     )}
                   </div>
                 </button>
@@ -173,16 +173,16 @@ export function CommandPalette() {
         </div>
 
         {/* Footer hint */}
-        <div className="px-4 py-2 border-t border-[#374151] flex items-center gap-3">
-          <div className="flex items-center gap-1 text-[10px] text-[#6b7280]">
-            <kbd className="bg-[#111827] border border-[#374151] rounded px-1 py-0.5 font-mono">↑↓</kbd>
+        <div className="px-4 py-2 border-t border-[var(--border)] flex items-center gap-3">
+          <div className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
+            <kbd className="bg-[var(--bg-alt)] border border-[var(--border)] rounded px-1 py-0.5 font-mono">↑↓</kbd>
             navigate
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-[#6b7280]">
-            <kbd className="bg-[#111827] border border-[#374151] rounded px-1 py-0.5 font-mono">↵</kbd>
+          <div className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
+            <kbd className="bg-[var(--bg-alt)] border border-[var(--border)] rounded px-1 py-0.5 font-mono">↵</kbd>
             select
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-[#6b7280] ml-auto">
+          <div className="flex items-center gap-1 text-[10px] text-[var(--text-muted)] ml-auto">
             <Command size={10} />
             <span>K to toggle</span>
           </div>

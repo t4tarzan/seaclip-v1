@@ -7,10 +7,10 @@ import {
 import type { IssuePriority } from "../lib/types";
 
 const config: Record<IssuePriority, { icon: typeof AlertTriangle; color: string; label: string }> = {
-  urgent: { icon: AlertTriangle, color: "#ef4444", label: "Urgent" },
+  urgent: { icon: AlertTriangle, color: "var(--error)", label: "Urgent" },
   high: { icon: ArrowUp, color: "#f97316", label: "High" },
-  medium: { icon: Minus, color: "#eab308", label: "Medium" },
-  low: { icon: ArrowDown, color: "#6b7280", label: "Low" },
+  medium: { icon: Minus, color: "var(--warning)", label: "Medium" },
+  low: { icon: ArrowDown, color: "var(--text-muted)", label: "Low" },
 };
 
 export function PriorityIcon({ priority }: { priority: IssuePriority }) {

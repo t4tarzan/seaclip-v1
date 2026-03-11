@@ -48,7 +48,7 @@ export default function IssueDetail() {
 
   if (isLoading) {
     return (
-      <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }} className="lg:grid-cols-3">
         <SkeletonCard className="lg:col-span-2" />
         <SkeletonCard />
       </div>
@@ -57,9 +57,9 @@ export default function IssueDetail() {
 
   if (!issue) {
     return (
-      <div className="p-6 text-center py-20">
-        <p className="text-[#6b7280]">Issue not found</p>
-        <Button variant="ghost" size="sm" className="mt-3" onClick={() => navigate("/issues")}>
+      <div style={{ textAlign: "center", padding: "80px 0" }}>
+        <p className="text-[var(--text-muted)]">Issue not found</p>
+        <Button variant="ghost" size="sm" style={{ marginTop: 12 }} onClick={() => navigate("/issues")}>
           Back to Issues
         </Button>
       </div>
@@ -69,7 +69,7 @@ export default function IssueDetail() {
   const transitions = STATUS_TRANSITIONS[issue.status] ?? [];
 
   return (
-    <div className="p-6 flex flex-col gap-5 animate-fade-in">
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }} className="animate-fade-in">
       {/* Back */}
       <Button
         variant="ghost"
@@ -81,20 +81,20 @@ export default function IssueDetail() {
         Issues
       </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }} className="lg:grid-cols-3">
         {/* Main content */}
-        <div className="lg:col-span-2 flex flex-col gap-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }} className="lg:col-span-2">
           {/* Issue header */}
-          <div className="bg-[#1f2937] border border-[#374151] rounded-xl p-5">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[11px] text-[#6b7280] font-mono">{issue.identifier}</span>
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 20 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <span className="text-[11px] text-[var(--text-muted)] font-mono">{issue.identifier}</span>
                   <StatusBadge type="issue" value={issue.status} />
                   <span className="text-[13px]">{PRIORITY_ICONS[issue.priority]}</span>
                   <StatusBadge type="priority" value={issue.priority} />
                 </div>
-                <h1 className="text-[20px] font-bold text-[#f9fafb] leading-tight">{issue.title}</h1>
+                <h1 className="text-[20px] font-bold text-[var(--text-primary)] leading-tight">{issue.title}</h1>
               </div>
               <Button
                 variant="ghost"
@@ -107,19 +107,19 @@ export default function IssueDetail() {
 
             {issue.description ? (
               <div className="prose prose-invert max-w-none">
-                <p className="text-[13px] text-[#d1d5db] leading-relaxed whitespace-pre-wrap">
+                <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">
                   {issue.description}
                 </p>
               </div>
             ) : (
-              <p className="text-[12px] text-[#4b5563] italic">No description provided.</p>
+              <p className="text-[12px] text-[var(--border-hover)] italic">No description provided.</p>
             )}
           </div>
 
           {/* Status transitions */}
           {transitions.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] text-[#6b7280]">Move to:</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span className="text-[11px] text-[var(--text-muted)]">Move to:</span>
               {transitions.map((s) => (
                 <Button
                   key={s}
@@ -142,27 +142,47 @@ export default function IssueDetail() {
               <TabsTrigger value="activity">Activity</TabsTrigger>
             </TabsList>
             <TabsContent value="comments">
-              <div className="bg-[#1f2937] border border-[#374151] rounded-xl p-4">
+              <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
                 <CommentThread issueId={issue.id} />
               </div>
             </TabsContent>
             <TabsContent value="activity">
-              <div className="bg-[#1f2937] border border-[#374151] rounded-xl p-4">
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-[#374151] flex items-center justify-center">
-                      <span className="text-[9px] text-[#9ca3af]">•</span>
+              <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 9999,
+                        backgroundColor: "var(--border)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <span className="text-[9px] text-[var(--text-secondary)]">•</span>
                     </div>
-                    <p className="text-[11px] text-[#9ca3af]">
+                    <p className="text-[11px] text-[var(--text-secondary)]">
                       Created {timeAgo(issue.createdAt)}
                     </p>
                   </div>
                   {issue.updatedAt !== issue.createdAt && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-[#374151] flex items-center justify-center">
-                        <span className="text-[9px] text-[#9ca3af]">✎</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 9999,
+                          backgroundColor: "var(--border)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <span className="text-[9px] text-[var(--text-secondary)]">✎</span>
                       </div>
-                      <p className="text-[11px] text-[#9ca3af]">
+                      <p className="text-[11px] text-[var(--text-secondary)]">
                         Updated {timeAgo(issue.updatedAt)}
                       </p>
                     </div>
@@ -174,46 +194,56 @@ export default function IssueDetail() {
         </div>
 
         {/* Sidebar */}
-        <div className="flex flex-col gap-3">
-          <div className="bg-[#1f2937] border border-[#374151] rounded-xl p-4 flex flex-col gap-4">
-            <h3 className="text-[12px] font-semibold text-[#f9fafb]">Details</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+            <h3 className="text-[12px] font-semibold text-[var(--text-primary)]">Details</h3>
 
-            <div className="flex flex-col gap-3">
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {[
                 { label: "Status", value: <StatusBadge type="issue" value={issue.status} /> },
                 { label: "Priority", value: <StatusBadge type="priority" value={issue.priority} /> },
                 {
                   label: "Assignee",
                   value: issue.assigneeName ? (
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-full bg-[#20808D]/20 border border-[#20808D]/30 flex items-center justify-center text-[8px] font-bold text-[#20808D]">
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <div
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: 9999,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                        className="bg-[var(--primary)]/20 border border-[var(--primary)]/30 text-[8px] font-bold text-[var(--primary)]"
+                      >
                         {issue.assigneeName.charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-[11px] text-[#f9fafb]">{issue.assigneeName}</span>
+                      <span className="text-[11px] text-[var(--text-primary)]">{issue.assigneeName}</span>
                     </div>
                   ) : (
-                    <span className="text-[11px] text-[#6b7280]">Unassigned</span>
+                    <span className="text-[11px] text-[var(--text-muted)]">Unassigned</span>
                   ),
                 },
                 {
                   label: "Project",
-                  value: <span className="text-[11px] text-[#f9fafb]">{issue.projectName ?? "—"}</span>,
+                  value: <span className="text-[11px] text-[var(--text-primary)]">{issue.projectName ?? "—"}</span>,
                 },
                 {
                   label: "Goal",
-                  value: <span className="text-[11px] text-[#f9fafb]">{issue.goalName ?? "—"}</span>,
+                  value: <span className="text-[11px] text-[var(--text-primary)]">{issue.goalName ?? "—"}</span>,
                 },
                 {
                   label: "Created",
-                  value: <span className="text-[11px] text-[#9ca3af]">{timeAgo(issue.createdAt)}</span>,
+                  value: <span className="text-[11px] text-[var(--text-secondary)]">{timeAgo(issue.createdAt)}</span>,
                 },
                 {
                   label: "Updated",
-                  value: <span className="text-[11px] text-[#9ca3af]">{timeAgo(issue.updatedAt)}</span>,
+                  value: <span className="text-[11px] text-[var(--text-secondary)]">{timeAgo(issue.updatedAt)}</span>,
                 },
               ].map(({ label, value }) => (
-                <div key={label} className="flex items-center justify-between gap-2">
-                  <span className="text-[11px] text-[#6b7280] flex-shrink-0">{label}</span>
+                <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <span className="text-[11px] text-[var(--text-muted)]" style={{ flexShrink: 0 }}>{label}</span>
                   <div>{value}</div>
                 </div>
               ))}

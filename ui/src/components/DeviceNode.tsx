@@ -30,38 +30,38 @@ const deviceIcons: Record<DeviceType, React.ElementType> = {
 
 const statusColors: Record<DeviceStatus, { dot: string; ring: string; text: string; bg: string }> = {
   online: {
-    dot: "bg-[#22c55e]",
-    ring: "ring-[#22c55e]/20",
-    text: "text-[#22c55e]",
-    bg: "bg-[#22c55e]/10",
+    dot: "bg-[var(--success)]",
+    ring: "ring-[var(--success)]/20",
+    text: "text-[var(--success)]",
+    bg: "bg-[var(--success)]/10",
   },
   offline: {
-    dot: "bg-[#6b7280]",
-    ring: "ring-[#6b7280]/20",
-    text: "text-[#6b7280]",
-    bg: "bg-[#6b7280]/10",
+    dot: "bg-[var(--text-muted)]",
+    ring: "ring-[var(--text-muted)]/20",
+    text: "text-[var(--text-muted)]",
+    bg: "bg-[var(--text-muted)]/10",
   },
   degraded: {
-    dot: "bg-[#eab308]",
-    ring: "ring-[#eab308]/20",
-    text: "text-[#eab308]",
-    bg: "bg-[#eab308]/10",
+    dot: "bg-[var(--warning)]",
+    ring: "ring-[var(--warning)]/20",
+    text: "text-[var(--warning)]",
+    bg: "bg-[var(--warning)]/10",
   },
 };
 
-function MiniStatBar({ value, label, color = "#20808D" }: { value: number; label: string; color?: string }) {
+function MiniStatBar({ value, label, color = "var(--primary)" }: { value: number; label: string; color?: string }) {
   return (
     <div className="flex flex-col gap-0.5">
       <div className="flex items-center justify-between">
-        <span className="text-[8px] text-[#6b7280]">{label}</span>
-        <span className="text-[8px] font-mono text-[#9ca3af]">{value}%</span>
+        <span className="text-[8px] text-[var(--text-muted)]">{label}</span>
+        <span className="text-[8px] font-mono text-[var(--text-secondary)]">{value}%</span>
       </div>
-      <div className="h-1 w-full bg-[#374151] rounded-full overflow-hidden">
+      <div className="h-1 w-full bg-[var(--border)] rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{
             width: `${Math.min(100, value)}%`,
-            backgroundColor: value > 85 ? "#ef4444" : value > 65 ? "#eab308" : color,
+            backgroundColor: value > 85 ? "var(--error)" : value > 65 ? "var(--warning)" : color,
           }}
         />
       </div>
@@ -77,15 +77,15 @@ export function DeviceNode({ device, isHub = false, isSelected = false, onClick 
     <button
       onClick={onClick}
       className={cn(
-        "relative flex flex-col items-center gap-1.5 p-2.5 rounded-xl",
+        "relative flex flex-col items-center gap-1.5 p-2.5 rounded-[var(--radius-lg)]",
         "border transition-all duration-200 cursor-pointer",
         "hover:scale-105 active:scale-100 focus:outline-none",
         isHub
-          ? "w-24 bg-[#1f2937] border-[#20808D]/40 shadow-lg shadow-[#20808D]/10"
-          : "w-[76px] bg-[#111827] border-[#374151]",
+          ? "w-24 bg-[var(--surface)] border-[var(--primary)]/40 shadow-lg shadow-[var(--primary)]/10"
+          : "w-[76px] bg-[var(--bg-alt)] border-[var(--border)]",
         isSelected
-          ? "border-[#06b6d4] ring-2 ring-[#06b6d4]/30 bg-[#06b6d4]/5"
-          : cn("hover:border-[#4b5563]", isHub && "hover:border-[#20808D]/60"),
+          ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/30 bg-[var(--accent)]/5"
+          : cn("hover:border-[var(--border-hover)]", isHub && "hover:border-[var(--primary)]/60"),
         device.status === "offline" && "opacity-60"
       )}
       aria-label={`${device.name} (${device.status})`}
@@ -93,7 +93,7 @@ export function DeviceNode({ device, isHub = false, isSelected = false, onClick 
       {/* Status indicator */}
       <div
         className={cn(
-          "absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#0a0f1a] z-10",
+          "absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[var(--bg)] z-10",
           colors.dot
         )}
       >
@@ -110,14 +110,14 @@ export function DeviceNode({ device, isHub = false, isSelected = false, onClick 
       {/* Device icon */}
       <div
         className={cn(
-          "rounded-lg flex items-center justify-center",
+          "rounded-[var(--radius-md)] flex items-center justify-center",
           isHub ? "w-10 h-10" : "w-8 h-8",
-          isHub ? "bg-[#20808D]/20 border border-[#20808D]/30" : colors.bg
+          isHub ? "bg-[var(--primary)]/20 border border-[var(--primary)]/30" : colors.bg
         )}
       >
         <Icon
           size={isHub ? 20 : 16}
-          className={isHub ? "text-[#20808D]" : colors.text}
+          className={isHub ? "text-[var(--primary)]" : colors.text}
         />
       </div>
 
@@ -125,7 +125,7 @@ export function DeviceNode({ device, isHub = false, isSelected = false, onClick 
       <span
         className={cn(
           "font-medium text-center leading-tight w-full truncate",
-          isHub ? "text-[11px] text-[#f9fafb]" : "text-[9px] text-[#d1d5db]"
+          isHub ? "text-[11px] text-[var(--text-primary)]" : "text-[9px] text-[var(--text-secondary)]"
         )}
       >
         {device.name}
@@ -137,24 +137,24 @@ export function DeviceNode({ device, isHub = false, isSelected = false, onClick 
           <MiniStatBar
             value={device.telemetry.cpuPercent}
             label="CPU"
-            color={isHub ? "#20808D" : "#06b6d4"}
+            color={isHub ? "var(--primary)" : "var(--accent)"}
           />
           <MiniStatBar
             value={device.telemetry.memoryPercent}
             label="MEM"
-            color={isHub ? "#20808D" : "#06b6d4"}
+            color={isHub ? "var(--primary)" : "var(--accent)"}
           />
           {device.telemetry.temperatureCelsius > 0 && (
             <div className="flex items-center justify-between">
-              <span className="text-[8px] text-[#6b7280]">TEMP</span>
+              <span className="text-[8px] text-[var(--text-muted)]">TEMP</span>
               <span
                 className={cn(
                   "text-[8px] font-mono",
                   device.telemetry.temperatureCelsius > 80
-                    ? "text-[#ef4444]"
+                    ? "text-[var(--error)]"
                     : device.telemetry.temperatureCelsius > 65
-                    ? "text-[#eab308]"
-                    : "text-[#9ca3af]"
+                    ? "text-[var(--warning)]"
+                    : "text-[var(--text-secondary)]"
                 )}
               >
                 {device.telemetry.temperatureCelsius.toFixed(0)}°C
@@ -166,7 +166,7 @@ export function DeviceNode({ device, isHub = false, isSelected = false, onClick 
 
       {/* Hub badge */}
       {isHub && (
-        <span className="absolute -bottom-2 bg-[#20808D] text-white text-[7px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+        <span className="absolute -bottom-2 bg-[var(--primary)] text-white text-[7px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
           HUB
         </span>
       )}

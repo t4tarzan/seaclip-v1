@@ -38,16 +38,16 @@ export default function SpokeTasks() {
   const [showNewDialog, setShowNewDialog] = useState(false);
 
   return (
-    <div className="p-6 flex flex-col gap-5 animate-fade-in">
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }} className="animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
         <div>
-          <h2 className="text-[18px] font-bold text-[#f9fafb]">Spoke Tasks</h2>
-          <p className="text-[12px] text-[#6b7280] mt-0.5">
+          <h2 className="text-[18px] font-bold text-[var(--text-primary)]">Spoke Tasks</h2>
+          <p className="text-[12px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>
             {tasks.length} task{tasks.length !== 1 ? "s" : ""} — git worktree assignments to spoke devices
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Button
             variant="ghost"
             size="sm"
@@ -68,7 +68,7 @@ export default function SpokeTasks() {
       </div>
 
       {/* Status Tabs */}
-      <div className="flex items-center gap-1.5">
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         {STATUS_TABS.map((s) => (
           <button
             key={s.key}
@@ -76,8 +76,8 @@ export default function SpokeTasks() {
             className={cn(
               "px-2.5 py-1 text-[11px] rounded-md font-medium transition-colors",
               tab === s.key
-                ? "bg-[#20808D]/20 text-[#06b6d4] border border-[#20808D]/30"
-                : "text-[#9ca3af] hover:text-[#f9fafb] hover:bg-[#1f2937] border border-transparent"
+                ? "bg-[var(--primary)]/20 text-[var(--accent)] border border-[var(--primary)]/30"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] border border-transparent"
             )}
           >
             {s.label}
@@ -86,18 +86,18 @@ export default function SpokeTasks() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
         {isLoading ? (
           <SkeletonTable rows={6} cols={5} />
         ) : tasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-12 h-12 rounded-xl bg-[#374151] flex items-center justify-center mb-3">
-              <GitBranch size={24} className="text-[#6b7280]" />
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0" }} className="text-center">
+            <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+              <GitBranch size={24} className="text-[var(--text-muted)]" />
             </div>
-            <p className="text-[13px] font-medium text-[#9ca3af]">
+            <p className="text-[13px] font-medium text-[var(--text-secondary)]">
               {tab !== "all" ? "No tasks match this filter" : "No spoke tasks yet"}
             </p>
-            <p className="text-[11px] text-[#6b7280] mt-1">
+            <p className="text-[11px] text-[var(--text-muted)]" style={{ marginTop: 4 }}>
               {tab !== "all"
                 ? "Try a different status filter"
                 : "Create a task to assign work to a spoke device"}
@@ -106,7 +106,7 @@ export default function SpokeTasks() {
               <Button
                 variant="primary"
                 size="sm"
-                className="mt-4"
+                style={{ marginTop: 16 }}
                 onClick={() => setShowNewDialog(true)}
               >
                 Create Task
@@ -114,7 +114,7 @@ export default function SpokeTasks() {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div style={{ overflowX: "auto" }}>
             <table className="data-table">
               <thead>
                 <tr>
@@ -127,16 +127,16 @@ export default function SpokeTasks() {
               </thead>
               <tbody>
                 {tasks.map((task) => (
-                  <tr key={task.id} className="hover:bg-[#263244] transition-colors">
+                  <tr key={task.id} className="hover:bg-[var(--surface-raised)] transition-colors">
                     <td>
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-[#20808D]/15 border border-[#20808D]/25 flex items-center justify-center text-[#20808D] flex-shrink-0">
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }} className="bg-[var(--primary)]/15 border border-[var(--primary)]/25 text-[var(--primary)]">
                           <GitBranch size={12} />
                         </div>
                         <div>
-                          <p className="text-[12px] font-semibold text-[#f9fafb]">{task.title}</p>
+                          <p className="text-[12px] font-semibold text-[var(--text-primary)]">{task.title}</p>
                           {task.repoUrl && (
-                            <p className="text-[10px] text-[#6b7280] truncate max-w-[220px]">
+                            <p className="text-[10px] text-[var(--text-muted)] truncate" style={{ maxWidth: 220 }}>
                               {task.repoUrl}
                             </p>
                           )}
@@ -144,12 +144,12 @@ export default function SpokeTasks() {
                       </div>
                     </td>
                     <td>
-                      <span className="text-[11px] bg-[#374151] text-[#9ca3af] px-2 py-0.5 rounded font-medium">
+                      <span className="text-[11px] bg-[var(--border)] text-[var(--text-secondary)] rounded font-medium" style={{ padding: "2px 8px" }}>
                         {task.deviceId.slice(0, 8)}...
                       </span>
                     </td>
                     <td>
-                      <span className="text-[11px] text-[#9ca3af] font-mono">
+                      <span className="text-[11px] text-[var(--text-secondary)] font-mono">
                         {task.branch ?? "—"}
                       </span>
                     </td>
@@ -157,7 +157,7 @@ export default function SpokeTasks() {
                       <StatusBadge type="spoke-task" value={task.status} />
                     </td>
                     <td>
-                      <span className="text-[11px] text-[#9ca3af]">
+                      <span className="text-[11px] text-[var(--text-secondary)]">
                         {timeAgo(task.createdAt)}
                       </span>
                     </td>
@@ -213,9 +213,9 @@ function NewSpokeTaskDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <label className="text-[11px] text-[#9ca3af] font-medium mb-1 block">Title</label>
+            <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>Title</label>
             <Input
               placeholder="Task title"
               value={title}
@@ -223,9 +223,10 @@ function NewSpokeTaskDialog({
             />
           </div>
           <div>
-            <label className="text-[11px] text-[#9ca3af] font-medium mb-1 block">Description</label>
+            <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>Description</label>
             <textarea
-              className="w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-[12px] text-[#f9fafb] placeholder:text-[#6b7280] focus:outline-none focus:border-[#20808D] resize-none"
+              style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px" }}
+              className="text-[12px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--primary)]"
               rows={3}
               placeholder="Optional description..."
               value={description}
@@ -233,7 +234,7 @@ function NewSpokeTaskDialog({
             />
           </div>
           <div>
-            <label className="text-[11px] text-[#9ca3af] font-medium mb-1 block">Repository URL</label>
+            <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>Repository URL</label>
             <Input
               placeholder="https://github.com/org/repo"
               value={repoUrl}
@@ -241,9 +242,10 @@ function NewSpokeTaskDialog({
             />
           </div>
           <div>
-            <label className="text-[11px] text-[#9ca3af] font-medium mb-1 block">Device</label>
+            <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>Device</label>
             <select
-              className="w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-[12px] text-[#f9fafb] focus:outline-none focus:border-[#20808D]"
+              style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px" }}
+              className="text-[12px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
               value={deviceId}
               onChange={(e) => setDeviceId(e.target.value)}
             >

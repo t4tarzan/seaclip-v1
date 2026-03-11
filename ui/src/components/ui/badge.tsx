@@ -18,25 +18,25 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  default: "bg-[#374151] text-[#d1d5db]",
-  primary: "bg-[#20808D]/20 text-[#20d1e0] border border-[#20808D]/30",
-  success: "bg-[#22c55e]/15 text-[#4ade80] border border-[#22c55e]/30",
-  warning: "bg-[#eab308]/15 text-[#fbbf24] border border-[#eab308]/30",
-  error: "bg-[#ef4444]/15 text-[#f87171] border border-[#ef4444]/30",
-  info: "bg-[#06b6d4]/15 text-[#22d3ee] border border-[#06b6d4]/30",
-  muted: "bg-[#1f2937] text-[#6b7280] border border-[#374151]",
-  outline: "bg-transparent text-[#9ca3af] border border-[#374151]",
+  default: "bg-[var(--surface-raised)] text-[var(--text-secondary)]",
+  primary: "bg-[var(--primary-muted)] text-[var(--primary)] border border-[var(--primary)]/20",
+  success: "bg-[var(--success-muted)] text-[var(--success)] border border-[var(--success)]/20",
+  warning: "bg-[var(--warning-muted)] text-[var(--warning)] border border-[var(--warning)]/20",
+  error: "bg-[var(--error-muted)] text-[var(--error)] border border-[var(--error)]/20",
+  info: "bg-[var(--accent-muted)] text-[var(--accent)] border border-[var(--accent)]/20",
+  muted: "bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border)]",
+  outline: "bg-transparent text-[var(--text-secondary)] border border-[var(--border)]",
 };
 
 const dotColors: Record<BadgeVariant, string> = {
-  default: "bg-[#9ca3af]",
-  primary: "bg-[#20808D]",
-  success: "bg-[#22c55e]",
-  warning: "bg-[#eab308]",
-  error: "bg-[#ef4444]",
-  info: "bg-[#06b6d4]",
-  muted: "bg-[#6b7280]",
-  outline: "bg-[#6b7280]",
+  default: "bg-[var(--text-secondary)]",
+  primary: "bg-[var(--primary)]",
+  success: "bg-[var(--success)]",
+  warning: "bg-[var(--warning)]",
+  error: "bg-[var(--error)]",
+  info: "bg-[var(--accent)]",
+  muted: "bg-[var(--text-muted)]",
+  outline: "bg-[var(--text-muted)]",
 };
 
 export function Badge({
@@ -50,8 +50,8 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 font-medium rounded-full whitespace-nowrap",
-        size === "sm" ? "text-[10px] px-1.5 py-0.5" : "text-[11px] px-2 py-0.5",
+        "inline-flex items-center gap-1.5 font-medium rounded-full whitespace-nowrap font-[var(--font-mono)]",
+        size === "sm" ? "text-[10px] px-2 py-0.5" : "text-[11px] px-2.5 py-1",
         variantStyles[variant],
         className
       )}

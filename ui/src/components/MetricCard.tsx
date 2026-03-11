@@ -1,5 +1,4 @@
 import React from "react";
-import { cn } from "../lib/utils";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface MetricCardProps {
@@ -16,32 +15,12 @@ interface MetricCardProps {
   onClick?: () => void;
 }
 
-const accentColors = {
-  primary: {
-    icon: "text-[#20808D]",
-    iconBg: "bg-[#20808D]/15 border-[#20808D]/25",
-    value: "text-[#f9fafb]",
-  },
-  success: {
-    icon: "text-[#22c55e]",
-    iconBg: "bg-[#22c55e]/15 border-[#22c55e]/25",
-    value: "text-[#f9fafb]",
-  },
-  warning: {
-    icon: "text-[#eab308]",
-    iconBg: "bg-[#eab308]/15 border-[#eab308]/25",
-    value: "text-[#f9fafb]",
-  },
-  error: {
-    icon: "text-[#ef4444]",
-    iconBg: "bg-[#ef4444]/15 border-[#ef4444]/25",
-    value: "text-[#f9fafb]",
-  },
-  info: {
-    icon: "text-[#06b6d4]",
-    iconBg: "bg-[#06b6d4]/15 border-[#06b6d4]/25",
-    value: "text-[#f9fafb]",
-  },
+const accentMap = {
+  primary: { fg: "var(--primary)", bg: "var(--primary-muted)" },
+  success: { fg: "var(--success)", bg: "var(--success-muted)" },
+  warning: { fg: "var(--warning)", bg: "var(--warning-muted)" },
+  error: { fg: "var(--error)", bg: "var(--error-muted)" },
+  info: { fg: "var(--accent)", bg: "var(--accent-muted)" },
 };
 
 export function MetricCard({
@@ -54,71 +33,79 @@ export function MetricCard({
   loading = false,
   onClick,
 }: MetricCardProps) {
-  const colors = accentColors[accent];
+  const colors = accentMap[accent];
 
   return (
     <div
-      className={cn(
-        "bg-[#1f2937] border border-[#374151] rounded-xl p-4",
-        "transition-all duration-150",
-        onClick && "cursor-pointer hover:border-[#4b5563] hover:bg-[#263244]"
-      )}
+      style={{
+        backgroundColor: "var(--surface)",
+        border: "1px solid var(--border)",
+        borderRadius: 12,
+        padding: 20,
+        overflow: "hidden",
+        cursor: onClick ? "pointer" : "default",
+        transition: "transform 200ms ease, box-shadow 200ms ease",
+      }}
       onClick={onClick}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
     >
-      <div className="flex items-start justify-between gap-3 mb-3">
+      {/* Icon + Trend row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         {icon && (
-          <div
-            className={cn(
-              "w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0",
-              colors.iconBg
-            )}
-          >
-            <span className={cn("w-4 h-4", colors.icon)}>{icon}</span>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10,
+            border: `1px solid ${colors.fg}33`,
+            backgroundColor: colors.bg,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            <span style={{ width: 18, height: 18, color: colors.fg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {icon}
+            </span>
           </div>
         )}
         {trend && (
-          <div
-            className={cn(
-              "flex items-center gap-1 text-[10px] font-medium ml-auto",
-              trend.value > 0
-                ? "text-[#22c55e]"
-                : trend.value < 0
-                ? "text-[#ef4444]"
-                : "text-[#6b7280]"
-            )}
-          >
-            {trend.value > 0 ? (
-              <TrendingUp size={10} />
-            ) : trend.value < 0 ? (
-              <TrendingDown size={10} />
-            ) : (
-              <Minus size={10} />
-            )}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 3,
+            fontSize: 10, fontWeight: 500,
+            fontFamily: "'JetBrains Mono', monospace",
+            color: trend.value > 0 ? "var(--success)" : trend.value < 0 ? "var(--error)" : "var(--text-muted)",
+          }}>
+            {trend.value > 0 ? <TrendingUp size={10} /> : trend.value < 0 ? <TrendingDown size={10} /> : <Minus size={10} />}
             {Math.abs(trend.value)}%
           </div>
         )}
       </div>
 
       {loading ? (
-        <div className="space-y-2">
-          <div className="h-6 w-16 bg-[#374151] rounded skeleton-shimmer" />
-          <div className="h-3 w-24 bg-[#374151] rounded skeleton-shimmer" />
+        <div>
+          <div style={{ height: 22, width: 56, borderRadius: 4, backgroundColor: "var(--surface-raised)", marginBottom: 8 }} />
+          <div style={{ height: 12, width: 80, borderRadius: 4, backgroundColor: "var(--surface-raised)" }} />
         </div>
       ) : (
         <>
-          <div
-            className={cn(
-              "text-[24px] font-bold leading-none mb-1",
-              colors.value
-            )}
-          >
+          <div style={{
+            fontSize: 26, fontWeight: 700, lineHeight: 1,
+            marginBottom: 6, letterSpacing: "-0.02em",
+            color: "var(--text-primary)",
+            fontFamily: "'Instrument Serif', Georgia, serif",
+          }}>
             {value}
           </div>
-          <div className="text-[11px] font-medium text-[#9ca3af]">{label}</div>
+          <div style={{
+            fontSize: 10, fontWeight: 600,
+            textTransform: "uppercase" as const,
+            letterSpacing: "0.08em",
+            color: "var(--text-secondary)",
+            fontFamily: "'JetBrains Mono', monospace",
+          }}>
+            {label}
+          </div>
           {description && (
-            <div className="text-[10px] text-[#6b7280] mt-0.5 leading-relaxed">{description}</div>
+            <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, lineHeight: 1.5 }}>
+              {description}
+            </div>
           )}
         </>
       )}

@@ -16,11 +16,11 @@ import { cn, timeAgo } from "../lib/utils";
 type ViewMode = "board" | "list";
 
 const COLUMNS: { status: IssueStatus; label: string; color: string }[] = [
-  { status: "backlog", label: "Backlog", color: "#6b7280" },
-  { status: "todo", label: "Todo", color: "#eab308" },
-  { status: "in_progress", label: "In Progress", color: "#20808D" },
-  { status: "in_review", label: "In Review", color: "#06b6d4" },
-  { status: "done", label: "Done", color: "#22c55e" },
+  { status: "backlog", label: "Backlog", color: "var(--text-muted)" },
+  { status: "todo", label: "Todo", color: "var(--warning)" },
+  { status: "in_progress", label: "In Progress", color: "var(--primary)" },
+  { status: "in_review", label: "In Review", color: "var(--accent)" },
+  { status: "done", label: "Done", color: "var(--success)" },
 ];
 
 const PRIORITY_ICONS: Record<IssuePriority, string> = {
@@ -34,30 +34,31 @@ function IssueCard({ issue, onClick }: { issue: Issue; onClick: () => void }) {
   return (
     <div
       onClick={onClick}
-      className="bg-[#111827] border border-[#374151] rounded-lg p-3 cursor-pointer hover:border-[#4b5563] hover:bg-[#1a2132] transition-all group"
+      className="cursor-pointer hover:border-[var(--border-hover)] hover:bg-[#1a2132] transition-all group"
+      style={{ backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 8, padding: 12 }}
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <p className="text-[12px] font-medium text-[#f9fafb] leading-snug group-hover:text-white line-clamp-2">
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+        <p className="text-[12px] font-medium text-[var(--text-primary)] leading-snug group-hover:text-white line-clamp-2">
           {issue.title}
         </p>
-        <span className="flex-shrink-0 text-[13px]">{PRIORITY_ICONS[issue.priority]}</span>
+        <span className="text-[13px]" style={{ flexShrink: 0 }}>{PRIORITY_ICONS[issue.priority]}</span>
       </div>
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] text-[#6b7280] font-mono">{issue.identifier}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span className="text-[10px] text-[var(--text-muted)] font-mono">{issue.identifier}</span>
         {issue.projectName && (
           <>
-            <span className="text-[#374151]">·</span>
-            <span className="text-[10px] text-[#6b7280] truncate">{issue.projectName}</span>
+            <span className="text-[var(--border)]">·</span>
+            <span className="text-[10px] text-[var(--text-muted)] truncate">{issue.projectName}</span>
           </>
         )}
-        <span className="ml-auto text-[10px] text-[#6b7280]">{timeAgo(issue.updatedAt)}</span>
+        <span className="text-[10px] text-[var(--text-muted)]" style={{ marginLeft: "auto" }}>{timeAgo(issue.updatedAt)}</span>
       </div>
       {issue.assigneeName && (
-        <div className="flex items-center gap-1.5 mt-2">
-          <div className="w-4 h-4 rounded-full bg-[#20808D]/20 flex items-center justify-center text-[7px] font-bold text-[#20808D]">
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
+          <div className="text-[7px] font-bold text-[var(--primary)]" style={{ width: 16, height: 16, borderRadius: 9999, backgroundColor: "rgba(var(--primary-rgb), 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             {issue.assigneeName.charAt(0).toUpperCase()}
           </div>
-          <span className="text-[10px] text-[#9ca3af]">{issue.assigneeName}</span>
+          <span className="text-[10px] text-[var(--text-secondary)]">{issue.assigneeName}</span>
         </div>
       )}
     </div>
@@ -136,26 +137,27 @@ export default function Issues() {
   }
 
   return (
-    <div className="p-6 flex flex-col gap-5 animate-fade-in h-full">
+    <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: 24, height: "100%" }}>
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
         <div>
-          <h2 className="text-[18px] font-bold text-[#f9fafb]">Issues</h2>
-          <p className="text-[12px] text-[#6b7280] mt-0.5">
+          <h2 className="text-[18px] font-bold text-[var(--text-primary)]">Issues</h2>
+          <p className="text-[12px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>
             {issues.length} issue{issues.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {/* View Toggle */}
-          <div className="flex items-center bg-[#1f2937] rounded-lg p-0.5">
+          <div style={{ display: "flex", alignItems: "center", backgroundColor: "var(--surface)", borderRadius: 8, padding: 2 }}>
             <button
               onClick={() => handleViewChange("board")}
               className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-colors",
+                "text-[11px] font-medium transition-colors",
                 viewMode === "board"
-                  ? "bg-[#20808D] text-white"
-                  : "text-[#6b7280] hover:text-[#f9fafb]"
+                  ? "bg-[var(--primary)] text-white"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               )}
+              style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 4 }}
             >
               <LayoutGrid size={12} />
               Board
@@ -163,11 +165,12 @@ export default function Issues() {
             <button
               onClick={() => handleViewChange("list")}
               className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-colors",
+                "text-[11px] font-medium transition-colors",
                 viewMode === "list"
-                  ? "bg-[#20808D] text-white"
-                  : "text-[#6b7280] hover:text-[#f9fafb]"
+                  ? "bg-[var(--primary)] text-white"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               )}
+              style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 4 }}
             >
               <List size={12} />
               List
@@ -178,7 +181,7 @@ export default function Issues() {
             size="sm"
             icon={<Filter size={12} />}
             onClick={() => setShowFilters((v) => !v)}
-            className={showFilters ? "text-[#20808D]" : undefined}
+            className={showFilters ? "text-[var(--primary)]" : undefined}
           >
             Filter
           </Button>
@@ -194,7 +197,7 @@ export default function Issues() {
       </div>
 
       {/* Search */}
-      <div className="w-72">
+      <div style={{ width: 288 }}>
         <Input
           placeholder="Search issues..."
           value={search}
@@ -213,9 +216,9 @@ export default function Issues() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="flex gap-4">
+        <div style={{ display: "flex", gap: 16 }}>
           {COLUMNS.map((col) => (
-            <div key={col.status} className="flex-1 min-w-0">
+            <div key={col.status} style={{ flex: 1, minWidth: 0 }}>
               <SkeletonCard />
               <SkeletonCard className="mt-2" />
             </div>
@@ -228,29 +231,29 @@ export default function Issues() {
           onAddIssue={handleAddIssue}
         />
       ) : (
-        <div className="flex gap-3 overflow-x-auto pb-4 flex-1">
+        <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 16, flex: 1 }}>
           {COLUMNS.map((col) => {
             const colIssues = issuesByStatus[col.status];
             return (
               <div
                 key={col.status}
-                className="flex flex-col flex-shrink-0 w-72"
+                style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 180 }}
               >
                 {/* Column header */}
-                <div className="flex items-center gap-2 mb-3 px-0.5">
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: "0 2px" }}>
                   <div
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: col.color }}
+                    style={{ width: 10, height: 10, borderRadius: 9999, flexShrink: 0, backgroundColor: col.color }}
                   />
-                  <span className="text-[12px] font-semibold text-[#f9fafb]">
+                  <span className="text-[12px] font-semibold text-[var(--text-primary)]">
                     {col.label}
                   </span>
-                  <span className="ml-auto text-[10px] font-mono text-[#6b7280] bg-[#1f2937] px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] font-mono text-[var(--text-muted)] bg-[var(--surface)] px-1.5 py-0.5 rounded" style={{ marginLeft: "auto" }}>
                     {colIssues.length}
                   </span>
                   <button
                     onClick={() => { setNewIssueStatus(col.status); setShowNewDialog(true); }}
-                    className="p-1 rounded text-[#6b7280] hover:text-[#f9fafb] hover:bg-[#1f2937] transition-colors"
+                    className="text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
+                    style={{ padding: 4, borderRadius: 4 }}
                     title={`Add to ${col.label}`}
                   >
                     <Plus size={12} />
@@ -261,10 +264,10 @@ export default function Issues() {
                 <div className={cn(
                   "kanban-column",
                   colIssues.length === 0 &&
-                    "items-center justify-center rounded-xl border-2 border-dashed border-[#374151] min-h-[120px]"
+                    "items-center justify-center rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--border)] min-h-[120px]"
                 )}>
                   {colIssues.length === 0 ? (
-                    <p className="text-[11px] text-[#4b5563] text-center">No issues</p>
+                    <p className="text-[11px] text-[var(--border-hover)] text-center">No issues</p>
                   ) : (
                     colIssues.map((issue) => (
                       <IssueCard

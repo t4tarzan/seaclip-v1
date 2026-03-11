@@ -7,10 +7,13 @@ WORKDIR /app
 
 # Copy workspace manifests and lockfile
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-COPY shared/package.json ./shared/
 COPY server/package.json ./server/
 COPY ui/package.json ./ui/
 COPY cli/package.json ./cli/
+COPY site/package.json ./site/
+COPY packages/db/package.json ./packages/db/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/adapter-utils/package.json ./packages/adapter-utils/
 
 # Install all dependencies (including devDependencies for build)
 RUN pnpm install --frozen-lockfile
@@ -21,13 +24,7 @@ FROM deps AS build
 # Copy full source
 COPY . .
 
-# Build shared package first (others depend on it)
-RUN pnpm --filter @seaclip/shared build
-
-# Build server
-RUN pnpm --filter @seaclip/server build
-
-# Build UI (Vite)
+# Build UI (Vite bundles everything into static files)
 RUN pnpm --filter @seaclip/ui build
 
 # ── Stage 3: Production image ───────────────────────────────────────────────────
@@ -45,20 +42,29 @@ WORKDIR /app
 
 # Copy workspace manifests for production install
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-COPY shared/package.json ./shared/
 COPY server/package.json ./server/
+COPY cli/package.json ./cli/
+COPY site/package.json ./site/
+COPY packages/db/package.json ./packages/db/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/adapter-utils/package.json ./packages/adapter-utils/
 
-# Install production deps only
-RUN pnpm install --frozen-lockfile --prod
+# Install all deps (tsx needed at runtime since internal packages export raw .ts)
+RUN pnpm install --frozen-lockfile
 
-# Copy built artifacts from build stage
-COPY --from=build /app/shared/dist ./shared/dist
-COPY --from=build /app/server/dist ./server/dist
+# Copy server source (runs via tsx, not compiled)
+COPY --from=build /app/server/src ./server/src
+COPY --from=build /app/server/tsconfig.json ./server/
+
+# Copy internal packages (export raw .ts, consumed by server at runtime)
+COPY --from=build /app/packages/db ./packages/db
+COPY --from=build /app/packages/shared ./packages/shared
+COPY --from=build /app/packages/adapter-utils ./packages/adapter-utils
 
 # Copy compiled UI to be served by the server
-COPY --from=build /app/ui/dist ./server/dist/public
+COPY --from=build /app/ui/dist ./ui/dist
 
-# Persistent data volume for uploads, SQLite DB, etc.
+# Persistent data volume for uploads, config, etc.
 VOLUME /seaclip
 
 # Expose server port
@@ -66,4 +72,4 @@ EXPOSE 3100
 
 # Run with dumb-init for proper signal forwarding
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["node", "server/dist/index.js"]
+CMD ["npx", "tsx", "server/src/index.ts"]

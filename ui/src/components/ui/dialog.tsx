@@ -52,8 +52,9 @@ export function DialogContent({
       <RadixDialog.Content
         className={cn(
           "fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%]",
-          "w-full bg-[#1f2937] border border-[#374151] rounded-xl shadow-2xl",
-          "p-5 focus:outline-none",
+          "w-full border border-[var(--border)] rounded-[var(--radius-lg)] shadow-2xl",
+          "glass-surface",
+          "p-6 focus:outline-none",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -67,7 +68,7 @@ export function DialogContent({
         {children}
         {showClose && (
           <RadixDialog.Close
-            className="absolute right-3 top-3 rounded-md p-1 text-[#6b7280] hover:text-[#f9fafb] hover:bg-[#374151] transition-colors"
+            className="absolute right-4 top-4 rounded-[var(--radius-sm)] p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors"
             aria-label="Close"
           >
             <X size={14} />
@@ -80,7 +81,7 @@ export function DialogContent({
 
 export function DialogHeader({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("mb-4 pr-6", className)}>
+    <div className={cn("mb-5 pr-8", className)}>
       {children}
     </div>
   );
@@ -89,7 +90,7 @@ export function DialogHeader({ children, className }: { children: React.ReactNod
 export function DialogTitle({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <RadixDialog.Title
-      className={cn("text-[15px] font-semibold text-[#f9fafb]", className)}
+      className={cn("text-[16px] font-semibold text-[var(--text-primary)]", className)}
     >
       {children}
     </RadixDialog.Title>
@@ -99,7 +100,7 @@ export function DialogTitle({ children, className }: { children: React.ReactNode
 export function DialogDescription({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <RadixDialog.Description
-      className={cn("text-[12px] text-[#9ca3af] mt-1", className)}
+      className={cn("text-[13px] text-[var(--text-secondary)] mt-1.5", className)}
     >
       {children}
     </RadixDialog.Description>
@@ -108,7 +109,7 @@ export function DialogDescription({ children, className }: { children: React.Rea
 
 export function DialogFooter({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("flex items-center justify-end gap-2 mt-5 pt-4 border-t border-[#374151]", className)}>
+    <div className={cn("flex items-center justify-end gap-2 mt-6 pt-4 border-t border-[var(--border)]", className)}>
       {children}
     </div>
   );

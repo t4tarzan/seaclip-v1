@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -9,145 +9,116 @@ import {
   CheckSquare,
   Activity,
   Settings,
-  ChevronLeft,
-  ChevronRight,
   Bell,
   Menu,
-  X,
-  LogOut,
-  User,
-  Building2,
   Target,
   GitBranch,
   GitPullRequest,
-  Inbox,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
-import { cn } from "../lib/utils";
 import { useCompanyContext } from "../context/CompanyContext";
 import { useApprovals } from "../api/approvals";
 import { useSidebarBadges } from "../api/sidebar-badges";
-import { SidebarAgents } from "./SidebarAgents";
-import { SidebarProjects } from "./SidebarProjects";
-import { SidebarSection } from "./SidebarSection";
-import { BreadcrumbBar } from "./BreadcrumbBar";
 
 interface NavItem {
   to: string;
   label: string;
   icon: React.ElementType;
   end?: boolean;
+  badge?: number;
 }
 
-// Top-level nav items (always visible)
-const TOP_NAV: NavItem[] = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
-];
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
 
-// Work section
-const WORK_NAV: NavItem[] = [
-  { to: "/issues", label: "Issues", icon: CircleDot },
-  { to: "/goals", label: "Goals", icon: Target },
-];
+/* ── SeaClip Logo ── */
 
-// Spokes section
-const SPOKE_NAV: NavItem[] = [
-  { to: "/spoke-tasks", label: "Spoke Tasks", icon: GitBranch },
-  { to: "/pull-requests", label: "Pull Requests", icon: GitPullRequest },
-  { to: "/edge-mesh", label: "Edge Mesh", icon: Network },
-];
-
-// Company section
-const COMPANY_NAV: NavItem[] = [
-  { to: "/costs", label: "Costs", icon: DollarSign },
-  { to: "/approvals", label: "Approvals", icon: CheckSquare },
-  { to: "/activity", label: "Activity", icon: Activity },
-  { to: "/settings", label: "Settings", icon: Settings },
-];
-
-// All nav items flat (for mobile bottom nav + page title lookup)
-const NAV_ITEMS: NavItem[] = [...TOP_NAV, ...WORK_NAV, ...SPOKE_NAV, ...COMPANY_NAV];
-
-// SeaClip SVG Logo
-function SeaClipLogo({ collapsed }: { collapsed: boolean }) {
+function SeaClipLogo({ collapsed }: { collapsed?: boolean }) {
   return (
-    <div className="flex items-center gap-2.5 px-1">
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
       <svg
-        width="28"
-        height="28"
+        width="26"
+        height="26"
         viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         aria-label="SeaClip logo"
-        className="flex-shrink-0"
+        style={{ flexShrink: 0 }}
       >
-        <rect width="32" height="32" rx="8" fill="#0a0f1a" />
-        <circle cx="16" cy="16" r="5" fill="#20808D" />
-        <circle cx="16" cy="5" r="2.5" fill="#06b6d4" opacity="0.85" />
-        <circle cx="27" cy="10" r="2.5" fill="#06b6d4" opacity="0.85" />
-        <circle cx="27" cy="22" r="2.5" fill="#06b6d4" opacity="0.85" />
-        <circle cx="16" cy="27" r="2.5" fill="#06b6d4" opacity="0.85" />
-        <circle cx="5" cy="22" r="2.5" fill="#06b6d4" opacity="0.85" />
-        <circle cx="5" cy="10" r="2.5" fill="#06b6d4" opacity="0.85" />
-        <line x1="16" y1="11" x2="16" y2="7.5" stroke="#374151" strokeWidth="1.5" />
-        <line x1="19.8" y1="13" x2="24.7" y2="11.5" stroke="#374151" strokeWidth="1.5" />
-        <line x1="19.8" y1="19" x2="24.7" y2="20.5" stroke="#374151" strokeWidth="1.5" />
-        <line x1="16" y1="21" x2="16" y2="24.5" stroke="#374151" strokeWidth="1.5" />
-        <line x1="12.2" y1="19" x2="7.3" y2="20.5" stroke="#374151" strokeWidth="1.5" />
-        <line x1="12.2" y1="13" x2="7.3" y2="11.5" stroke="#374151" strokeWidth="1.5" />
+        <rect width="32" height="32" rx="8" fill="var(--bg)" />
+        <circle cx="16" cy="16" r="5" fill="var(--primary)" />
+        <circle cx="16" cy="5" r="2.5" fill="var(--accent)" opacity="0.85" />
+        <circle cx="27" cy="10" r="2.5" fill="var(--accent)" opacity="0.85" />
+        <circle cx="27" cy="22" r="2.5" fill="var(--accent)" opacity="0.85" />
+        <circle cx="16" cy="27" r="2.5" fill="var(--accent)" opacity="0.85" />
+        <circle cx="5" cy="22" r="2.5" fill="var(--accent)" opacity="0.85" />
+        <circle cx="5" cy="10" r="2.5" fill="var(--accent)" opacity="0.85" />
+        <line x1="16" y1="11" x2="16" y2="7.5" stroke="var(--border)" strokeWidth="1.5" />
+        <line x1="19.8" y1="13" x2="24.7" y2="11.5" stroke="var(--border)" strokeWidth="1.5" />
+        <line x1="19.8" y1="19" x2="24.7" y2="20.5" stroke="var(--border)" strokeWidth="1.5" />
+        <line x1="16" y1="21" x2="16" y2="24.5" stroke="var(--border)" strokeWidth="1.5" />
+        <line x1="12.2" y1="19" x2="7.3" y2="20.5" stroke="var(--border)" strokeWidth="1.5" />
+        <line x1="12.2" y1="13" x2="7.3" y2="11.5" stroke="var(--border)" strokeWidth="1.5" />
       </svg>
       {!collapsed && (
-        <span className="text-[15px] font-bold text-[#f9fafb] tracking-tight">
-          Sea<span className="text-[#20808D]">Clip</span>
+        <span style={{ fontSize: 16, letterSpacing: "-0.02em", fontFamily: "'Instrument Serif', Georgia, serif" }}>
+          <span style={{ color: "var(--text-primary)" }}>Sea</span>
+          <span style={{ color: "var(--primary)" }}>Clip</span>
         </span>
       )}
     </div>
   );
 }
 
-function SidebarNavItem({
-  item,
-  collapsed,
-  badge,
-}: {
-  item: NavItem;
-  collapsed: boolean;
-  badge?: number;
-}) {
+/* ── Sidebar Link ── */
+
+function SidebarLink({ item, collapsed }: { item: NavItem; collapsed?: boolean }) {
   const Icon = item.icon;
+  const location = useLocation();
+  const isActive = item.end
+    ? location.pathname === item.to
+    : location.pathname.startsWith(item.to);
+
   return (
     <NavLink
       to={item.to}
       end={item.end}
-      className={({ isActive }) =>
-        cn(
-          "group relative flex items-center gap-2.5 px-3 h-9 rounded-lg",
-          "text-[13px] font-medium transition-all duration-150",
-          "hover:bg-[#1f2937] hover:text-[#f9fafb]",
-          isActive
-            ? "bg-[#20808D]/15 text-[#06b6d4] border border-[#20808D]/25"
-            : "text-[#9ca3af] border border-transparent",
-          collapsed && "justify-center px-0 w-9 mx-auto"
-        )
-      }
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        height: 36,
+        borderRadius: 8,
+        fontSize: 13,
+        fontWeight: 500,
+        textDecoration: "none",
+        padding: collapsed ? "0" : "0 12px",
+        justifyContent: collapsed ? "center" : "flex-start",
+        width: collapsed ? 36 : "auto",
+        margin: collapsed ? "0 auto" : "1px 0",
+        backgroundColor: isActive ? "var(--primary-muted)" : "transparent",
+        color: isActive ? "var(--primary)" : "var(--text-muted)",
+        transition: "all 150ms ease",
+      }}
       title={collapsed ? item.label : undefined}
     >
-      {({ isActive }) => (
+      <Icon size={16} style={{ flexShrink: 0 }} />
+      {!collapsed && (
         <>
-          <Icon
-            size={16}
-            className={cn(
-              "flex-shrink-0 transition-colors",
-              isActive ? "text-[#06b6d4]" : "text-[#6b7280] group-hover:text-[#9ca3af]"
-            )}
-          />
-          {!collapsed && <span>{item.label}</span>}
-          {!collapsed && badge != null && badge > 0 && (
-            <span className="ml-auto bg-[#ef4444] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none">
-              {badge > 99 ? "99+" : badge}
+          <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {item.label}
+          </span>
+          {item.badge != null && item.badge > 0 && (
+            <span style={{
+              fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 99,
+              minWidth: 16, textAlign: "center", lineHeight: "14px",
+              backgroundColor: "var(--error)", color: "#fff",
+            }}>
+              {item.badge > 99 ? "99+" : item.badge}
             </span>
-          )}
-          {collapsed && badge != null && badge > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#ef4444] rounded-full" />
           )}
         </>
       )}
@@ -155,9 +126,35 @@ function SidebarNavItem({
   );
 }
 
+/* ── Section Header ── */
+
+function SectionHeader({ title, collapsed }: { title: string; collapsed?: boolean }) {
+  if (collapsed) {
+    return <div style={{ margin: "12px 8px", borderTop: "1px solid var(--border-subtle)" }} />;
+  }
+  return (
+    <div style={{
+      padding: "20px 12px 8px",
+      fontSize: 10,
+      fontWeight: 600,
+      textTransform: "uppercase" as const,
+      letterSpacing: "0.1em",
+      color: "var(--text-muted)",
+      fontFamily: "'JetBrains Mono', monospace",
+    }}>
+      {title}
+    </div>
+  );
+}
+
+/* ── Main Layout ── */
+
+const SIDEBAR_WIDTH = 240;
+const SIDEBAR_COLLAPSED_WIDTH = 56;
+
 export function Layout() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { company, companies, setCompanyId } = useCompanyContext();
   const location = useLocation();
 
@@ -165,304 +162,308 @@ export function Layout() {
   const pendingApprovals = approvals?.filter((a) => a.status === "pending").length ?? 0;
   const { data: badges } = useSidebarBadges(company?.id);
 
-  return (
-    <div className="flex h-screen overflow-hidden bg-[#0a0f1a]">
-      {/* Desktop Sidebar */}
-      <aside
-        className={cn(
-          "hidden md:flex flex-col flex-shrink-0 h-full",
-          "bg-[#111827] border-r border-[#374151]",
-          "transition-all duration-200",
-          sidebarCollapsed ? "w-16" : "w-[240px]"
-        )}
-      >
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  const sidebarW = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+
+  const sections: NavSection[] = [
+    {
+      title: "Overview",
+      items: [{ to: "/", label: "Dashboard", icon: LayoutDashboard, end: true }],
+    },
+    {
+      title: "Work",
+      items: [
+        { to: "/issues", label: "Issues", icon: CircleDot, badge: badges?.activeIssues },
+        { to: "/goals", label: "Goals", icon: Target },
+        { to: "/agents", label: "Agents", icon: Bot, badge: badges?.errorAgents },
+      ],
+    },
+    {
+      title: "Spokes",
+      items: [
+        { to: "/spoke-tasks", label: "Spoke Tasks", icon: GitBranch },
+        { to: "/pull-requests", label: "Pull Requests", icon: GitPullRequest, badge: badges?.openPRs },
+        { to: "/edge-mesh", label: "Edge Mesh", icon: Network },
+      ],
+    },
+    {
+      title: "Company",
+      items: [
+        { to: "/costs", label: "Costs", icon: DollarSign },
+        { to: "/approvals", label: "Approvals", icon: CheckSquare, badge: pendingApprovals },
+        { to: "/activity", label: "Activity", icon: Activity },
+        { to: "/settings", label: "Settings", icon: Settings },
+      ],
+    },
+  ];
+
+  const sidebarInner = (isMobile?: boolean) => {
+    const isCollapsed = collapsed && !isMobile;
+    return (
+      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
         {/* Logo */}
-        <div
-          className={cn(
-            "flex items-center h-14 px-3 border-b border-[#374151] flex-shrink-0",
-            sidebarCollapsed ? "justify-center" : "justify-between"
-          )}
-        >
-          <SeaClipLogo collapsed={sidebarCollapsed} />
-          {!sidebarCollapsed && (
-            <button
-              onClick={() => setSidebarCollapsed(true)}
-              className="p-1 rounded text-[#6b7280] hover:text-[#f9fafb] hover:bg-[#1f2937] transition-colors"
-              aria-label="Collapse sidebar"
-            >
-              <ChevronLeft size={14} />
-            </button>
-          )}
+        <div style={{
+          display: "flex", alignItems: "center", height: 56, flexShrink: 0,
+          padding: isCollapsed ? "0 8px" : "0 20px",
+          justifyContent: isCollapsed ? "center" : "flex-start",
+          borderBottom: "1px solid var(--border-subtle)",
+        }}>
+          <NavLink to="/" style={{ textDecoration: "none", flexShrink: 0 }}>
+            <SeaClipLogo collapsed={isCollapsed} />
+          </NavLink>
         </div>
 
-        {/* Expand button when collapsed */}
-        {sidebarCollapsed && (
-          <div className="flex justify-center py-2 border-b border-[#374151]">
-            <button
-              onClick={() => setSidebarCollapsed(false)}
-              className="p-1.5 rounded text-[#6b7280] hover:text-[#f9fafb] hover:bg-[#1f2937] transition-colors"
-              aria-label="Expand sidebar"
-            >
-              <ChevronRight size={14} />
-            </button>
-          </div>
-        )}
-
-        {/* Company Selector */}
-        {!sidebarCollapsed && companies.length > 1 && (
-          <div className="px-3 py-2 border-b border-[#374151]">
-            <div className="flex items-center gap-2">
-              <Building2 size={13} className="text-[#6b7280] flex-shrink-0" />
-              <select
-                value={company?.id ?? ""}
-                onChange={(e) => setCompanyId(e.target.value)}
-                className="flex-1 bg-transparent text-[11px] text-[#9ca3af] focus:outline-none cursor-pointer"
-              >
-                {companies.map((c) => (
-                  <option key={c.id} value={c.id} className="bg-[#1f2937]">
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
-
         {/* Nav */}
-        <nav
-          className={cn(
-            "flex-1 overflow-y-auto py-3",
-            sidebarCollapsed ? "px-0" : "px-3",
-            "flex flex-col gap-3"
-          )}
-        >
-          {/* Top */}
-          <div className="flex flex-col gap-0.5">
-            {TOP_NAV.map((item) => (
-              <SidebarNavItem key={item.to} item={item} collapsed={sidebarCollapsed} />
-            ))}
-          </div>
-
-          {/* Work */}
-          {!sidebarCollapsed ? (
-            <SidebarSection label="Work">
-              {WORK_NAV.map((item) => (
-                <SidebarNavItem
-                  key={item.to}
-                  item={item}
-                  collapsed={false}
-                  badge={item.to === "/issues" ? badges?.activeIssues : undefined}
-                />
-              ))}
-            </SidebarSection>
-          ) : (
-            <div className="flex flex-col gap-0.5">
-              {WORK_NAV.map((item) => (
-                <SidebarNavItem key={item.to} item={item} collapsed={true} />
-              ))}
+        <nav style={{
+          flex: 1, overflowY: "auto",
+          padding: isCollapsed ? "8px 6px" : "8px 12px",
+        }}>
+          {sections.map((section, i) => (
+            <div key={section.title}>
+              {i === 0 ? <div style={{ paddingTop: 4 }} /> : <SectionHeader title={section.title} collapsed={isCollapsed} />}
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {section.items.map((item) => (
+                  <SidebarLink key={item.to} item={item} collapsed={isCollapsed} />
+                ))}
+              </div>
             </div>
-          )}
-
-          {/* Projects (collapsible) */}
-          <SidebarProjects collapsed={sidebarCollapsed} />
-
-          {/* Agents (collapsible) */}
-          <SidebarAgents collapsed={sidebarCollapsed} />
-
-          {/* Spokes */}
-          {!sidebarCollapsed ? (
-            <SidebarSection label="Spokes">
-              {SPOKE_NAV.map((item) => (
-                <SidebarNavItem
-                  key={item.to}
-                  item={item}
-                  collapsed={false}
-                  badge={item.to === "/pull-requests" ? badges?.openPRs : undefined}
-                />
-              ))}
-            </SidebarSection>
-          ) : (
-            <div className="flex flex-col gap-0.5">
-              {SPOKE_NAV.map((item) => (
-                <SidebarNavItem key={item.to} item={item} collapsed={true} />
-              ))}
-            </div>
-          )}
-
-          {/* Company */}
-          {!sidebarCollapsed ? (
-            <SidebarSection label="Company">
-              {COMPANY_NAV.map((item) => (
-                <SidebarNavItem
-                  key={item.to}
-                  item={item}
-                  collapsed={false}
-                  badge={item.to === "/approvals" ? pendingApprovals : undefined}
-                />
-              ))}
-            </SidebarSection>
-          ) : (
-            <div className="flex flex-col gap-0.5">
-              {COMPANY_NAV.map((item) => (
-                <SidebarNavItem
-                  key={item.to}
-                  item={item}
-                  collapsed={true}
-                  badge={item.to === "/approvals" ? pendingApprovals : undefined}
-                />
-              ))}
-            </div>
-          )}
+          ))}
         </nav>
 
-        {/* User / Bottom area */}
-        {!sidebarCollapsed && (
-          <div className="border-t border-[#374151] p-3">
-            <div className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-[#1f2937] cursor-pointer transition-colors group">
-              <div className="w-7 h-7 rounded-full bg-[#20808D]/20 border border-[#20808D]/30 flex items-center justify-center text-[#20808D]">
-                <User size={13} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[12px] font-medium text-[#f9fafb] truncate">
-                  {company?.name ?? "SeaClip"}
-                </div>
-                <div className="text-[10px] text-[#6b7280] truncate">Admin</div>
-              </div>
-              <LogOut
-                size={12}
-                className="text-[#6b7280] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-              />
+        {/* Bottom */}
+        <div style={{
+          flexShrink: 0, borderTop: "1px solid var(--border-subtle)",
+          padding: isCollapsed ? "12px 8px" : "12px 16px",
+        }}>
+          {!isCollapsed && companies.length > 1 && (
+            <select
+              value={company?.id ?? ""}
+              onChange={(e) => setCompanyId(e.target.value)}
+              style={{
+                width: "100%", marginBottom: 12, fontSize: 11,
+                padding: "6px 10px", borderRadius: 8,
+                border: "1px solid var(--border)",
+                backgroundColor: "var(--surface)",
+                color: "var(--text-secondary)",
+                outline: "none", cursor: "pointer",
+              }}
+            >
+              {companies.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          )}
+
+          <div style={{
+            display: "flex", alignItems: "center",
+            justifyContent: isCollapsed ? "center" : "flex-start",
+            gap: isCollapsed ? 0 : 10,
+          }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: "50%",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 11, fontWeight: 600, flexShrink: 0,
+              backgroundColor: "var(--primary-muted)",
+              border: "1px solid rgba(56,189,248,0.2)",
+              color: "var(--primary)",
+            }} title={company?.name ?? "SeaClip"}>
+              {company?.name?.charAt(0).toUpperCase() ?? "S"}
             </div>
+            {!isCollapsed && (
+              <>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: 11, fontWeight: 500,
+                    color: "var(--text-primary)",
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    {company?.name ?? "SeaClip"}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setCollapsed(!collapsed)}
+                  style={{
+                    padding: 4, borderRadius: 4, border: "none",
+                    background: "none", cursor: "pointer",
+                    color: "var(--text-muted)", flexShrink: 0,
+                    display: "flex", alignItems: "center",
+                  }}
+                  title="Collapse sidebar"
+                >
+                  <ChevronsLeft size={14} />
+                </button>
+              </>
+            )}
           </div>
-        )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{
+      display: "flex",
+      height: "100vh",
+      overflow: "hidden",
+      backgroundColor: "var(--bg)",
+    }}>
+      {/* Desktop Sidebar */}
+      <aside style={{
+        width: sidebarW,
+        minWidth: sidebarW,
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        flexShrink: 0,
+        borderRight: "1px solid var(--border)",
+        backgroundColor: "var(--bg-alt)",
+        transition: "width 200ms ease, min-width 200ms ease",
+      }}>
+        {sidebarInner()}
       </aside>
 
-      {/* Mobile Sidebar Overlay */}
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <aside className="relative z-10 w-64 h-full bg-[#111827] border-r border-[#374151] flex flex-col animate-fade-in">
-            <div className="flex items-center justify-between h-14 px-4 border-b border-[#374151]">
-              <SeaClipLogo collapsed={false} />
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1 rounded text-[#6b7280] hover:text-[#f9fafb]"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <nav className="flex-1 overflow-y-auto py-3 px-3 flex flex-col gap-0.5">
-              {NAV_ITEMS.map((item) => (
-                <div key={item.to} onClick={() => setMobileMenuOpen(false)}>
-                  <SidebarNavItem
-                    item={item}
-                    collapsed={false}
-                    badge={item.to === "/approvals" ? pendingApprovals : undefined}
-                  />
-                </div>
-              ))}
-            </nav>
+      {/* Mobile Overlay */}
+      {mobileOpen && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex" }}
+          onClick={() => setMobileOpen(false)}
+        >
+          <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.6)" }} />
+          <aside
+            style={{
+              position: "relative", zIndex: 50,
+              width: SIDEBAR_WIDTH, height: "100%",
+              display: "flex", flexDirection: "column",
+              borderRight: "1px solid var(--border)",
+              backgroundColor: "var(--bg-alt)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {sidebarInner(true)}
           </aside>
         </div>
       )}
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Header */}
-        <header className="flex items-center gap-3 h-14 px-4 bg-[#111827] border-b border-[#374151] flex-shrink-0">
-          {/* Mobile menu toggle */}
-          <button
-            className="md:hidden p-1.5 rounded text-[#6b7280] hover:text-[#f9fafb] hover:bg-[#1f2937]"
-            onClick={() => setMobileMenuOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu size={18} />
-          </button>
+      {/* Main Content */}
+      <div style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        minWidth: 0,
+        overflow: "hidden",
+      }}>
+        {/* Top Bar */}
+        <header style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: 48,
+          flexShrink: 0,
+          padding: "0 32px",
+          borderBottom: "1px solid var(--border-subtle)",
+          backgroundColor: "var(--bg)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileOpen(true)}
+              style={{
+                display: "none", // shown via media query below
+                padding: 6, borderRadius: 8, border: "none",
+                background: "none", cursor: "pointer",
+                color: "var(--text-muted)",
+              }}
+              className="md-hidden-toggle"
+              aria-label="Open menu"
+            >
+              <Menu size={18} />
+            </button>
 
-          {/* Page title derived from location */}
-          <div className="flex-1 min-w-0">
-            <h1 className="text-[14px] font-semibold text-[#f9fafb] truncate">
-              {getPageTitle(location.pathname)}
-            </h1>
-            {company && (
-              <p className="text-[11px] text-[#6b7280] hidden sm:block">
-                {company.name}
-              </p>
+            {collapsed && (
+              <button
+                onClick={() => setCollapsed(false)}
+                style={{
+                  padding: 4, borderRadius: 4, border: "none",
+                  background: "none", cursor: "pointer",
+                  color: "var(--text-muted)", display: "flex", alignItems: "center",
+                }}
+                title="Expand sidebar"
+              >
+                <ChevronsRight size={14} />
+              </button>
             )}
+
+            <span style={{
+              fontSize: 11, fontWeight: 500,
+              textTransform: "uppercase" as const,
+              letterSpacing: "0.08em",
+              color: "var(--text-muted)",
+              fontFamily: "'JetBrains Mono', monospace",
+            }}>
+              {getPageTitle(location.pathname)}
+            </span>
           </div>
 
-          {/* Header actions */}
-          <div className="flex items-center gap-2">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
-              className="relative p-1.5 rounded-lg text-[#6b7280] hover:text-[#f9fafb] hover:bg-[#1f2937] transition-colors"
+              style={{
+                position: "relative", padding: 6, borderRadius: 8,
+                border: "none", background: "none", cursor: "pointer",
+                color: "var(--text-muted)", display: "flex", alignItems: "center",
+              }}
               aria-label="Notifications"
             >
-              <Bell size={16} />
+              <Bell size={15} />
               {pendingApprovals > 0 && (
-                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-[#ef4444] rounded-full" />
+                <span style={{
+                  position: "absolute", top: 4, right: 4,
+                  width: 6, height: 6, borderRadius: "50%",
+                  backgroundColor: "var(--error)",
+                }} />
               )}
             </button>
-            <div className="w-7 h-7 rounded-full bg-[#20808D]/20 border border-[#20808D]/30 flex items-center justify-center text-[#20808D] text-[11px] font-semibold cursor-pointer">
-              {company?.name?.charAt(0).toUpperCase() ?? "S"}
-            </div>
           </div>
         </header>
 
-        {/* Breadcrumbs */}
-        <BreadcrumbBar />
-
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto">
-          <Outlet />
+        <main style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
+          <div style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            width: "100%",
+            padding: "32px 40px",
+            boxSizing: "border-box",
+          }}>
+            <Outlet />
+          </div>
         </main>
-
-        {/* Mobile bottom nav */}
-        <nav className="md:hidden flex items-center justify-around h-14 bg-[#111827] border-t border-[#374151] flex-shrink-0">
-          {NAV_ITEMS.slice(0, 5).map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              item.end
-                ? location.pathname === item.to
-                : location.pathname.startsWith(item.to);
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={cn(
-                  "flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg transition-colors",
-                  isActive ? "text-[#06b6d4]" : "text-[#6b7280]"
-                )}
-              >
-                <Icon size={18} />
-                <span className="text-[9px] font-medium">{item.label}</span>
-              </NavLink>
-            );
-          })}
-        </nav>
       </div>
     </div>
   );
 }
 
 function getPageTitle(pathname: string): string {
-  if (pathname === "/") return "Dashboard";
-  if (pathname.startsWith("/agents/")) return "Agent Detail";
-  if (pathname === "/agents") return "Agents";
-  if (pathname.startsWith("/issues/")) return "Issue Detail";
-  if (pathname === "/issues") return "Issues";
-  if (pathname === "/goals") return "Goals";
-  if (pathname === "/edge-mesh") return "Edge Mesh";
-  if (pathname === "/spoke-tasks") return "Spoke Tasks";
-  if (pathname === "/pull-requests") return "Pull Requests";
-  if (pathname === "/costs") return "Cost Tracking";
-  if (pathname.startsWith("/projects/")) return "Project Detail";
-  if (pathname === "/approvals") return "Approvals";
-  if (pathname.startsWith("/approvals/")) return "Approval Detail";
-  if (pathname === "/activity") return "Activity";
-  if (pathname === "/settings") return "Settings";
+  const map: Record<string, string> = {
+    "/": "Dashboard",
+    "/agents": "Agents",
+    "/issues": "Issues",
+    "/goals": "Goals",
+    "/spoke-tasks": "Spoke Tasks",
+    "/pull-requests": "Pull Requests",
+    "/edge-mesh": "Edge Mesh",
+    "/costs": "Costs",
+    "/approvals": "Approvals",
+    "/activity": "Activity",
+    "/settings": "Settings",
+    "/inbox": "Inbox",
+    "/org-chart": "Org Chart",
+  };
+  if (map[pathname]) return map[pathname];
+  for (const [prefix, title] of Object.entries(map)) {
+    if (prefix !== "/" && pathname.startsWith(prefix)) return title;
+  }
   return "SeaClip";
 }

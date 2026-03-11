@@ -351,16 +351,11 @@ export async function pushSchema(db: Db): Promise<void> {
     // PGlite — use its native exec() for multi-statement SQL
     await pglite.exec(DDL);
   } else {
-    // postgres-js — split into individual statements
-    const { sql: rawSql } = await import("drizzle-orm");
-    const statements = DDL
-      .split(";")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !s.startsWith("--"));
-
-    for (const stmt of statements) {
-      await db.execute(rawSql.raw(stmt));
-    }
+    // postgres-js — use the raw sql connection for multi-statement DDL
+    const { getSql } = await import("./db.js");
+    const sqlConn = getSql();
+    if (!sqlConn) throw new Error("No postgres-js connection available");
+    await sqlConn.unsafe(DDL);
   }
 
   logger.info("Database schema ready.");
