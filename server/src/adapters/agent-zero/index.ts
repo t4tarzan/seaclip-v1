@@ -14,6 +14,7 @@ import type {
 import { executeHttp } from "../http/execute.js";
 import { spawnProcess } from "../process/execute.js";
 import { getLogger } from "../../middleware/logger.js";
+import WebSocket from "ws";
 
 // Agent Zero skill injection for SeaClip task management
 const SEACLIP_SKILL_INJECTION = `
@@ -31,35 +32,128 @@ When completing tasks:
 SeaClip API: {seaclipApiUrl}
 `.trim();
 
-interface AgentZeroSessionResponse {
-  sessionId?: string;
-  output?: string;
-  messages?: Array<{ role: string; content: string }>;
-  toolCalls?: Array<{ name: string; args: Record<string, unknown>; result?: unknown }>;
-  done?: boolean;
-  error?: string;
+interface AgentZeroApiResponse {
+  context_id: string;
+  response: string;
+}
+
+interface AgentZeroWebSocketMessage {
+  type: string;
+  content?: string;
+  data?: unknown;
+  context_id?: string;
+}
+
+async function callAgentZeroWebSocket(
+  baseUrl: string,
+  contextId: string | null,
+  task: string,
+  apiKey: string | undefined,
+  timeoutMs: number,
+): Promise<AgentZeroApiResponse> {
+  const logger = getLogger();
+  const wsUrl = baseUrl.replace(/^http/, "ws") + "/ws";
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      ws.close();
+      reject(new Error(`Agent Zero WebSocket timeout after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    let responseText = "";
+    let newContextId = contextId || crypto.randomUUID();
+
+    const ws = new WebSocket(wsUrl, {
+      headers: apiKey ? { "X-API-KEY": apiKey } : {},
+    });
+
+    ws.on("open", () => {
+      logger.debug({ wsUrl }, "WebSocket connected to Agent Zero");
+      
+      const message = {
+        type: "message",
+        content: task,
+        context_id: contextId,
+      };
+      
+      ws.send(JSON.stringify(message));
+    });
+
+    ws.on("message", (data: WebSocket.Data) => {
+      try {
+        const msg = JSON.parse(data.toString()) as AgentZeroWebSocketMessage;
+        
+        logger.debug({ type: msg.type }, "Received WebSocket message from Agent Zero");
+
+        if (msg.type === "response" || msg.type === "message") {
+          if (msg.content) {
+            responseText += msg.content;
+          }
+          if (msg.context_id) {
+            newContextId = msg.context_id;
+          }
+        }
+        
+        if (msg.type === "done" || msg.type === "complete") {
+          clearTimeout(timeout);
+          ws.close();
+          resolve({
+            context_id: newContextId,
+            response: responseText || "Agent Zero completed task",
+          });
+        }
+      } catch (err) {
+        logger.error({ error: err }, "Failed to parse WebSocket message");
+      }
+    });
+
+    ws.on("error", (error) => {
+      clearTimeout(timeout);
+      logger.error({ error }, "WebSocket error");
+      reject(new Error(`Agent Zero WebSocket error: ${error.message}`));
+    });
+
+    ws.on("close", () => {
+      clearTimeout(timeout);
+      if (responseText) {
+        resolve({
+          context_id: newContextId,
+          response: responseText,
+        });
+      }
+    });
+  });
 }
 
 async function callAgentZeroApi(
   baseUrl: string,
-  sessionId: string | null,
+  contextId: string | null,
   task: string,
+  apiKey: string | undefined,
   timeoutMs: number,
-): Promise<AgentZeroSessionResponse> {
-  const url = sessionId
-    ? `${baseUrl}/api/session/${sessionId}/message`
-    : `${baseUrl}/api/session/new`;
+): Promise<AgentZeroApiResponse> {
+  const url = `${baseUrl}/api_message`;
 
   const body: Record<string, unknown> = {
     message: task,
-    sessionId,
-    streaming: false,
   };
+
+  if (contextId) {
+    body.context_id = contextId;
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (apiKey) {
+    headers["X-API-KEY"] = apiKey;
+  }
 
   const result = await executeHttp({
     url,
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
     timeoutMs,
     retries: 0,
@@ -69,7 +163,7 @@ async function callAgentZeroApi(
     throw new Error(`Agent Zero API returned HTTP ${result.statusCode}: ${result.body}`);
   }
 
-  return JSON.parse(result.body) as AgentZeroSessionResponse;
+  return JSON.parse(result.body) as AgentZeroApiResponse;
 }
 
 // Session codec for persisting Agent Zero state across heartbeats
@@ -97,6 +191,8 @@ export const agentZeroAdapter: ServerAdapterModule = {
   async execute(ctx: AdapterExecuteContext): Promise<AdapterExecuteResult> {
     const logger = getLogger();
     const baseUrl = ctx.adapterConfig.agentZeroUrl as string | undefined;
+    const apiKey = ctx.adapterConfig.apiKey as string | undefined;
+    const useWebSocket = (ctx.adapterConfig.useWebSocket as boolean | undefined) ?? true;
     const useProcess = ctx.adapterConfig.useProcess as boolean | undefined;
     const agentZeroPath = ctx.adapterConfig.agentZeroPath as string | undefined;
     const seaclipApiUrl = (ctx.adapterConfig.seaclipApiUrl as string | undefined) ?? "http://localhost:3001";
@@ -113,26 +209,32 @@ export const agentZeroAdapter: ServerAdapterModule = {
       ? `${skillPrompt}\n\n${ctx.systemPrompt}\n\nTask: ${JSON.stringify(ctx.context)}`
       : `${skillPrompt}\n\nTask: ${JSON.stringify(ctx.context)}`;
 
-    // Restore previous session if state is encoded in context
-    let sessionId: string | null = null;
+    // Restore previous context if state is encoded in context
+    let contextId: string | null = null;
     if (ctx.context.sessionState && typeof ctx.context.sessionState === "string") {
       const decoded = decodeSessionState(ctx.context.sessionState);
       if (decoded) {
-        sessionId = decoded.sessionId;
-        logger.debug({ sessionId, agentId: ctx.agentId }, "Restored Agent Zero session");
+        contextId = decoded.sessionId;
+        logger.debug({ contextId, agentId: ctx.agentId }, "Restored Agent Zero context");
       }
     }
 
     if (baseUrl && !useProcess) {
-      // Use Agent Zero HTTP API
-      const response = await callAgentZeroApi(baseUrl, sessionId, fullTask, ctx.timeoutMs);
+      // Use Agent Zero WebSocket or HTTP API
+      let response: AgentZeroApiResponse;
+      
+      if (useWebSocket) {
+        logger.debug({ baseUrl }, "Using WebSocket connection to Agent Zero");
+        response = await callAgentZeroWebSocket(baseUrl, contextId, fullTask, apiKey, ctx.timeoutMs);
+      } else {
+        logger.debug({ baseUrl }, "Using HTTP API connection to Agent Zero");
+        response = await callAgentZeroApi(baseUrl, contextId, fullTask, apiKey, ctx.timeoutMs);
+      }
 
-      const newSessionId = response.sessionId ?? sessionId ?? crypto.randomUUID();
-      const sessionState = encodeSessionState(newSessionId, ctx.context);
+      const newContextId = response.context_id;
+      const sessionState = encodeSessionState(newContextId, ctx.context);
 
-      const output = response.output ??
-        response.messages?.filter((m) => m.role === "assistant").map((m) => m.content).join("\n") ??
-        "Agent Zero completed task with no output";
+      const output = response.response || "Agent Zero completed task with no output";
 
       return {
         output,
@@ -140,10 +242,8 @@ export const agentZeroAdapter: ServerAdapterModule = {
         outputTokens: 0,
         costUsd: 0,
         metadata: {
-          sessionId: newSessionId,
+          contextId: newContextId,
           sessionState,
-          toolCallCount: response.toolCalls?.length ?? 0,
-          toolCalls: response.toolCalls,
         },
       };
     } else if (useProcess && agentZeroPath) {
@@ -189,7 +289,7 @@ export const agentZeroAdapter: ServerAdapterModule = {
     if (baseUrl) {
       try {
         const result = await executeHttp({
-          url: `${baseUrl}/api/ping`,
+          url: `${baseUrl}/api/health`,
           method: "GET",
           timeoutMs: 5000,
           retries: 0,
@@ -235,12 +335,22 @@ export const agentZeroAdapter: ServerAdapterModule = {
 
 | Field          | Type    | Required | Description                                         |
 |----------------|---------|----------|-----------------------------------------------------|
-| agentZeroUrl   | string  | *        | HTTP API URL of a running Agent Zero instance       |
+| agentZeroUrl   | string  | *        | HTTP/WebSocket URL of a running Agent Zero instance |
+| apiKey         | string  | **       | API key for Agent Zero authentication (X-API-KEY header) |
+| useWebSocket   | boolean | No       | Use WebSocket connection (default: true)            |
 | useProcess     | boolean | *        | Set to true to spawn Agent Zero as a subprocess     |
-| agentZeroPath  | string  | **       | Path to Agent Zero installation (required with useProcess) |
+| agentZeroPath  | string  | ***      | Path to Agent Zero installation (required with useProcess) |
 | seaclipApiUrl  | string  | No       | SeaClip server URL injected into agent context      |
 
 \* Either \`agentZeroUrl\` or (\`useProcess=true\` + \`agentZeroPath\`) is required.
+\*\* Required when using \`agentZeroUrl\` (Agent Zero's mcp_server_token from settings).
+\*\*\* Required when \`useProcess=true\`.
+
+### Connection Methods
+
+- **WebSocket (default)**: Real-time bidirectional communication with streaming responses
+- **HTTP API**: Fallback synchronous REST API (set useWebSocket: false)
+- **Process**: Local subprocess execution (set useProcess: true)
 
 ### SeaClip Skill
 

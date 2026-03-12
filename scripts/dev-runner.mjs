@@ -79,7 +79,7 @@ processes.push(
     color: color.cyan,
     env: {
       NODE_ENV: 'development',
-      PORT: process.env.PORT ?? '3100',
+      PORT: process.env.PORT ?? '3001',
       SEACLIP_DEPLOYMENT_MODE: process.env.SEACLIP_DEPLOYMENT_MODE ?? 'local_trusted',
     },
   })
@@ -130,9 +130,9 @@ for (const child of processes) {
 }
 
 console.log(
-  `${color.dim}  Server:  http://localhost:${process.env.PORT ?? 3100}${color.reset}`
+  `${color.dim}  Server:  http://localhost:${process.env.PORT ?? 3001}${color.reset}`
 );
 console.log(
-  `${color.dim}  UI:      http://localhost:5173${color.reset}`
+  `${color.dim}  UI:      http://localhost:3100${color.reset}`
 );
 console.log(`${color.dim}  Press Ctrl+C to stop all processes.\n${color.reset}`);

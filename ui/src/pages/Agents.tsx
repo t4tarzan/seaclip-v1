@@ -18,6 +18,7 @@ const ADAPTER_LABELS: Record<AdapterType, string> = {
   anthropic: "Anthropic",
   gemini: "Gemini",
   ollama: "Ollama",
+  external_agent: "External Agent",
   custom: "Custom",
 };
 

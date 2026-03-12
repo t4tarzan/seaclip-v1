@@ -3,6 +3,7 @@
  * stdout/stderr capture.
  */
 import { spawn } from "node:child_process";
+import type { ChildProcess } from "node:child_process";
 
 export interface SpawnOptions {
   command: string;
@@ -38,19 +39,19 @@ export async function spawnProcess(options: SpawnOptions): Promise<SpawnResult> 
     let timedOut = false;
     let signalUsed: NodeJS.Signals | undefined;
 
-    const child = spawn(shell, ["-c", command], {
+    const child: ChildProcess = spawn(shell, ["-c", command], {
       env,
       cwd,
       stdio: ["ignore", "pipe", "pipe"],
     });
 
     // Capture stdout
-    child.stdout.on("data", (chunk: Buffer) => {
+    child.stdout?.on("data", (chunk: Buffer) => {
       stdoutChunks.push(chunk);
     });
 
     // Capture stderr
-    child.stderr.on("data", (chunk: Buffer) => {
+    child.stderr?.on("data", (chunk: Buffer) => {
       stderrChunks.push(chunk);
     });
 
@@ -71,12 +72,12 @@ export async function spawnProcess(options: SpawnOptions): Promise<SpawnResult> 
       forceKill.unref();
     }, timeoutMs);
 
-    child.on("error", (err) => {
+    (child as any).once("error", (err: Error) => {
       clearTimeout(timer);
       reject(err);
     });
 
-    child.on("close", (exitCode, signal) => {
+    (child as any).once("close", (exitCode: number | null, signal: NodeJS.Signals | null) => {
       clearTimeout(timer);
 
       const durationMs = Date.now() - startMs;

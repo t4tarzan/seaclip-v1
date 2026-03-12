@@ -11,8 +11,9 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
+  Trash2,
 } from "lucide-react";
-import { useAgent, useAgentRuns, useInvokeAgent, useUpdateAgent } from "../api/agents";
+import { useAgent, useAgentRuns, useInvokeAgent, useUpdateAgent, useDeleteAgent } from "../api/agents";
 import { useCompanyContext } from "../context/CompanyContext";
 import { StatusBadge } from "../components/StatusBadge";
 import { Button } from "../components/ui/button";
@@ -80,10 +81,12 @@ export default function AgentDetail() {
   const { data: runs = [] } = useAgentRuns(companyId, id);
   const invokeAgent = useInvokeAgent();
   const updateAgent = useUpdateAgent();
+  const deleteAgent = useDeleteAgent();
 
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [invokePrompt, setInvokePrompt] = useState("");
   const [showInvokeDialog, setShowInvokeDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleInvoke = async () => {
     if (!companyId || !id) return;
@@ -100,6 +103,12 @@ export default function AgentDetail() {
     if (!companyId || !id) return;
     await updateAgent.mutateAsync({ companyId, id, data });
     setShowEditDialog(false);
+  };
+
+  const handleDelete = async () => {
+    if (!companyId || !id) return;
+    await deleteAgent.mutateAsync({ companyId, id });
+    navigate("/agents");
   };
 
   if (isLoading) {
@@ -164,6 +173,14 @@ export default function AgentDetail() {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Button
+            variant="outline"
+            size="sm"
+            icon={<Trash2 size={12} />}
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            Delete
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -391,6 +408,34 @@ export default function AgentDetail() {
                 icon={<Play size={12} />}
               >
                 Invoke
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Agent</DialogTitle>
+          </DialogHeader>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <p className="text-[13px] text-[var(--text-secondary)]">
+              Are you sure you want to delete <strong>{agent.name}</strong>? This action cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleDelete}
+                loading={deleteAgent.isPending}
+                icon={<Trash2 size={12} />}
+                style={{ backgroundColor: "var(--error)", borderColor: "var(--error)" }}
+              >
+                Delete Agent
               </Button>
             </div>
           </div>

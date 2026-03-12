@@ -18,8 +18,18 @@ import {
   HardDrive,
   Wifi,
   Activity,
+  Download,
+  Copy,
+  CheckCircle,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../components/ui/dialog";
 
 // ─── SVG Mesh Visualization ───────────────────────────────────────────────────
 interface MeshCanvasProps {
@@ -196,6 +206,150 @@ function MeshCanvas({
         </foreignObject>
       )}
     </svg>
+  );
+}
+
+// ─── Register Device Dialog ──────────────────────────────────────────────────
+function RegisterDeviceDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { companyId } = useCompanyContext();
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const hubUrl = window.location.origin.replace(/:\d+$/, ":3001");
+  const downloadUrl = `${hubUrl}/spoke-agent.sh`;
+
+  const downloadCommand = `curl -O ${downloadUrl}
+chmod +x spoke-agent.sh`;
+
+  const setupCommands = `export SEACLIP_HUB_URL="${hubUrl}"
+export SEACLIP_COMPANY_ID="${companyId}"
+export SEACLIP_DEVICE_TYPE="raspberry-pi"
+./spoke-agent.sh`;
+
+  const copyToClipboard = (text: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent size="lg">
+        <DialogHeader>
+          <DialogTitle>Register Edge Device</DialogTitle>
+          <DialogDescription>
+            Follow these steps to connect your edge device to the SeaClip hub.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, marginTop: 8 }}>
+          {/* Step 1: Download */}
+          <div>
+            <h4 className="text-[12px] font-semibold text-[var(--text-primary)] mb-3">
+              Step 1: Download Spoke Agent
+            </h4>
+            <div
+              style={{
+                backgroundColor: "var(--bg-alt)",
+                border: "1px solid var(--border)",
+                borderRadius: 8,
+                padding: 12,
+              }}
+            >
+              <pre
+                className="text-[11px] font-mono text-[var(--text-secondary)] mb-3"
+                style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
+              >
+                {downloadCommand}
+              </pre>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={copied === "download" ? <CheckCircle size={12} /> : <Copy size={12} />}
+                  onClick={() => copyToClipboard(downloadCommand, "download")}
+                >
+                  {copied === "download" ? "Copied!" : "Copy Command"}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={<Download size={12} />}
+                  onClick={() => window.open(downloadUrl, "_blank")}
+                >
+                  Download Script
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 2: Run on Device */}
+          <div>
+            <h4 className="text-[12px] font-semibold text-[var(--text-primary)] mb-3">
+              Step 2: Run on Your Device
+            </h4>
+            <div
+              style={{
+                backgroundColor: "var(--bg-alt)",
+                border: "1px solid var(--border)",
+                borderRadius: 8,
+                padding: 12,
+              }}
+            >
+              <pre
+                className="text-[11px] font-mono text-[var(--text-secondary)] mb-3"
+                style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
+              >
+                {setupCommands}
+              </pre>
+              <Button
+                variant="outline"
+                size="sm"
+                icon={copied === "setup" ? <CheckCircle size={12} /> : <Copy size={12} />}
+                onClick={() => copyToClipboard(setupCommands, "setup")}
+              >
+                {copied === "setup" ? "Copied!" : "Copy Commands"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Step 3: Verify */}
+          <div
+            style={{
+              backgroundColor: "var(--primary)/10",
+              border: "1px solid var(--primary)/25",
+              borderRadius: 8,
+              padding: 12,
+            }}
+          >
+            <p className="text-[11px] text-[var(--text-secondary)]">
+              <strong>✓ Your device will appear automatically</strong> in the Edge Mesh view once
+              the script runs successfully. No manual registration needed!
+            </p>
+          </div>
+
+          {/* Documentation Link */}
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12 }}>
+            <p className="text-[10px] text-[var(--text-muted)]">
+              For detailed setup instructions, see the{" "}
+              <a
+                href="https://github.com/yourusername/seaclip/blob/main/doc/SPOKE-AGENT-SETUP.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--primary)] hover:underline"
+              >
+                Spoke Agent Setup Guide
+              </a>
+            </p>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -390,6 +544,7 @@ export default function EdgeMesh() {
   const { data: mesh, isLoading, isFetching } = useEdgeMesh(companyId);
   const qc = useQueryClient();
   const [selectedId, setSelectedId] = useState<string | undefined>();
+  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
 
   const handleSelect = (id: string) => {
     setSelectedId((prev) => (prev === id ? undefined : id));
@@ -439,7 +594,12 @@ export default function EdgeMesh() {
             Register edge devices to visualize your mesh network.
           </p>
         </div>
-        <Button variant="primary" size="sm" icon={<Plus size={12} />}>
+        <Button
+          variant="primary"
+          size="sm"
+          icon={<Plus size={12} />}
+          onClick={() => setShowRegisterDialog(true)}
+        >
           Register Device
         </Button>
       </div>
@@ -497,7 +657,12 @@ export default function EdgeMesh() {
           >
             Refresh
           </Button>
-          <Button variant="primary" size="sm" icon={<Plus size={11} />}>
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<Plus size={11} />}
+            onClick={() => setShowRegisterDialog(true)}
+          >
             Register Device
           </Button>
         </div>
@@ -572,6 +737,12 @@ export default function EdgeMesh() {
           />
         )}
       </div>
+
+      {/* Register Device Dialog */}
+      <RegisterDeviceDialog
+        open={showRegisterDialog}
+        onOpenChange={setShowRegisterDialog}
+      />
     </div>
   );
 }

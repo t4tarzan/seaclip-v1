@@ -10,6 +10,10 @@ export interface ServerEnv {
   SEACLIP_DEPLOYMENT_MODE: string;
   DATABASE_URL: string;
   OLLAMA_BASE_URL: string;
+  OPENAI_API_KEY?: string;
+  ANTHROPIC_API_KEY?: string;
+  OPENROUTER_API_KEY?: string;
+  LITELLM_BASE_URL?: string;
   SEACLIP_STORAGE_DIR: string;
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
@@ -34,6 +38,20 @@ export function buildEnvFromConfig(config: SeaClipConfig): NodeJS.ProcessEnv {
   } else {
     // Embedded PGlite — server uses embedded PostgreSQL in storage dir
     env['DATABASE_URL'] = `pglite://${config.storage.baseDir}`;
+  }
+
+  // Provider API keys
+  if (config.providers?.openai?.apiKey) {
+    env['OPENAI_API_KEY'] = config.providers.openai.apiKey;
+  }
+  if (config.providers?.anthropic?.apiKey) {
+    env['ANTHROPIC_API_KEY'] = config.providers.anthropic.apiKey;
+  }
+  if (config.providers?.openrouter?.apiKey) {
+    env['OPENROUTER_API_KEY'] = config.providers.openrouter.apiKey;
+  }
+  if (config.providers?.litellm?.baseUrl) {
+    env['LITELLM_BASE_URL'] = config.providers.litellm.baseUrl;
   }
 
   if (config.telegram.botToken) {

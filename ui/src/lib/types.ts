@@ -7,7 +7,7 @@ export type IssueStatus = "backlog" | "todo" | "in_progress" | "in_review" | "do
 export type IssuePriority = "urgent" | "high" | "medium" | "low";
 export type DeviceStatus = "online" | "offline" | "degraded";
 export type ApprovalStatus = "pending" | "approved" | "rejected";
-export type AdapterType = "openai" | "anthropic" | "gemini" | "ollama" | "custom";
+export type AdapterType = "openai" | "anthropic" | "gemini" | "ollama" | "external_agent" | "custom";
 export type DeviceType = "raspberry_pi" | "jetson" | "phone" | "camera" | "mac" | "linux" | "windows";
 
 export interface Company {

@@ -68,9 +68,20 @@ git clone https://github.com/your-org/seaclip.git
 cd seaclip
 pnpm install
 pnpm build
+
+# Set up CLI globally (one-time)
+pnpm setup
+source ~/.bashrc
+cd cli && pnpm link --global && cd ..
+
+# Run onboarding (optional)
 seaclip onboard
-seaclip run
+
+# Start dev server + UI
+pnpm dev
 ```
+
+The server runs at `http://localhost:3001` (API) and UI at `http://localhost:3100` (Vite dev server with proxy to API).
 
 ### Option C — Docker Compose
 
@@ -189,6 +200,92 @@ A **spoke** is a lightweight agent process running on an edge device. It connect
 Multiple hubs can be linked for **federation**: tasks can be routed across sites, and a dashboard on one hub can observe agents registered on another.
 
 See [`doc/HUB-FEDERATION.md`](doc/HUB-FEDERATION.md) and [`doc/EDGE-MESH.md`](doc/EDGE-MESH.md) for protocol details.
+
+---
+
+## Connecting Edge Devices
+
+Connect Raspberry Pi, Jetson boards, laptops, or any Linux device to your SeaClip hub:
+
+### Quick Start
+
+1. **Download the spoke agent script** to your edge device:
+   ```bash
+   curl -O http://YOUR_HUB_IP:3001/spoke-agent.sh
+   chmod +x spoke-agent.sh
+   ```
+
+2. **Configure and run**:
+   ```bash
+   export SEACLIP_HUB_URL="http://YOUR_HUB_IP:3001"
+   export SEACLIP_COMPANY_ID="your-company-id"
+   export SEACLIP_DEVICE_TYPE="raspberry-pi"  # or jetson, laptop, container, etc.
+   ./spoke-agent.sh
+   ```
+
+3. **Verify** — Your device will appear automatically in the Edge Mesh dashboard at `http://YOUR_HUB_IP:3100/edge-mesh`
+
+### Via UI
+
+1. Navigate to **Edge Mesh** in the dashboard
+2. Click **"Register Device"**
+3. Follow the on-screen instructions with pre-filled commands
+4. Run the script on your device
+5. Device appears automatically — no manual registration needed!
+
+### What the Spoke Agent Does
+
+- ✅ Registers device with hub (one-time)
+- ✅ Sends telemetry every 30 seconds (CPU, RAM, disk, temperature)
+- ✅ Polls for tasks every 10 seconds
+- ✅ Executes assigned tasks and reports results
+- ✅ Automatically reconnects if connection drops
+
+### Supported Devices
+
+| Device Type | Example Use Cases |
+|-------------|-------------------|
+| `raspberry-pi` | Home automation, IoT sensors, edge AI |
+| `jetson` | Computer vision, GPU-accelerated inference |
+| `laptop` | Mobile development, testing, on-the-go agents |
+| `server` | High-performance computing, data processing |
+| `container` | Containerized AI agents (Docker, Podman) |
+| `vm` | Cloud instances, virtual machines |
+
+### Run as System Service
+
+For production deployments, run the spoke agent as a systemd service:
+
+```bash
+sudo nano /etc/systemd/system/seaclip-spoke.service
+```
+
+```ini
+[Unit]
+Description=SeaClip Spoke Agent
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+Environment="SEACLIP_HUB_URL=http://YOUR_HUB_IP:3001"
+Environment="SEACLIP_COMPANY_ID=your-company-id"
+Environment="SEACLIP_DEVICE_TYPE=raspberry-pi"
+ExecStart=/home/pi/spoke-agent.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable seaclip-spoke
+sudo systemctl start seaclip-spoke
+```
+
+For detailed setup instructions, see [`doc/SPOKE-AGENT-SETUP.md`](doc/SPOKE-AGENT-SETUP.md).
 
 ---
 

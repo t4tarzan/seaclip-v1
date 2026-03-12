@@ -275,6 +275,8 @@ CREATE TABLE IF NOT EXISTS enhancements (
   tests       JSONB NOT NULL DEFAULT '[]',
   depends_on  JSONB NOT NULL DEFAULT '[]',
   notes       TEXT,
+  code_generated BOOLEAN NOT NULL DEFAULT FALSE,
+  code_tested    BOOLEAN NOT NULL DEFAULT FALSE,
   started_at  TIMESTAMPTZ,
   completed_at TIMESTAMPTZ,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),

@@ -17,6 +17,10 @@ import { createServer } from 'net';
 import { spawn, type ChildProcess } from 'child_process';
 
 const ADAPTER_TYPES = [
+  { name: 'OpenAI          — GPT-4o, GPT-4o-mini, o1 models', value: 'openai' },
+  { name: 'Anthropic       — Claude 3.5 Sonnet, Haiku models', value: 'anthropic' },
+  { name: 'OpenRouter      — 100+ models via unified API', value: 'openrouter' },
+  { name: 'LiteLLM Proxy   — Self-hosted multi-provider proxy', value: 'litellm' },
   { name: 'Ollama Local    — Run local LLMs via Ollama', value: 'ollama_local' },
   { name: 'Claude Code     — Claude as an agent backend', value: 'claude_code' },
   { name: 'HTTP            — Any HTTP-callable agent endpoint', value: 'http' },
@@ -167,30 +171,186 @@ async function runOnboard(reset: boolean, skipBootstrap: boolean): Promise<void>
     connectionString = dbUrl;
   }
 
-  // ── Step 3: Ollama ─────────────────────────────────────────────────────
-  const { ollamaUrl } = await inquirer.prompt<{ ollamaUrl: string }>([
+  // ── Step 3: LLM Providers ──────────────────────────────────────────────
+  console.log(chalk.bold('\n── LLM Provider Configuration ──\n'));
+  console.log(chalk.dim('Select which LLM providers you want to configure (optional, can be set later via env vars)\n'));
+
+  // Select providers to configure
+  console.log(chalk.dim('Use SPACE to select, ENTER to confirm\n'));
+  const { selectedProviders } = await inquirer.prompt<{ selectedProviders: string[] }>([
     {
-      type: 'input',
-      name: 'ollamaUrl',
-      message: 'Ollama base URL:',
-      default: 'http://localhost:11434',
-      validate: (v: string) => {
-        try {
-          new URL(v);
-          return true;
-        } catch {
-          return 'Please enter a valid URL';
-        }
-      },
+      type: 'checkbox',
+      name: 'selectedProviders',
+      message: 'Select LLM providers to configure:',
+      choices: [
+        { name: 'OpenAI          — GPT-4o, GPT-4o-mini, o1 models', value: 'openai' },
+        { name: 'Anthropic       — Claude 3.5 Sonnet, Haiku, Opus', value: 'anthropic' },
+        { name: 'OpenRouter      — 100+ models via unified API', value: 'openrouter' },
+        { name: 'LiteLLM Proxy   — Self-hosted multi-provider proxy', value: 'litellm' },
+        { name: 'Ollama          — Local LLMs (llama, mistral, etc)', value: 'ollama' },
+      ],
     },
   ]);
 
-  // Pre-flight: check Ollama reachability
-  const ollamaCheck = await checkOllamaReachable(ollamaUrl);
-  if (ollamaCheck.ok) {
-    console.log(chalk.green(`  ✓ Ollama reachable — ${ollamaCheck.models} model(s) available`));
-  } else {
-    console.log(chalk.yellow(`  ⚠ Ollama not reachable at ${ollamaUrl} — you can configure it later`));
+  if (selectedProviders.length === 0) {
+    console.log(chalk.yellow('\n  ⚠ No providers selected - you can configure them later via environment variables or seaclip configure\n'));
+  }
+
+  // Collect credentials for selected providers
+  let openaiApiKey: string | undefined;
+  let anthropicApiKey: string | undefined;
+  let openrouterApiKey: string | undefined;
+  let litellmBaseUrl: string | undefined;
+  let ollamaUrl = 'http://localhost:11434';
+
+  // OpenAI
+  if (selectedProviders.includes('openai')) {
+    console.log(chalk.bold('\n── OpenAI Configuration ──'));
+    const openaiAnswers = await inquirer.prompt<{ apiKey: string; model?: string; baseUrl?: string }>([
+      {
+        type: 'password',
+        name: 'apiKey',
+        message: 'OpenAI API key (sk-...):',
+        mask: '*',
+        validate: (v: string) => v.trim().length > 0 || 'API key is required',
+      },
+      {
+        type: 'list',
+        name: 'model',
+        message: 'Default model (can be changed per agent):',
+        default: 'gpt-4o-mini',
+        choices: [
+          { name: 'gpt-4o-mini     — Fast & affordable (recommended)', value: 'gpt-4o-mini' },
+          { name: 'gpt-4o          — Most capable', value: 'gpt-4o' },
+          { name: 'gpt-4-turbo     — Previous generation', value: 'gpt-4-turbo' },
+          { name: 'o1-mini         — Reasoning model (fast)', value: 'o1-mini' },
+          { name: 'o1              — Advanced reasoning', value: 'o1' },
+        ],
+      },
+      {
+        type: 'input',
+        name: 'baseUrl',
+        message: 'Custom base URL (leave blank for default):',
+        default: '',
+      },
+    ]);
+    openaiApiKey = openaiAnswers.apiKey;
+    console.log(chalk.green(`  ✓ OpenAI configured (default model: ${openaiAnswers.model})`));
+  }
+
+  // Anthropic
+  if (selectedProviders.includes('anthropic')) {
+    console.log(chalk.bold('\n── Anthropic Configuration ──'));
+    const anthropicAnswers = await inquirer.prompt<{ apiKey: string; model?: string }>([
+      {
+        type: 'password',
+        name: 'apiKey',
+        message: 'Anthropic API key (sk-ant-...):',
+        mask: '*',
+        validate: (v: string) => v.trim().length > 0 || 'API key is required',
+      },
+      {
+        type: 'list',
+        name: 'model',
+        message: 'Default model (can be changed per agent):',
+        default: 'claude-3-5-haiku-20241022',
+        choices: [
+          { name: 'claude-3-5-haiku-20241022  — Fast & affordable (recommended)', value: 'claude-3-5-haiku-20241022' },
+          { name: 'claude-3-5-sonnet-20241022 — Most capable', value: 'claude-3-5-sonnet-20241022' },
+          { name: 'claude-3-opus-20240229     — Highest intelligence', value: 'claude-3-opus-20240229' },
+        ],
+      },
+    ]);
+    anthropicApiKey = anthropicAnswers.apiKey;
+    console.log(chalk.green(`  ✓ Anthropic configured (default model: ${anthropicAnswers.model})`));
+  }
+
+  // OpenRouter
+  if (selectedProviders.includes('openrouter')) {
+    console.log(chalk.bold('\n── OpenRouter Configuration ──'));
+    const openrouterAnswers = await inquirer.prompt<{ apiKey: string; model?: string }>([
+      {
+        type: 'password',
+        name: 'apiKey',
+        message: 'OpenRouter API key (sk-or-...):',
+        mask: '*',
+        validate: (v: string) => v.trim().length > 0 || 'API key is required',
+      },
+      {
+        type: 'input',
+        name: 'model',
+        message: 'Default model (e.g., anthropic/claude-3.5-haiku):',
+        default: 'anthropic/claude-3.5-haiku',
+      },
+    ]);
+    openrouterApiKey = openrouterAnswers.apiKey;
+    console.log(chalk.green(`  ✓ OpenRouter configured (default model: ${openrouterAnswers.model})`));
+  }
+
+  // LiteLLM
+  if (selectedProviders.includes('litellm')) {
+    console.log(chalk.bold('\n── LiteLLM Proxy Configuration ──'));
+    const litellmAnswers = await inquirer.prompt<{ baseUrl: string; apiKey?: string; model?: string }>([
+      {
+        type: 'input',
+        name: 'baseUrl',
+        message: 'LiteLLM proxy URL:',
+        default: 'http://localhost:4000',
+        validate: (v: string) => {
+          try {
+            new URL(v);
+            return true;
+          } catch {
+            return 'Please enter a valid URL';
+          }
+        },
+      },
+      {
+        type: 'password',
+        name: 'apiKey',
+        message: 'Proxy API key (leave blank if no auth):',
+        mask: '*',
+        default: '',
+      },
+      {
+        type: 'input',
+        name: 'model',
+        message: 'Default model (e.g., gpt-4o-mini):',
+        default: 'gpt-4o-mini',
+      },
+    ]);
+    litellmBaseUrl = litellmAnswers.baseUrl;
+    console.log(chalk.green(`  ✓ LiteLLM configured (default model: ${litellmAnswers.model})`));
+  }
+
+  // Ollama
+  if (selectedProviders.includes('ollama')) {
+    console.log(chalk.bold('\n── Ollama Configuration ──'));
+    const { url } = await inquirer.prompt<{ url: string }>([
+      {
+        type: 'input',
+        name: 'url',
+        message: 'Ollama base URL:',
+        default: 'http://localhost:11434',
+        validate: (v: string) => {
+          try {
+            new URL(v);
+            return true;
+          } catch {
+            return 'Please enter a valid URL';
+          }
+        },
+      },
+    ]);
+    ollamaUrl = url;
+
+    // Pre-flight: check Ollama reachability
+    const ollamaCheck = await checkOllamaReachable(ollamaUrl);
+    if (ollamaCheck.ok) {
+      console.log(chalk.green(`  ✓ Ollama reachable — ${ollamaCheck.models} model(s) available`));
+    } else {
+      console.log(chalk.yellow(`  ⚠ Ollama not reachable at ${ollamaUrl} — you can configure it later`));
+    }
   }
 
   // ── Step 4: Telegram (optional) ────────────────────────────────────────
@@ -212,12 +372,14 @@ async function runOnboard(reset: boolean, skipBootstrap: boolean): Promise<void>
         type: 'password',
         name: 'botToken',
         message: 'Telegram bot token (from @BotFather):',
+        mask: '*',
         validate: (v: string) => v.trim().length > 0 || 'Bot token is required',
       },
       {
-        type: 'input',
+        type: 'password',
         name: 'chatId',
         message: 'Telegram chat ID (leave blank to configure later):',
+        mask: '*',
       },
     ]);
     telegramBotToken = telegramAnswers.botToken;
@@ -256,6 +418,12 @@ async function runOnboard(reset: boolean, skipBootstrap: boolean): Promise<void>
       connectionString,
     },
     ollama: { baseUrl: ollamaUrl },
+    providers: {
+      ...(openaiApiKey && { openai: { apiKey: openaiApiKey } }),
+      ...(anthropicApiKey && { anthropic: { apiKey: anthropicApiKey } }),
+      ...(openrouterApiKey && { openrouter: { apiKey: openrouterApiKey } }),
+      ...(litellmBaseUrl && { litellm: { baseUrl: litellmBaseUrl } }),
+    },
     telegram: {
       botToken: telegramBotToken,
       chatId: telegramChatId,
@@ -413,7 +581,9 @@ async function runOnboard(reset: boolean, skipBootstrap: boolean): Promise<void>
         name: 'adapterType',
         message: 'Agent adapter type:',
         choices: ADAPTER_TYPES,
-        default: ollamaCheck.ok ? 'ollama_local' : 'claude_code',
+        default: selectedProviders.includes('openai') ? 'openai' : 
+                 selectedProviders.includes('anthropic') ? 'anthropic' :
+                 selectedProviders.includes('ollama') ? 'ollama_local' : 'openai',
       },
       {
         type: 'input',

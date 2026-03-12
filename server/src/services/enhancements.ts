@@ -6,6 +6,9 @@
 import { getDb } from "../db.js";
 import { sql } from "drizzle-orm";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw SQL result type varies by driver
+type RawResult = { rows: Record<string, unknown>[] };
+
 export interface Enhancement {
   id: string;
   parentId: string | null;
@@ -20,6 +23,8 @@ export interface Enhancement {
   tests: string[];
   dependsOn: string[];
   notes: string | null;
+  codeGenerated: boolean;
+  codeTested: boolean;
   startedAt: string | null;
   completedAt: string | null;
   createdAt: string;
@@ -47,6 +52,8 @@ function rowToEnhancement(row: Record<string, unknown>): Enhancement {
     tests: (row.tests as string[]) ?? [],
     dependsOn: (row.depends_on as string[]) ?? [],
     notes: row.notes as string | null,
+    codeGenerated: Boolean(row.code_generated),
+    codeTested: Boolean(row.code_tested),
     startedAt: row.started_at ? toISOString(row.started_at) : null,
     completedAt: row.completed_at ? toISOString(row.completed_at) : null,
     createdAt: toISOString(row.created_at),
@@ -74,18 +81,18 @@ export async function listEnhancements(filters?: {
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-  const rows = await db.execute(
+  const result = await db.execute(
     sql.raw(`SELECT * FROM enhancements ${where} ORDER BY phase, sort_order, priority DESC, created_at`),
-  );
-  return (rows.rows as Record<string, unknown>[]).map(rowToEnhancement);
+  ) as unknown as RawResult;
+  return result.rows.map(rowToEnhancement);
 }
 
 export async function getEnhancement(id: string): Promise<Enhancement | null> {
   const db = getDb();
-  const rows = await db.execute(
+  const result = await db.execute(
     sql.raw(`SELECT * FROM enhancements WHERE id = '${id}'`),
-  );
-  const row = (rows.rows as Record<string, unknown>[])[0];
+  ) as unknown as RawResult;
+  const row = result.rows[0];
   return row ? rowToEnhancement(row) : null;
 }
 
@@ -102,10 +109,12 @@ export async function createEnhancement(data: {
   tests?: string[];
   dependsOn?: string[];
   notes?: string;
+  codeGenerated?: boolean;
+  codeTested?: boolean;
 }): Promise<Enhancement> {
   const db = getDb();
-  const rows = await db.execute(sql.raw(`
-    INSERT INTO enhancements (parent_id, phase, category, title, description, status, priority, sort_order, files, tests, depends_on, notes)
+  const result = await db.execute(sql.raw(`
+    INSERT INTO enhancements (parent_id, phase, category, title, description, status, priority, sort_order, files, tests, depends_on, notes, code_generated, code_tested)
     VALUES (
       ${data.parentId ? `'${data.parentId}'` : "NULL"},
       '${data.phase}',
@@ -118,11 +127,13 @@ export async function createEnhancement(data: {
       '${JSON.stringify(data.files ?? [])}'::jsonb,
       '${JSON.stringify(data.tests ?? [])}'::jsonb,
       '${JSON.stringify(data.dependsOn ?? [])}'::jsonb,
-      ${data.notes ? `'${data.notes.replace(/'/g, "''")}'` : "NULL"}
+      ${data.notes ? `'${data.notes.replace(/'/g, "''")}'` : "NULL"},
+      ${data.codeGenerated ?? false},
+      ${data.codeTested ?? false}
     )
     RETURNING *
-  `));
-  return rowToEnhancement((rows.rows as Record<string, unknown>[])[0]);
+  `)) as unknown as RawResult;
+  return rowToEnhancement(result.rows[0]);
 }
 
 export async function updateEnhancement(
@@ -132,6 +143,8 @@ export async function updateEnhancement(
     notes: string;
     priority: number;
     sortOrder: number;
+    codeGenerated: boolean;
+    codeTested: boolean;
   }>,
 ): Promise<Enhancement | null> {
   const db = getDb();
@@ -144,12 +157,14 @@ export async function updateEnhancement(
   if (data.notes !== undefined) sets.push(`notes = '${data.notes.replace(/'/g, "''")}'`);
   if (data.priority !== undefined) sets.push(`priority = ${data.priority}`);
   if (data.sortOrder !== undefined) sets.push(`sort_order = ${data.sortOrder}`);
+  if (data.codeGenerated !== undefined) sets.push(`code_generated = ${data.codeGenerated}`);
+  if (data.codeTested !== undefined) sets.push(`code_tested = ${data.codeTested}`);
   sets.push(`updated_at = now()`);
 
-  const rows = await db.execute(
+  const result = await db.execute(
     sql.raw(`UPDATE enhancements SET ${sets.join(", ")} WHERE id = '${id}' RETURNING *`),
-  );
-  const row = (rows.rows as Record<string, unknown>[])[0];
+  ) as unknown as RawResult;
+  const row = result.rows[0];
   return row ? rowToEnhancement(row) : null;
 }
 
@@ -164,25 +179,25 @@ export async function getStats(): Promise<{
   byPhase: Record<string, number>;
 }> {
   const db = getDb();
-  const totalRows = await db.execute(sql.raw(`SELECT count(*) as cnt FROM enhancements`));
-  const statusRows = await db.execute(
+  const totalResult = await db.execute(sql.raw(`SELECT count(*) as cnt FROM enhancements`)) as unknown as RawResult;
+  const statusResult = await db.execute(
     sql.raw(`SELECT status, count(*) as cnt FROM enhancements GROUP BY status`),
-  );
-  const phaseRows = await db.execute(
+  ) as unknown as RawResult;
+  const phaseResult = await db.execute(
     sql.raw(`SELECT phase, count(*) as cnt FROM enhancements GROUP BY phase`),
-  );
+  ) as unknown as RawResult;
 
   const byStatus: Record<string, number> = {};
-  for (const r of statusRows.rows as Record<string, unknown>[]) {
+  for (const r of statusResult.rows) {
     byStatus[r.status as string] = Number(r.cnt);
   }
   const byPhase: Record<string, number> = {};
-  for (const r of phaseRows.rows as Record<string, unknown>[]) {
+  for (const r of phaseResult.rows) {
     byPhase[r.phase as string] = Number(r.cnt);
   }
 
   return {
-    total: Number((totalRows.rows[0] as Record<string, unknown>).cnt),
+    total: Number(totalResult.rows[0].cnt),
     byStatus,
     byPhase,
   };

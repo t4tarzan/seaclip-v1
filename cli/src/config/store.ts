@@ -17,6 +17,23 @@ export interface SeaClipConfig {
     mode: 'embedded' | 'postgres';
     connectionString?: string;
   };
+  providers: {
+    ollama?: {
+      baseUrl: string;
+    };
+    openai?: {
+      apiKey: string;
+    };
+    anthropic?: {
+      apiKey: string;
+    };
+    openrouter?: {
+      apiKey: string;
+    };
+    litellm?: {
+      baseUrl: string;
+    };
+  };
   ollama: {
     baseUrl: string;
   };
@@ -39,6 +56,7 @@ export const DEFAULT_CONFIG: SeaClipConfig = {
   database: {
     mode: 'embedded',
   },
+  providers: {},
   ollama: {
     baseUrl: 'http://localhost:11434',
   },
