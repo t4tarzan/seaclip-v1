@@ -12,6 +12,78 @@ Step-by-step guide to set up SeaClip on your hub and connect spoke devices over 
 
 ---
 
+## 0. Joining the Tailnet
+
+SeaClip uses **Tailscale** as the trust boundary — all hub ↔ spoke communication travels over an encrypted WireGuard mesh. Before you can connect a device, it must be on the same Tailscale network (tailnet).
+
+### For the hub admin (you)
+
+1. **Share your tailnet** — Go to [Tailscale Admin Console](https://login.tailscale.com/admin) → Settings → Sharing
+2. **Option A: Same account** — If the joiner uses the same identity provider (Google, GitHub, etc.), they sign in and auto-join your tailnet
+3. **Option B: Share a node** — Use [node sharing](https://tailscale.com/kb/1084/sharing) to share specific devices without adding them to your full tailnet
+4. **Option C: Invite link** — Under Users → Invite, generate an invite link the joiner can use to create an account on your tailnet
+
+### For the person joining
+
+1. **Install Tailscale** on your device:
+   - macOS / Windows / Linux: [tailscale.com/download](https://tailscale.com/download)
+   - Raspberry Pi / Debian: `curl -fsSL https://tailscale.com/install.sh | sh`
+   - iOS / Android: Install from App Store / Play Store
+2. **Authenticate** — Run `tailscale up` (or open the app) and sign in with the invite link or shared identity provider
+3. **Verify connectivity** to the hub:
+   ```bash
+   # Check you're on the tailnet
+   tailscale status
+
+   # Ping the hub
+   ping whitenoises-mac-studio.zapus-rohu.ts.net
+
+   # Or by IP
+   ping 100.114.140.33
+   ```
+4. **Test service access**:
+   ```bash
+   # API health check
+   curl http://whitenoises-mac-studio.zapus-rohu.ts.net:3001/health
+
+   # Dashboard (open in browser)
+   open http://whitenoises-mac-studio.zapus-rohu.ts.net:5180
+   ```
+
+### MagicDNS hostnames
+
+Once on the tailnet, devices can reach each other by hostname instead of IP:
+
+| Service | URL |
+|---------|-----|
+| API | `http://whitenoises-mac-studio.zapus-rohu.ts.net:3001` |
+| Dashboard | `http://whitenoises-mac-studio.zapus-rohu.ts.net:5180` |
+| Ollama | `http://whitenoises-mac-studio.zapus-rohu.ts.net:11434` |
+
+> **Tip:** In `local_trusted` deployment mode, Tailscale membership **is** the auth — no API keys or tokens needed. The tailnet acts as a zero-trust perimeter.
+
+### ACL lockdown (optional)
+
+For tighter control, add Tailscale ACL rules to restrict which devices can reach which ports:
+
+```json
+{
+  "acls": [
+    { "action": "accept", "src": ["tag:spoke"], "dst": ["tag:hub:3001"] },
+    { "action": "accept", "src": ["tag:admin"], "dst": ["tag:hub:*"] }
+  ],
+  "tagOwners": {
+    "tag:hub": ["autogroup:admin"],
+    "tag:spoke": ["autogroup:admin"],
+    "tag:admin": ["autogroup:admin"]
+  }
+}
+```
+
+This limits spoke devices to only the API port (3001) while admins get full access.
+
+---
+
 ## 1. Hub Setup
 
 ### 1a. Clone and install
@@ -50,7 +122,7 @@ pnpm dev
 
 This starts:
 - **API server** on `http://localhost:3001`
-- **Dashboard UI** on `http://localhost:5173`
+- **Dashboard UI** on `http://localhost:5180`
 
 Note your hub's **Tailscale IP** (e.g. `100.x.y.z`):
 
@@ -60,7 +132,7 @@ tailscale ip -4
 
 ### 1d. Get your company ID
 
-Open `http://localhost:5173` or run:
+Open `http://localhost:5180` or run:
 
 ```bash
 pnpm seaclip company list
@@ -138,7 +210,7 @@ curl -s -X POST "$HUB/api/companies/$COMPANY/agents" \
 
 ### 2d. View the spoke in the dashboard
 
-Open `http://<hub-tailscale-ip>:5173/spoke/<DEVICE_ID>` from any device on your Tailnet.
+Open `http://<hub-tailscale-ip>:5180/spoke/<DEVICE_ID>` from any device on your Tailnet.
 
 This thin-client view shows:
 - Device status and health

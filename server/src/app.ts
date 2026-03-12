@@ -19,6 +19,7 @@ import { activityRouter } from "./routes/activity.js";
 import { edgeDevicesRouter } from "./routes/edge-devices.js";
 import { hubFederationRouter } from "./routes/hub-federation.js";
 import { spokeRouter } from "./routes/spoke.js";
+import { hubRequestsRouter } from "./routes/hub-requests.js";
 import { enhancementsRouter } from "./routes/enhancements.js";
 import { spokeTasksRouter } from "./routes/spoke-tasks.js";
 import { pullRequestsRouter } from "./routes/pull-requests.js";
@@ -71,6 +72,9 @@ export function createApp(): express.Express {
 
   // Spoke (thin-client) routes — no auth required (device-level endpoints)
   app.use("/api/spoke", spokeRouter);
+
+  // Hub requests — no auth (standard dev users submit requests for admin review)
+  app.use("/api/hub-requests", hubRequestsRouter);
 
   // Spoke tasks and pull requests (company-scoped)
   app.use("/api/companies", spokeTasksRouter);
