@@ -185,15 +185,17 @@ export interface DailyCost {
 export interface Approval {
   id: string;
   companyId: string;
-  type: string;
-  requesterId: string;
-  requesterName: string;
-  payload: Record<string, unknown>;
+  title: string;
+  description?: string;
+  agentId?: string;
+  requestedById?: string;
   status: ApprovalStatus;
-  resolvedBy?: string;
-  resolvedAt?: string;
+  decision?: "approved" | "rejected";
   reason?: string;
-  createdAt: string;
+  resolvedById?: string;
+  requestedAt: string;
+  resolvedAt?: string;
+  metadata: Record<string, unknown>;
 }
 
 export interface ActivityEvent {

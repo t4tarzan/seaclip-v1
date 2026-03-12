@@ -53,11 +53,11 @@ export default function Inbox() {
       .map((a) => ({
         id: `approval-${a.id}`,
         type: "approval" as const,
-        title: `Approval: ${a.type}`,
-        description: `Requested by ${a.requesterName}`,
+        title: a.title,
+        description: a.requestedById ? `Requested by ${a.requestedById}` : "Pending review",
         icon: CheckSquare,
         route: `/approvals/${a.id}`,
-        time: a.createdAt,
+        time: a.requestedAt,
         read: false,
       })),
     ...issues.slice(0, 10).map((issue) => ({

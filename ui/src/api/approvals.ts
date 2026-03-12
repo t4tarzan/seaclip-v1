@@ -6,7 +6,7 @@ export function useApprovals(companyId: string | undefined) {
   return useQuery({
     queryKey: ["approvals", companyId],
     queryFn: async () => {
-      const res = await api.get<{ data: Approval[] }>(`/companies/${companyId}/approvals`);
+      const res = await api.get<{ data: Approval[] }>(`/companies/${companyId}/approvals?status=all`);
       return res.data;
     },
     enabled: !!companyId,
@@ -40,8 +40,8 @@ export function useResolveApproval() {
       decision: "approved" | "rejected";
       reason?: string;
     }) =>
-      api.patch<Approval>(`/companies/${companyId}/approvals/${id}`, {
-        status: decision,
+      api.post<Approval>(`/companies/${companyId}/approvals/${id}/resolve`, {
+        decision,
         reason,
       }),
     onSuccess: (_data, { companyId }) => {

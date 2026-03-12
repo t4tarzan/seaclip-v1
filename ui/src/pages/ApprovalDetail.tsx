@@ -29,10 +29,10 @@ export default function ApprovalDetail() {
 
   const isPending = approval.status === "pending";
 
-  const handleResolve = (status: "approved" | "rejected") => {
+  const handleResolve = (decision: "approved" | "rejected") => {
     if (!companyId) return;
     resolveApproval.mutate(
-      { companyId, id: approval.id, decision: status, reason: "" },
+      { companyId, id: approval.id, decision, reason: "" },
       { onSuccess: () => navigate("/approvals") }
     );
   };
@@ -43,9 +43,10 @@ export default function ApprovalDetail() {
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <Button variant="ghost" size="sm" icon={<ArrowLeft size={14} />} onClick={() => navigate("/approvals")} />
         <div>
-          <h2 className="text-[18px] font-bold text-[var(--text-primary)]">Approval Request</h2>
+          <h2 className="text-[18px] font-bold text-[var(--text-primary)]">{approval.title}</h2>
           <p className="text-[12px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>
-            {approval.type} · requested {timeAgo(approval.createdAt)}
+            {approval.requestedById && `by ${approval.requestedById} · `}
+            requested {timeAgo(approval.requestedAt)}
           </p>
         </div>
         <div style={{ marginLeft: "auto" }}>
@@ -55,14 +56,19 @@ export default function ApprovalDetail() {
 
       {/* Details card */}
       <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* Description */}
+        {approval.description && (
+          <p className="text-[13px] text-[var(--text-secondary)]">{approval.description}</p>
+        )}
+
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
           <div>
-            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Type</label>
-            <p className="text-[13px] text-[var(--text-primary)]" style={{ marginTop: 2 }}>{approval.type}</p>
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Title</label>
+            <p className="text-[13px] text-[var(--text-primary)]" style={{ marginTop: 2 }}>{approval.title}</p>
           </div>
           <div>
             <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Requester</label>
-            <p className="text-[13px] text-[var(--text-primary)]" style={{ marginTop: 2 }}>{approval.requesterName}</p>
+            <p className="text-[13px] text-[var(--text-primary)]" style={{ marginTop: 2 }}>{approval.requestedById ?? "—"}</p>
           </div>
           <div>
             <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Status</label>
@@ -73,16 +79,16 @@ export default function ApprovalDetail() {
           <div>
             <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Created</label>
             <p className="text-[13px] text-[var(--text-secondary)]" style={{ marginTop: 2 }}>
-              {new Date(approval.createdAt).toLocaleString()}
+              {new Date(approval.requestedAt).toLocaleString()}
             </p>
           </div>
         </div>
 
-        {approval.resolvedBy && (
+        {approval.resolvedById && (
           <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16, display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
             <div>
               <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Resolved By</label>
-              <p className="text-[13px] text-[var(--text-primary)]" style={{ marginTop: 2 }}>{approval.resolvedBy}</p>
+              <p className="text-[13px] text-[var(--text-primary)]" style={{ marginTop: 2 }}>{approval.resolvedById}</p>
             </div>
             {approval.resolvedAt && (
               <div>
@@ -102,10 +108,10 @@ export default function ApprovalDetail() {
           </div>
         )}
 
-        {/* Payload */}
-        {Object.keys(approval.payload).length > 0 && (
+        {/* Metadata */}
+        {approval.metadata && Object.keys(approval.metadata).length > 0 && (
           <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
-            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Payload</label>
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-medium">Details</label>
             <pre
               style={{
                 marginTop: 8,
@@ -116,7 +122,7 @@ export default function ApprovalDetail() {
               }}
               className="text-[11px] text-[var(--text-secondary)] font-mono"
             >
-              {JSON.stringify(approval.payload, null, 2)}
+              {JSON.stringify(approval.metadata, null, 2)}
             </pre>
           </div>
         )}

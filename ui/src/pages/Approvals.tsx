@@ -49,32 +49,40 @@ function ApprovalCard({ approval, onApprove, onReject, isResolving }: ApprovalCa
             )}
           </div>
           <div>
-            <p className="text-[13px] font-semibold text-[var(--text-primary)]">{approval.type}</p>
+            <p className="text-[13px] font-semibold text-[var(--text-primary)]">{approval.title}</p>
             <p className="text-[10px] text-[var(--text-muted)]">
-              by <span className="text-[var(--text-secondary)]">{approval.requesterName}</span>
-              {" · "}
-              {timeAgo(approval.createdAt)}
+              {approval.requestedById && (
+                <>by <span className="text-[var(--text-secondary)]">{approval.requestedById}</span>{" · "}</>
+              )}
+              {timeAgo(approval.requestedAt)}
             </p>
           </div>
         </div>
         <StatusBadge type="approval" value={approval.status} />
       </div>
 
-      {/* Payload preview */}
-      <div style={{ backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 8, padding: 12 }}>
-        <p className="text-[9px] font-semibold text-[var(--text-muted)] uppercase tracking-wider" style={{ marginBottom: 6 }}>
-          Payload
-        </p>
-        <pre className="text-[11px] text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap" style={{ overflowX: "auto" }}>
-          {truncate(JSON.stringify(approval.payload, null, 2), 400)}
-        </pre>
-      </div>
+      {/* Description + metadata */}
+      {approval.description && (
+        <p className="text-[12px] text-[var(--text-secondary)]">{approval.description}</p>
+      )}
+      {approval.metadata && Object.keys(approval.metadata).length > 0 && (
+        <div style={{ backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 8, padding: 12 }}>
+          <p className="text-[9px] font-semibold text-[var(--text-muted)] uppercase tracking-wider" style={{ marginBottom: 6 }}>
+            Details
+          </p>
+          <pre className="text-[11px] text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap" style={{ overflowX: "auto" }}>
+            {truncate(JSON.stringify(approval.metadata, null, 2), 400)}
+          </pre>
+        </div>
+      )}
 
       {/* Resolved info */}
-      {!isPending && approval.resolvedBy && (
+      {!isPending && (approval.resolvedById || approval.resolvedAt) && (
         <div className="text-[11px] text-[var(--text-muted)]">
-          {approval.status === "approved" ? "Approved" : "Rejected"} by{" "}
-          <span className="text-[var(--text-secondary)]">{approval.resolvedBy}</span>
+          {approval.decision === "approved" ? "Approved" : "Rejected"}
+          {approval.resolvedById && (
+            <> by <span className="text-[var(--text-secondary)]">{approval.resolvedById}</span></>
+          )}
           {approval.resolvedAt && ` · ${timeAgo(approval.resolvedAt)}`}
           {approval.reason && (
             <span className="text-[var(--text-secondary)]" style={{ display: "block", marginTop: 2 }}>Reason: {approval.reason}</span>
