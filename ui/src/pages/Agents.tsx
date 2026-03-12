@@ -14,12 +14,22 @@ import { cn } from "../lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 
 const ADAPTER_LABELS: Record<AdapterType, string> = {
+  // Cloud
   openai: "OpenAI",
   anthropic: "Anthropic",
-  gemini: "Gemini",
-  ollama: "Ollama",
+  openrouter: "OpenRouter",
+  litellm: "LiteLLM",
+  // Local / Hub
+  ollama_local: "Ollama (Local)",
+  claude_code: "Claude Code",
+  // Edge / Spoke
+  seaclaw: "SeaClaw Edge",
+  agent_zero: "Agent Zero",
   external_agent: "External Agent",
-  custom: "Custom",
+  // Infrastructure
+  telegram_bridge: "Telegram Bridge",
+  process: "Process",
+  http: "HTTP",
 };
 
 export default function Agents() {
@@ -102,7 +112,7 @@ export default function Agents() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
           <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide">Adapter:</span>
-          {(["all", "openai", "anthropic", "gemini", "ollama", "custom"] as const).map((a) => (
+          {(["all", "openai", "anthropic", "openrouter", "ollama_local", "claude_code", "seaclaw", "agent_zero", "external_agent"] as const).map((a) => (
             <button
               key={a}
               onClick={() => setAdapterFilter(a)}

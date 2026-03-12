@@ -7,7 +7,23 @@ export type IssueStatus = "backlog" | "todo" | "in_progress" | "in_review" | "do
 export type IssuePriority = "urgent" | "high" | "medium" | "low";
 export type DeviceStatus = "online" | "offline" | "degraded";
 export type ApprovalStatus = "pending" | "approved" | "rejected";
-export type AdapterType = "openai" | "anthropic" | "gemini" | "ollama" | "external_agent" | "custom";
+export type AdapterType =
+  // Cloud LLM providers
+  | "openai"
+  | "anthropic"
+  | "openrouter"
+  | "litellm"
+  // Local / Hub models
+  | "ollama_local"
+  | "claude_code"
+  // Edge / Spoke agents
+  | "seaclaw"
+  | "agent_zero"
+  | "external_agent"
+  // Infrastructure
+  | "telegram_bridge"
+  | "process"
+  | "http";
 export type DeviceType = "raspberry_pi" | "jetson" | "phone" | "camera" | "mac" | "linux" | "windows";
 
 export interface Company {

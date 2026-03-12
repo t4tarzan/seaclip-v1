@@ -17,16 +17,27 @@ interface AgentConfigFormProps {
   loading?: boolean;
 }
 
-const ADAPTER_TYPES: { value: AdapterType; label: string; description: string }[] = [
-  { value: "openai", label: "OpenAI", description: "GPT-4o, o1, o3-mini" },
-  { value: "anthropic", label: "Anthropic", description: "Claude 3.5 Sonnet, Haiku" },
-  { value: "gemini", label: "Google Gemini", description: "Gemini 2.0 Flash, Pro" },
-  { value: "ollama", label: "Ollama (Local)", description: "Local models via Ollama" },
-  { value: "external_agent", label: "External Agent", description: "Agent Zero, OpenClaw, or any autonomous agent" },
-  { value: "custom", label: "Custom", description: "Custom adapter endpoint" },
+const ADAPTER_TYPES: { value: AdapterType; label: string; description: string; group: string }[] = [
+  // Cloud LLM providers — use for projects that need frontier models
+  { value: "openai", label: "OpenAI", description: "GPT-4o, o1, o3-mini", group: "Cloud" },
+  { value: "anthropic", label: "Anthropic", description: "Claude Opus, Sonnet, Haiku", group: "Cloud" },
+  { value: "openrouter", label: "OpenRouter", description: "Multi-provider gateway (100+ models)", group: "Cloud" },
+  { value: "litellm", label: "LiteLLM", description: "Unified proxy for any LLM provider", group: "Cloud" },
+  // Local / Hub — free inference on Mac Studio GPU
+  { value: "ollama_local", label: "Ollama (Hub)", description: "Local models — qwen3.5:35b, glm-4.7-flash (free)", group: "Local" },
+  { value: "claude_code", label: "Claude Code", description: "Claude Code CLI as agent backend", group: "Local" },
+  // Edge / Spoke agents
+  { value: "seaclaw", label: "SeaClaw Edge", description: "C binary agent for Pi / Jetson / edge devices", group: "Edge" },
+  { value: "agent_zero", label: "Agent Zero", description: "Autonomous coding agent (Python)", group: "Edge" },
+  { value: "external_agent", label: "External Agent", description: "Any external autonomous agent endpoint", group: "Edge" },
+  // Infrastructure
+  { value: "telegram_bridge", label: "Telegram Bridge", description: "Human-in-the-loop via Telegram bot", group: "Infra" },
+  { value: "process", label: "Process", description: "Spawn a local command as an agent", group: "Infra" },
+  { value: "http", label: "HTTP", description: "Generic HTTP-callable agent endpoint", group: "Infra" },
 ];
 
 const ADAPTER_CONFIG_FIELDS: Record<AdapterType, { key: string; label: string; placeholder: string; type?: string }[]> = {
+  // Cloud providers
   openai: [
     { key: "model", label: "Model", placeholder: "gpt-4o" },
     { key: "apiKey", label: "API Key", placeholder: "sk-...", type: "password" },
@@ -34,17 +45,40 @@ const ADAPTER_CONFIG_FIELDS: Record<AdapterType, { key: string; label: string; p
     { key: "temperature", label: "Temperature", placeholder: "0.7" },
   ],
   anthropic: [
-    { key: "model", label: "Model", placeholder: "claude-3-5-sonnet-20241022" },
+    { key: "model", label: "Model", placeholder: "claude-sonnet-4-20250514" },
     { key: "apiKey", label: "API Key", placeholder: "sk-ant-...", type: "password" },
     { key: "maxTokens", label: "Max Tokens", placeholder: "4096" },
   ],
-  gemini: [
-    { key: "model", label: "Model", placeholder: "gemini-2.0-flash" },
-    { key: "apiKey", label: "API Key", placeholder: "AIza...", type: "password" },
+  openrouter: [
+    { key: "model", label: "Model", placeholder: "anthropic/claude-sonnet-4-20250514" },
+    { key: "apiKey", label: "API Key", placeholder: "sk-or-...", type: "password" },
+    { key: "maxTokens", label: "Max Tokens", placeholder: "4096" },
+    { key: "temperature", label: "Temperature", placeholder: "0.7" },
   ],
-  ollama: [
-    { key: "model", label: "Model", placeholder: "llama3.2" },
-    { key: "baseUrl", label: "Base URL", placeholder: "http://localhost:11434" },
+  litellm: [
+    { key: "model", label: "Model", placeholder: "gpt-4o" },
+    { key: "baseUrl", label: "LiteLLM Proxy URL", placeholder: "http://localhost:4000" },
+    { key: "apiKey", label: "API Key", placeholder: "sk-...", type: "password" },
+  ],
+  // Local / Hub
+  ollama_local: [
+    { key: "model", label: "Model", placeholder: "qwen3.5:35b" },
+    { key: "baseUrl", label: "Ollama URL", placeholder: "http://localhost:11434" },
+  ],
+  claude_code: [
+    { key: "model", label: "Model", placeholder: "claude-sonnet-4-20250514" },
+    { key: "workingDir", label: "Working Directory", placeholder: "/path/to/repo" },
+    { key: "autoBranch", label: "Auto-Branch", placeholder: "true" },
+  ],
+  // Edge / Spoke
+  seaclaw: [
+    { key: "baseUrl", label: "Device URL", placeholder: "http://100.x.y.z:8080" },
+    { key: "deviceId", label: "Device ID", placeholder: "dev_abc123" },
+  ],
+  agent_zero: [
+    { key: "baseUrl", label: "Agent Zero URL", placeholder: "http://localhost:50001" },
+    { key: "apiKey", label: "API Key", placeholder: "your-api-key", type: "password" },
+    { key: "messageFormat", label: "Message Format", placeholder: "agent-zero" },
   ],
   external_agent: [
     { key: "baseUrl", label: "Agent URL", placeholder: "http://187.77.185.88:50001" },
@@ -53,10 +87,20 @@ const ADAPTER_CONFIG_FIELDS: Record<AdapterType, { key: string; label: string; p
     { key: "authType", label: "Auth Type", placeholder: "api-key" },
     { key: "messageFormat", label: "Message Format", placeholder: "agent-zero" },
   ],
-  custom: [
-    { key: "endpoint", label: "Endpoint URL", placeholder: "https://..." },
+  // Infrastructure
+  telegram_bridge: [
+    { key: "botToken", label: "Bot Token", placeholder: "123456:ABC-...", type: "password" },
+    { key: "chatId", label: "Chat ID", placeholder: "-1001234567890" },
+  ],
+  process: [
+    { key: "command", label: "Command", placeholder: "/usr/local/bin/my-agent" },
+    { key: "args", label: "Arguments", placeholder: "--mode=agent" },
+    { key: "workingDir", label: "Working Directory", placeholder: "/path/to/dir" },
+  ],
+  http: [
+    { key: "endpoint", label: "Endpoint URL", placeholder: "https://my-agent.example.com/api" },
     { key: "apiKey", label: "API Key", placeholder: "...", type: "password" },
-    { key: "model", label: "Model", placeholder: "model-name" },
+    { key: "method", label: "HTTP Method", placeholder: "POST" },
   ],
 };
 
@@ -70,7 +114,7 @@ export function AgentConfigForm({
   const [role, setRole] = useState(initial.role ?? "");
   const [title, setTitle] = useState(initial.title ?? "");
   const [adapterType, setAdapterType] = useState<AdapterType>(
-    initial.adapterType ?? "openai"
+    initial.adapterType ?? "ollama_local"
   );
   const [budgetCents, setBudgetCents] = useState(
     initial.budgetCents != null ? String(initial.budgetCents / 100) : "10"
@@ -143,12 +187,21 @@ export function AgentConfigForm({
             <SelectValue placeholder="Select adapter" />
           </SelectTrigger>
           <SelectContent>
-            {ADAPTER_TYPES.map((a) => (
-              <SelectItem key={a.value} value={a.value}>
-                <span className="font-medium">{a.label}</span>
-                <span className="ml-2 text-[var(--text-muted)] text-[10px]">{a.description}</span>
-              </SelectItem>
-            ))}
+            {["Cloud", "Local", "Edge", "Infra"].map((group) => {
+              const items = ADAPTER_TYPES.filter((a) => a.group === group);
+              if (items.length === 0) return null;
+              return (
+                <div key={group}>
+                  <div style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{group === "Infra" ? "Infrastructure" : group === "Local" ? "Local / Hub" : group === "Edge" ? "Edge / Spoke" : "Cloud Providers"}</div>
+                  {items.map((a) => (
+                    <SelectItem key={a.value} value={a.value}>
+                      <span className="font-medium">{a.label}</span>
+                      <span className="ml-2 text-[var(--text-muted)] text-[10px]">{a.description}</span>
+                    </SelectItem>
+                  ))}
+                </div>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>
