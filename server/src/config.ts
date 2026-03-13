@@ -1,5 +1,7 @@
 import "dotenv/config";
 
+// Pipeline smoke test — 2026-03-13 (issue #5)
+
 export interface Config {
   deploymentMode: "local_trusted" | "authenticated";
   host: string;
