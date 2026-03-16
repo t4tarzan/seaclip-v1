@@ -1,6 +1,23 @@
 ---
 const githubUrl = 'https://github.com/t4tarzan/seaclip-v1';
 const currentYear = new Date().getFullYear();
+
+const products = [
+  { label: 'Velocity Training', href: 'https://training-virtualgpt.cloud', external: true },
+  { label: 'SeaClaw Agent', href: 'https://seaclawagent.com', external: true },
+];
+
+const docs = [
+  { label: 'SeaBot Docs', href: 'https://docs.seabot.dev', external: true },
+  { label: 'SeaZero Docs', href: 'https://docs.seazero.dev', external: true },
+  { label: 'SeaClip Docs', href: `${githubUrl}#readme`, external: true },
+];
+
+const openSource = [
+  { label: 'SeaClaw GitHub', href: 'https://github.com/t4tarzan/seaclaw-agent', external: true },
+  { label: 'SeaClip GitHub', href: githubUrl, external: true },
+  { label: 'Issues', href: `${githubUrl}/issues`, external: true },
+];
 ---
 
 <footer class="footer">
@@ -11,22 +28,35 @@ const currentYear = new Date().getFullYear();
         <p class="footer__tagline">On-prem secure orchestration for edge-native AI fleets</p>
       </div>
 
-      <nav class="footer__links" aria-label="Footer navigation">
-        <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="footer__link">GitHub</a>
-        <a href={`${githubUrl}#readme`} target="_blank" rel="noopener noreferrer" class="footer__link">Documentation</a>
-        <a href={`${githubUrl}/issues`} target="_blank" rel="noopener noreferrer" class="footer__link">Issues</a>
+      <nav class="footer__col" aria-label="Products">
+        <h4 class="footer__col-title">Products</h4>
+        {products.map((link) => (
+          <a href={link.href} target="_blank" rel="noopener noreferrer" class="footer__link">{link.label}</a>
+        ))}
       </nav>
 
-      <div class="footer__meta">
-        <span class="footer__meta-item">Built with Astro</span>
-        <span class="footer__meta-item">MIT License</span>
-        <span class="footer__meta-item">&copy; {currentYear}</span>
-      </div>
+      <nav class="footer__col" aria-label="Documentation">
+        <h4 class="footer__col-title">Documentation</h4>
+        {docs.map((link) => (
+          <a href={link.href} target="_blank" rel="noopener noreferrer" class="footer__link">{link.label}</a>
+        ))}
+      </nav>
+
+      <nav class="footer__col" aria-label="Open Source">
+        <h4 class="footer__col-title">Open Source</h4>
+        {openSource.map((link) => (
+          <a href={link.href} target="_blank" rel="noopener noreferrer" class="footer__link">{link.label}</a>
+        ))}
+      </nav>
     </div>
 
     <hr class="footer__divider" />
 
-    <p class="footer__attribution">Forked with love from Paperclip</p>
+    <div class="footer__meta">
+      <span class="footer__meta-item">Built with Astro</span>
+      <span class="footer__meta-item">MIT License</span>
+      <span class="footer__meta-item">&copy; {currentYear}</span>
+    </div>
   </div>
 </footer>
 
@@ -38,7 +68,7 @@ const currentYear = new Date().getFullYear();
 
   .footer__grid {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
     gap: var(--space-3xl, 3rem);
     align-items: start;
   }
@@ -66,10 +96,20 @@ const currentYear = new Date().getFullYear();
     max-width: 28ch;
   }
 
-  .footer__links {
+  .footer__col {
     display: flex;
-    gap: var(--space-xl, 1.5rem);
-    align-items: center;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .footer__col-title {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.25rem;
   }
 
   .footer__link {
@@ -84,11 +124,17 @@ const currentYear = new Date().getFullYear();
     color: var(--color-accent);
   }
 
+  .footer__divider {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 2.5rem 0 1.25rem;
+  }
+
   .footer__meta {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.25rem;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 0.75rem;
   }
 
   .footer__meta-item {
@@ -97,44 +143,37 @@ const currentYear = new Date().getFullYear();
     color: var(--color-text-muted);
   }
 
-  .footer__divider {
-    border: none;
-    border-top: 1px solid var(--color-border);
-    margin: 2.5rem 0 1.25rem;
-  }
-
-  .footer__attribution {
-    font-family: var(--font-sans);
-    font-size: 0.8125rem;
-    color: var(--color-text-muted);
-    text-align: center;
-    margin: 0;
-  }
-
   @media (max-width: 768px) {
     .footer__grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: var(--space-xl, 1.5rem);
-      text-align: center;
     }
 
     .footer__brand {
+      grid-column: 1 / -1;
       align-items: center;
+      text-align: center;
     }
 
     .footer__tagline {
       max-width: none;
     }
+  }
 
-    .footer__links {
-      justify-content: center;
+  @media (max-width: 480px) {
+    .footer__grid {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .footer__col {
+      align-items: center;
     }
 
     .footer__meta {
+      flex-direction: column;
       align-items: center;
-      flex-direction: row;
-      justify-content: center;
-      gap: 1rem;
+      gap: 0.5rem;
     }
   }
 </style>

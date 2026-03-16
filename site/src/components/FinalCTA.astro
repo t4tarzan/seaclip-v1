@@ -1,25 +1,95 @@
 ---
-const githubUrl = 'https://github.com/t4tarzan/seaclip-v1';
 ---
 
-<section class="final-cta">
-  <div class="container final-cta__inner fade-in">
-    <h2 class="final-cta__heading">Ready to deploy your fleet?</h2>
-    <p class="final-cta__subline">On-prem secure. MIT licensed. Run it anywhere.</p>
-    <div class="final-cta__buttons">
-      <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="btn btn--primary">
-        Get started
-      </a>
-      <a href={`${githubUrl}#readme`} target="_blank" rel="noopener noreferrer" class="btn btn--secondary">
-        Read the docs
-      </a>
-    </div>
+<section id="contact" class="contact">
+  <div class="container contact__inner fade-in">
+    <h2 class="contact__heading">Book a Demo</h2>
+    <p class="contact__subline">See SeaClip in action. Tell us about your fleet and we'll set up a walkthrough.</p>
+    <p class="contact__person">Ajay Tyagi, VP Sales — <a href="mailto:ajay@dkube.io" class="contact__email">ajay@dkube.io</a></p>
+
+    <form id="contact-form" class="contact__form" novalidate>
+      <div class="contact__field">
+        <label for="contact-name" class="contact__label">Name *</label>
+        <input type="text" id="contact-name" name="name" required class="contact__input" placeholder="Your name" />
+      </div>
+
+      <div class="contact__field">
+        <label for="contact-email" class="contact__label">Email *</label>
+        <input type="email" id="contact-email" name="email" required class="contact__input" placeholder="you@company.com" />
+      </div>
+
+      <div class="contact__field">
+        <label for="contact-company" class="contact__label">Company</label>
+        <input type="text" id="contact-company" name="company" class="contact__input" placeholder="Company name (optional)" />
+      </div>
+
+      <div class="contact__field">
+        <label for="contact-message" class="contact__label">Message *</label>
+        <textarea id="contact-message" name="message" required class="contact__input contact__textarea" rows="4" placeholder="Tell us about your use case..."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn--primary contact__submit">Send Message</button>
+
+      <p id="contact-status" class="contact__status" aria-live="polite"></p>
+    </form>
   </div>
 </section>
 
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement;
+  const status = document.getElementById('contact-status') as HTMLParagraphElement;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    status.textContent = '';
+    status.className = 'contact__status';
+
+    const data = {
+      name: (form.elements.namedItem('name') as HTMLInputElement).value.trim(),
+      email: (form.elements.namedItem('email') as HTMLInputElement).value.trim(),
+      company: (form.elements.namedItem('company') as HTMLInputElement).value.trim() || undefined,
+      message: (form.elements.namedItem('message') as HTMLTextAreaElement).value.trim(),
+    };
+
+    if (!data.name || !data.email || !data.message) {
+      status.textContent = 'Please fill in all required fields.';
+      status.classList.add('contact__status--error');
+      return;
+    }
+
+    const submitBtn = form.querySelector('.contact__submit') as HTMLButtonElement;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+
+    try {
+      const res = await fetch('http://localhost:3001/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        status.textContent = 'Message sent! We\'ll be in touch soon.';
+        status.classList.add('contact__status--success');
+        form.reset();
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Something went wrong.' }));
+        status.textContent = err.error || 'Something went wrong. Please try again.';
+        status.classList.add('contact__status--error');
+      }
+    } catch {
+      status.textContent = 'Could not reach the server. Please try again later.';
+      status.classList.add('contact__status--error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send Message';
+    }
+  });
+</script>
+
 <style>
-  .final-cta {
-    padding: 8rem 0;
+  .contact {
+    padding: 6rem 0;
     background: linear-gradient(
       180deg,
       var(--color-bg-alt) 0%,
@@ -27,15 +97,17 @@ const githubUrl = 'https://github.com/t4tarzan/seaclip-v1';
     );
   }
 
-  .final-cta__inner {
+  .contact__inner {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     gap: var(--space-xl, 1.5rem);
+    max-width: 560px;
+    margin: 0 auto;
   }
 
-  .final-cta__heading {
+  .contact__heading {
     font-family: var(--font-serif);
     font-size: clamp(2rem, 5vw, 3.25rem);
     line-height: 1.15;
@@ -44,28 +116,110 @@ const githubUrl = 'https://github.com/t4tarzan/seaclip-v1';
     margin: 0;
   }
 
-  .final-cta__subline {
+  .contact__subline {
     font-family: var(--font-sans);
     font-size: 1.125rem;
     line-height: 1.6;
     color: var(--color-text-secondary);
     margin: 0;
-    max-width: 36ch;
+    max-width: 42ch;
   }
 
-  .final-cta__buttons {
+  .contact__person {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .contact__email {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .contact__email:hover {
+    color: var(--color-accent-secondary);
+  }
+
+  .contact__form {
+    width: 100%;
     display: flex;
-    gap: var(--space-md, 1rem);
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    gap: var(--space-lg, 1.25rem);
+    text-align: left;
     margin-top: var(--space-md, 1rem);
   }
 
+  .contact__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .contact__label {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+
+  .contact__input {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: var(--color-text);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .contact__input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .contact__input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  }
+
+  .contact__textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .contact__submit {
+    align-self: flex-start;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .contact__submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .contact__status {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    margin: 0;
+    min-height: 1.25em;
+  }
+
+  .contact__status--success {
+    color: #34d399;
+  }
+
+  .contact__status--error {
+    color: #f87171;
+  }
+
   @media (max-width: 480px) {
-    .final-cta__buttons {
-      flex-direction: column;
-      width: 100%;
-      max-width: 20rem;
+    .contact__submit {
+      align-self: stretch;
     }
   }
 </style>

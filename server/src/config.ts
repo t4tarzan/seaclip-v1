@@ -20,6 +20,11 @@ export interface Config {
   corsOrigins: string[];
   logLevel: string;
   nodeEnv: string;
+  githubToken: string;
+  hopebotBaseUrl: string;
+  githubOrg: string;
+  githubPollIntervalMs: number;
+
 }
 
 let _config: Config | null = null;
@@ -83,10 +88,17 @@ export function loadConfig(): Config {
     apiKeyHash: process.env.API_KEY_HASH ?? "",
     corsOrigins: parseList(
       process.env.CORS_ORIGINS,
-      ["http://localhost:3000", "http://localhost:5173"],
+      ["http://localhost:3000", "http://localhost:5173", "http://localhost:4321", "https://seaclip.tech"],
     ),
     logLevel: process.env.LOG_LEVEL ?? "info",
     nodeEnv: process.env.NODE_ENV ?? "development",
+    githubToken: process.env.GITHUB_TOKEN ?? "",
+    hopebotBaseUrl: process.env.HOPEBOT_BASE_URL ?? "http://localhost:80",
+    githubOrg: process.env.GITHUB_ORG ?? "t4tarzan",
+    githubPollIntervalMs: parseInt10(
+      process.env.GITHUB_POLL_INTERVAL_MS,
+      30_000,
+    ),
   };
 
   return _config;

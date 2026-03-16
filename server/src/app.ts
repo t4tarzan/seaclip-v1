@@ -24,6 +24,8 @@ import { enhancementsRouter } from "./routes/enhancements.js";
 import { spokeTasksRouter } from "./routes/spoke-tasks.js";
 import { pullRequestsRouter } from "./routes/pull-requests.js";
 import { sidebarBadgesRouter } from "./routes/sidebar-badges.js";
+import { githubBridgeRouter } from "./routes/github-bridge.js";
+import { contactRouter } from "./routes/contact.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -54,6 +56,21 @@ export function createApp(): express.Express {
   // ─── API Routes ───────────────────────────────────────────────────────────
   app.use("/health", healthRouter);
   app.use("/api/health", healthRouter);
+
+  // Spoke agent script download — root-level convenience URL
+  app.use("/spoke-agent.sh", (req, res, next) => {
+    if (req.method === "GET") {
+      const scriptPath = path.resolve(__dirname, "../../scripts/spoke-agent.sh");
+      res.setHeader("Content-Type", "application/x-shellscript");
+      res.download(scriptPath, "spoke-agent.sh", (err) => {
+        if (err && !res.headersSent) {
+          res.status(404).json({ error: "Spoke agent script not found" });
+        }
+      });
+    } else {
+      next();
+    }
+  });
   app.use("/api/companies", companiesRouter);
 
   // Nested company routes
@@ -66,6 +83,7 @@ export function createApp(): express.Express {
   app.use("/api/companies", dashboardRouter);
   app.use("/api/companies", activityRouter);
   app.use("/api/companies", edgeDevicesRouter);
+  app.use("/api/companies", githubBridgeRouter);
 
   // Federation routes
   app.use("/api/federation", hubFederationRouter);
@@ -82,6 +100,9 @@ export function createApp(): express.Express {
 
   // Sidebar badge counts
   app.use("/api/companies", sidebarBadgesRouter);
+
+  // Contact form (marketing site)
+  app.use("/api/contact", contactRouter);
 
   // Enhancements (internal dev task tracking)
   app.use("/api/enhancements", enhancementsRouter);
