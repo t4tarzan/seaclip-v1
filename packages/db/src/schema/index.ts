@@ -14,3 +14,4 @@ export * from "./issue_comments.js";
 export * from "./company_secrets.js";
 export * from "./edge_devices.js";
 export * from "./hub_federation.js";
+export * from "./github_repos.js";

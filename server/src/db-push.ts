@@ -339,6 +339,28 @@ CREATE INDEX IF NOT EXISTS idx_heartbeat_runs_agent ON heartbeat_runs(agent_id);
 CREATE INDEX IF NOT EXISTS idx_heartbeat_runs_company ON heartbeat_runs(company_id);
 CREATE INDEX IF NOT EXISTS idx_cost_events_company ON cost_events(company_id);
 CREATE INDEX IF NOT EXISTS idx_activity_log_company ON activity_log(company_id);
+
+-- 20. github_repos (GitHub repository integrations per company)
+CREATE TABLE IF NOT EXISTS github_repos (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id      UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  repo_full_name  TEXT NOT NULL,
+  github_repo_id  INT  NOT NULL UNIQUE,
+  default_branch  TEXT NOT NULL DEFAULT 'main',
+  webhook_id      INT,
+  installed_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Add GitHub fields to issues (nullable, safe for existing rows)
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS github_issue_id INT;
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS github_repo_id  TEXT;
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS external_id     TEXT;
+
+-- Add GitHub fields to goals (nullable, safe for existing rows)
+ALTER TABLE goals ADD COLUMN IF NOT EXISTS github_milestone_id INT;
+ALTER TABLE goals ADD COLUMN IF NOT EXISTS github_repo_id      TEXT;
 `;
 
 export async function pushSchema(db: Db): Promise<void> {
