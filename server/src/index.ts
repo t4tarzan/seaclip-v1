@@ -46,7 +46,7 @@ async function main(): Promise<void> {
   }
 
   // 6b. Start GitHub poller
-  startGithubPoller();
+  startGithubPoller(config.githubPollIntervalMs);
 
   // 7. Print startup banner
   const banner = `
