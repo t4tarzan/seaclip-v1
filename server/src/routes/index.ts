@@ -15,3 +15,5 @@ export { enhancementsRouter } from "./enhancements.js";
 export { spokeTasksRouter } from "./spoke-tasks.js";
 export { pullRequestsRouter } from "./pull-requests.js";
 export { sidebarBadgesRouter } from "./sidebar-badges.js";
+export { githubBridgeRouter } from "./github-bridge.js";
+export { identifyRouter } from "./identify.js";
