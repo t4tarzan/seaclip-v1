@@ -21,10 +21,10 @@ export interface Config {
   logLevel: string;
   nodeEnv: string;
   githubToken: string;
+  githubWebhookSecret: string;
   hopebotBaseUrl: string;
   githubOrg: string;
   githubPollIntervalMs: number;
-
 }
 
 let _config: Config | null = null;
@@ -93,6 +93,7 @@ export function loadConfig(): Config {
     logLevel: process.env.LOG_LEVEL ?? "info",
     nodeEnv: process.env.NODE_ENV ?? "development",
     githubToken: process.env.GITHUB_TOKEN ?? "",
+    githubWebhookSecret: process.env.GITHUB_WEBHOOK_SECRET ?? "",
     hopebotBaseUrl: process.env.HOPEBOT_BASE_URL ?? "http://localhost:80",
     githubOrg: process.env.GITHUB_ORG ?? "t4tarzan",
     githubPollIntervalMs: parseInt10(
