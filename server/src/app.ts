@@ -26,6 +26,7 @@ import { pullRequestsRouter } from "./routes/pull-requests.js";
 import { sidebarBadgesRouter } from "./routes/sidebar-badges.js";
 import { githubBridgeRouter } from "./routes/github-bridge.js";
 import { contactRouter } from "./routes/contact.js";
+import { identifyRouter } from "./routes/identify.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -106,6 +107,12 @@ export function createApp(): express.Express {
 
   // Enhancements (internal dev task tracking)
   app.use("/api/enhancements", enhancementsRouter);
+
+  // GitHub bridge — repo connection + webhook ingestion
+  app.use("/api/github-bridge", githubBridgeRouter);
+
+  // Identify / onboarding
+  app.use("/api/identify", identifyRouter);
 
   // ─── Static UI (optional) ─────────────────────────────────────────────────
   if (config.serveUi) {
