@@ -24,6 +24,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import ApprovalDetail from "./pages/ApprovalDetail";
 import Inbox from "./pages/Inbox";
 import OrgChart from "./pages/OrgChart";
+import Identify from "./pages/Identify";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,6 +68,7 @@ export default function App() {
                 <Route path="approvals/:id" element={<ApprovalDetail />} />
                 <Route path="activity" element={<Activity />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="identify" element={<Identify />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Routes>
