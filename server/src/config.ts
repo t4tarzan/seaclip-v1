@@ -53,6 +53,15 @@ export function loadConfig(): Config {
     );
   }
 
+  // Validate GITHUB_WEBHOOK_SECRET is configured — required for webhook security
+  const githubWebhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
+  if (!githubWebhookSecret) {
+    throw new Error(
+      "GITHUB_WEBHOOK_SECRET environment variable is required for webhook signature verification. " +
+      "Set a strong secret value to secure webhook endpoints.",
+    );
+  }
+
   _config = {
     deploymentMode: mode,
     host: process.env.HOST ?? "0.0.0.0",
@@ -84,7 +93,7 @@ export function loadConfig(): Config {
     logLevel: process.env.LOG_LEVEL ?? "info",
     nodeEnv: process.env.NODE_ENV ?? "development",
     githubToken: process.env.GITHUB_TOKEN ?? "",
-    githubWebhookSecret: process.env.GITHUB_WEBHOOK_SECRET ?? "",
+    githubWebhookSecret,
   };
 
   return _config;

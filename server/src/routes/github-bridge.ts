@@ -85,10 +85,7 @@ router.post("/webhook", async (req, res, next) => {
         ? (req as unknown as { rawBody: string }).rawBody
         : JSON.stringify(req.body);
 
-    if (
-      config.githubWebhookSecret &&
-      !validateWebhookSignature(config.githubWebhookSecret, rawBody, signature)
-    ) {
+    if (!validateWebhookSignature(config.githubWebhookSecret, rawBody, signature)) {
       throw new AppError(401, "Invalid webhook signature");
     }
 
