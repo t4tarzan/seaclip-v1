@@ -4,11 +4,24 @@
  * Uses fetch() for GitHub REST API (no extra deps). Talks to Hopebot
  * by fabricating webhook payloads to localhost:80/api/github/webhook.
  */
+import { getDb } from "../db.js";
+import { eq } from "drizzle-orm";
+import { agents as agentsTable } from "@seaclip/db";
 import { getConfig } from "../config.js";
 import { getLogger } from "../middleware/logger.js";
 import * as issuesService from "./issues.js";
 import { insertActivity } from "./activity-log.js";
 import { publishLiveEvent } from "./live-events.js";
+
+/** Maps a stage label to the pipelineRole of the agent it triggers */
+const STAGE_TO_ROLE: Record<string, string> = {
+  plan: "research",
+  researched: "architect",
+  planned: "developer",
+  coded: "tester",
+  tested: "reviewer",
+  reviewed: "release",
+};
 
 function log() {
   return getLogger().child({ service: "github-bridge" });
@@ -184,15 +197,92 @@ function buildAgentPrompt(
   stage: string,
   issue: { number: number; title: string; body: string; html_url: string; repository: string },
 ): string {
-  const base = `GitHub issue #${issue.number} labeled "${stage}".\n\nIssue: ${issue.title}\nRepo: ${issue.repository}\nURL: ${issue.html_url}\n\nDescription:\n${issue.body || "No description"}\n\n`;
+  const repo = issue.repository;
+  const num = issue.number;
+
+  // Strict repo context block — every agent gets this at the top
+  const repoBlock = [
+    `STRICT CONTEXT — DO NOT DEVIATE:`,
+    `  Repository: ${repo}`,
+    `  GitHub Issue: #${num}`,
+    `  Issue URL: ${issue.html_url}`,
+    `  Clone URL: https://github.com/${repo}.git`,
+    ``,
+    `IMPORTANT: You MUST only operate on the repository "${repo}".`,
+    `Do NOT clone, push to, create PRs on, or reference any other repository.`,
+    `All git commands, gh CLI commands, and API calls MUST target "${repo}" and issue #${num}.`,
+    ``,
+  ].join("\n");
+
+  const base = `${repoBlock}Issue: ${issue.title}\n\nDescription:\n${issue.body || "No description"}\n\n`;
+
+  const labelCmd = (label: string) =>
+    `CRITICAL — YOUR LAST STEP (do NOT skip):\nRun this exact command:\n  gh issue edit ${num} --repo ${repo} --add-label "${label}"\nIf that fails, use curl:\n  curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" https://api.github.com/repos/${repo}/issues/${num}/labels -d '{"labels":["${label}"]}'`;
 
   const instructions: Record<string, string> = {
-    plan: `Your job:\n1. Clone the repo and research the codebase\n2. Write a detailed research comment on the GitHub issue\n3. Write findings to shared/handoff/task.md\n\nCRITICAL — YOUR LAST STEP (do NOT skip):\nRun this exact command:\n  gh issue edit ${issue.number} --repo ${issue.repository} --add-label "researched"\nIf that fails, use curl:\n  curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" https://api.github.com/repos/${issue.repository}/issues/${issue.number}/labels -d '{"labels":["researched"]}'`,
-    researched: `Peter Plan: Read Charlie's research comment on issue #${issue.number}, create a detailed implementation plan, comment it on the issue.\n\nCRITICAL — YOUR LAST STEP (do NOT skip):\nRun this exact command:\n  gh issue edit ${issue.number} --repo ${issue.repository} --add-label "planned"\nIf that fails, use curl:\n  curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" https://api.github.com/repos/${issue.repository}/issues/${issue.number}/labels -d '{"labels":["planned"]}'`,
-    planned: `David Dev: Read Peter's plan on issue #${issue.number}, implement ALL changes, commit and push to a fix branch.\n\nCRITICAL — YOUR LAST STEP (do NOT skip):\nRun this exact command:\n  gh issue edit ${issue.number} --repo ${issue.repository} --add-label "coded"\nIf that fails, use curl:\n  curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" https://api.github.com/repos/${issue.repository}/issues/${issue.number}/labels -d '{"labels":["coded"]}'`,
-    coded: `Test Tina: Read David's changes on the fix branch for issue #${issue.number}, write and run tests, comment a test report on the issue.\n\nCRITICAL — YOUR LAST STEP (do NOT skip):\nRun this exact command:\n  gh issue edit ${issue.number} --repo ${issue.repository} --add-label "tested"\nIf that fails, use curl:\n  curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" https://api.github.com/repos/${issue.repository}/issues/${issue.number}/labels -d '{"labels":["tested"]}'`,
-    tested: `Sceptic Suzy: Review the code changes for issue #${issue.number} for security, quality, and correctness. Comment your verdict on the issue.\n\nCRITICAL — YOUR LAST STEP (do NOT skip):\nIf PASS, run this exact command:\n  gh issue edit ${issue.number} --repo ${issue.repository} --add-label "reviewed"\nIf that fails, use curl:\n  curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" https://api.github.com/repos/${issue.repository}/issues/${issue.number}/labels -d '{"labels":["reviewed"]}'`,
-    reviewed: `Merge Matthews: Create a PR from the fix branch for issue #${issue.number}, reference the issue with "closes #${issue.number}", merge it, then close the issue.`,
+    plan: [
+      `Your job:`,
+      `1. Clone ONLY the repo "${repo}" — run: git clone https://github.com/${repo}.git`,
+      `2. Research the codebase and understand the issue`,
+      `3. Write a detailed research comment on GitHub issue #${num} in repo ${repo}`,
+      `4. Write findings to shared/handoff/task.md`,
+      ``,
+      labelCmd("researched"),
+    ].join("\n"),
+
+    researched: [
+      `Peter Plan: Read Charlie's research comment on issue #${num} in repo ${repo}.`,
+      `Create a detailed implementation plan and comment it on the issue.`,
+      `All file paths and references MUST be relative to the ${repo} codebase.`,
+      ``,
+      labelCmd("planned"),
+    ].join("\n"),
+
+    planned: [
+      `David Dev: Read Peter's plan on issue #${num} in repo ${repo}.`,
+      `1. Clone ONLY "${repo}" — run: git clone https://github.com/${repo}.git`,
+      `2. Implement ALL changes in a fix branch`,
+      `3. Push ONLY to "${repo}" — run: git push origin <branch-name>`,
+      `4. Comment your changes summary on issue #${num}`,
+      `DO NOT push to or create branches on any other repository.`,
+      ``,
+      labelCmd("coded"),
+    ].join("\n"),
+
+    coded: [
+      `Test Tina: Read David's changes on the fix branch for issue #${num} in repo ${repo}.`,
+      `1. Clone ONLY "${repo}" — run: git clone https://github.com/${repo}.git`,
+      `2. Check out David's fix branch`,
+      `3. Write and run tests`,
+      `4. Comment a test report on issue #${num}`,
+      `DO NOT reference or test against any other repository.`,
+      ``,
+      labelCmd("tested"),
+    ].join("\n"),
+
+    tested: [
+      `Sceptic Suzy: Review the code changes for issue #${num} in repo ${repo}.`,
+      `1. Clone ONLY "${repo}" — run: git clone https://github.com/${repo}.git`,
+      `2. Check out the fix branch`,
+      `3. Review for security, quality, and correctness`,
+      `4. Comment your verdict on issue #${num}`,
+      `DO NOT reference or review code from any other repository.`,
+      ``,
+      `If PASS:`,
+      labelCmd("reviewed"),
+    ].join("\n"),
+
+    reviewed: [
+      `Merge Matthews: Create a PR and merge for issue #${num} in repo ${repo}.`,
+      `1. The fix branch is in "${repo}" — create a PR ONLY in that repo`,
+      `2. PR title must reference issue: "closes #${num}"`,
+      `3. Run: gh pr create --repo ${repo} --title "fix: <description> (closes #${num})" --body "Closes #${num}"`,
+      `4. Merge: gh pr merge --repo ${repo} --squash --delete-branch`,
+      `5. Close the issue: gh issue close ${num} --repo ${repo}`,
+      ``,
+      `CRITICAL: The PR MUST be created in "${repo}" and ONLY in "${repo}".`,
+      `Do NOT create PRs in any other repository.`,
+    ].join("\n"),
   };
 
   return base + (instructions[stage] ?? "");
@@ -209,7 +299,11 @@ export async function triggerHopebot(payload: Record<string, unknown>): Promise<
   }
 
   const issue = payload.issue as any;
-  const repo = (payload.repository as any)?.full_name ?? "t4tarzan/seaclip-v1";
+  const repo = (payload.repository as any)?.full_name;
+  if (!repo) {
+    log().error({ labelName }, "triggerHopebot called without repository — aborting");
+    return;
+  }
 
   const prompt = buildAgentPrompt(labelName, {
     number: issue.number,
@@ -386,7 +480,118 @@ export async function startPipeline(
     stage,
   });
 
+  // Mark the triggered agent as active
+  const targetRole = STAGE_TO_ROLE[stage];
+  if (targetRole) {
+    const db = getDb();
+    const allAgents = await db
+      .select()
+      .from(agentsTable)
+      .where(eq(agentsTable.companyId, companyId));
+
+    for (const agent of allAgents) {
+      const agentMeta = (agent.metadata as Record<string, unknown>) ?? {};
+      if (agentMeta.pipelineRole === targetRole) {
+        await db.update(agentsTable).set({
+          status: "active",
+          metadata: {
+            ...agentMeta,
+            currentIssueId: issueId,
+            currentIssueTitle: issue.title,
+            activeAt: new Date().toISOString(),
+          },
+          updatedAt: new Date(),
+        }).where(eq(agentsTable.id, agent.id));
+        break;
+      }
+    }
+  }
+
   log().info({ issueId, stage, repo, ghNumber }, "Pipeline started");
+}
+
+/**
+ * Resume a manual pipeline — triggers the next agent without changing pipelineStage.
+ * The poller will advance pipelineStage when the agent finishes and adds a label.
+ */
+export async function resumePipeline(
+  companyId: string,
+  issueId: string,
+  stage: PipelineStage,
+  mode: PipelineMode = "manual",
+): Promise<void> {
+  const issue = await issuesService.getIssue(companyId, issueId);
+  const meta = issue.metadata as Record<string, unknown>;
+  const repo = meta.githubRepo as string;
+  const ghNumber = meta.githubIssueNumber as number;
+
+  if (!repo || !ghNumber) {
+    throw new Error("Issue not linked to GitHub. Sync first.");
+  }
+
+  // Trigger Hopebot for the stage — the agent will add the label when done
+  await triggerHopebot({
+    action: "labeled",
+    label: { name: stage },
+    issue: {
+      number: ghNumber,
+      title: issue.title,
+      body: issue.description ?? "",
+      html_url: `https://github.com/${repo}/issues/${ghNumber}`,
+    },
+    repository: { full_name: repo },
+  });
+
+  // Clear pipelineWaiting but do NOT change pipelineStage —
+  // the poller advances pipelineStage when it sees the new label from the agent
+  await issuesService.updateIssue(companyId, issueId, {
+    metadata: { ...meta, pipelineWaiting: null, pipelineMode: mode },
+  });
+
+  // Mark the triggered agent as active so the Agents page shows it highlighted
+  const targetRole = STAGE_TO_ROLE[stage];
+  if (targetRole) {
+    const db = getDb();
+    const allAgents = await db
+      .select()
+      .from(agentsTable)
+      .where(eq(agentsTable.companyId, companyId));
+
+    for (const agent of allAgents) {
+      const agentMeta = (agent.metadata as Record<string, unknown>) ?? {};
+      if (agentMeta.pipelineRole === targetRole) {
+        await db.update(agentsTable).set({
+          status: "active",
+          metadata: {
+            ...agentMeta,
+            currentIssueId: issueId,
+            currentIssueTitle: issue.title,
+            activeAt: new Date().toISOString(),
+          },
+          updatedAt: new Date(),
+        }).where(eq(agentsTable.id, agent.id));
+        log().info({ agentName: agent.name, stage }, "Agent marked active on resume");
+        break;
+      }
+    }
+  }
+
+  await insertActivity({
+    companyId,
+    eventType: "pipeline.resumed",
+    issueId,
+    actorType: "user",
+    summary: `Pipeline resumed — triggering agent for "${stage}" stage`,
+    payload: { stage, repo, githubNumber: ghNumber },
+  });
+
+  await publishLiveEvent(companyId, {
+    type: "pipeline.resumed",
+    issueId,
+    stage,
+  });
+
+  log().info({ issueId, stage, repo, ghNumber }, "Pipeline resumed (manual)");
 }
 
 /**

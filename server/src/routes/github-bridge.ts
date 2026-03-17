@@ -75,7 +75,7 @@ router.post(
   validate(StartPipelineSchema),
   async (req, res, next) => {
     try {
-      await bridge.startPipeline(
+      await bridge.resumePipeline(
         String(req.params.companyId),
         req.body.issueId,
         req.body.stage,

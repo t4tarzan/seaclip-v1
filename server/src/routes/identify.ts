@@ -185,16 +185,21 @@ router.post(
         .map((m: { role: string; content: string }) => `${m.role}: ${m.content}`)
         .join("\n\n");
 
+      const repoContext = repo
+        ? `\nRepository: ${repo}\nInclude this repo context in the description.`
+        : "";
+
       const extractPrompt = `Based on the following conversation, extract a single GitHub-style issue. Return ONLY valid JSON with these fields:
-- "title": a concise issue title (max 100 chars)
-- "description": a detailed description in markdown format
+- "title": a concise issue title (max 100 chars), use conventional commit style (e.g. "fix: ...", "feat: ...")
+- "description": a detailed description in markdown format with problem, root cause, and proposed fix sections
+- "priority": one of "urgent", "high", "medium", "low" based on severity${repoContext}
 
 Do not wrap in markdown code fences. Output raw JSON only.
 
 Conversation:
 ${conversationText}`;
 
-      let issueJson: { title: string; description: string };
+      let issueJson: { title: string; description: string; priority?: string };
       try {
         const raw = await claudeChat(extractPrompt);
         // Strip markdown fences if present
@@ -203,23 +208,33 @@ ${conversationText}`;
         issueJson = {
           title: parsed.title || fallbackIssue.title,
           description: parsed.description || fallbackIssue.description,
+          priority: parsed.priority,
         };
       } catch (err) {
         getLogger().warn({ err }, "Claude extraction failed, using fallback");
         issueJson = fallbackIssue;
       }
 
-      // Create the issue in SeaClip
+      // Validate priority
+      const validPriorities = ["urgent", "high", "medium", "low"];
+      const priority = validPriorities.includes(issueJson.priority ?? "")
+        ? issueJson.priority!
+        : "medium";
+
+      // Build metadata — always include repo if provided
       const metadata: Record<string, unknown> = {};
       if (repo) {
-        const normalized = repo.replace(/^https?:\/\/github\.com\//, "");
+        const normalized = repo
+          .replace(/^https?:\/\/github\.com\//, "")
+          .replace(/\.git$/, "")
+          .replace(/\/$/, "");
         metadata.githubRepo = normalized;
       }
 
       const issue = await issuesService.createIssue(companyId, {
         title: issueJson.title || "Untitled Issue",
         description: issueJson.description || "",
-        priority: "medium",
+        priority: priority as any,
         status: "backlog" as any,
         metadata,
       });

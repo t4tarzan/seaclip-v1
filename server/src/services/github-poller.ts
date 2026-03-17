@@ -165,10 +165,13 @@ async function pollIssue(row: typeof issuesTable.$inferSelect): Promise<void> {
   const companyId = row.companyId;
   const issueId = row.id;
 
+  // Use a mutable ref for metadata so all sections see the latest state
+  let liveMeta = { ...meta };
+
   // 1. Check labels for stage advancement
   const labels = await bridge.getLabels(repo, ghNumber);
   const currentStage = bridge.latestStageFromLabels(labels);
-  const previousStage = meta.pipelineStage as string | undefined;
+  const previousStage = liveMeta.pipelineStage as string | undefined;
 
   if (
     currentStage &&
@@ -181,9 +184,11 @@ async function pollIssue(row: typeof issuesTable.$inferSelect): Promise<void> {
         ? "in_review"
         : "in_progress";
 
+    liveMeta = { ...liveMeta, pipelineStage: currentStage };
+
     await issuesService.updateIssue(companyId, issueId, {
       status: newStatus as any,
-      metadata: { ...meta, pipelineStage: currentStage },
+      metadata: liveMeta,
     });
 
     await insertActivity({
@@ -213,33 +218,32 @@ async function pollIssue(row: typeof issuesTable.$inferSelect): Promise<void> {
 
     log().info({ issueId, stage: currentStage, previousStage }, "Pipeline stage advanced");
 
-    // Check pipeline mode — manual mode creates an approval for human review
-    // instead of auto-triggering the next agent.
-    const pipelineMode = meta.pipelineMode as string | undefined;
+    // Check pipeline mode — manual mode pauses for human trigger,
+    // auto mode fires the next agent immediately.
+    const pipelineMode = liveMeta.pipelineMode as string | undefined;
 
     if (pipelineMode === "manual") {
-      // Set pipelineWaiting flag so the UI shows a "Start Next Agent" button
-      const nextStageIdx = bridge.PIPELINE_STAGES.indexOf(currentStage) + 1;
-      const nextStage = bridge.PIPELINE_STAGES[nextStageIdx] as string | undefined;
-
-      if (nextStage) {
-        await issuesService.updateIssue(companyId, issueId, {
-          metadata: { ...meta, pipelineStage: currentStage, pipelineWaiting: nextStage },
-        });
-      }
+      // ALWAYS pause in manual mode — every agent requires explicit approval,
+      // including Matthews (the final merge agent).
+      //
+      // pipelineWaiting = the current stage label, which is used to trigger
+      // the NEXT agent. e.g. when "tested" label appears, Tina is done,
+      // and "tested" triggers Suzy. So we store "tested" as the waiting value.
+      liveMeta = { ...liveMeta, pipelineWaiting: currentStage };
+      await issuesService.updateIssue(companyId, issueId, {
+        metadata: liveMeta,
+      });
 
       await publishLiveEvent(companyId, {
         type: "pipeline.waiting_for_trigger",
         issueId,
         stage: currentStage,
-        nextStage: nextStage ?? null,
+        nextStage: currentStage,
       });
 
       log().info({ issueId, stage: currentStage, nextStage }, "Manual mode — waiting for user trigger");
     } else {
       // Auto mode: trigger the next agent via Hopebot.
-      // This makes the pipeline self-healing — even if the original webhook
-      // was lost (runners down, network blip), the poller picks it up.
       try {
         await bridge.triggerHopebot({
           action: "labeled",
@@ -260,8 +264,8 @@ async function pollIssue(row: typeof issuesTable.$inferSelect): Promise<void> {
   }
 
   // 2. Check for new GitHub comments → insert as issue comments
-  const lastCheck = meta.lastCommentCheckAt as string | undefined;
-  const importedIds = (meta.importedGhCommentIds as number[]) ?? [];
+  const lastCheck = liveMeta.lastCommentCheckAt as string | undefined;
+  const importedIds = (liveMeta.importedGhCommentIds as number[]) ?? [];
   const comments = await bridge.getCommentsSince(repo, ghNumber, lastCheck);
 
   // Filter out already-imported comments by GitHub comment ID
@@ -282,29 +286,26 @@ async function pollIssue(row: typeof issuesTable.$inferSelect): Promise<void> {
       }
     }
 
-    // Update last check timestamp (add 1s to avoid inclusive re-fetch)
+    // Update liveMeta with comment tracking fields
     const latestCommentTime = newComments[newComments.length - 1].created_at;
+    liveMeta = {
+      ...liveMeta,
+      lastCommentCheckAt: latestCommentTime,
+      importedGhCommentIds: newImportedIds,
+    };
     await issuesService.updateIssue(companyId, issueId, {
-      metadata: {
-        ...meta,
-        pipelineStage: currentStage ?? previousStage,
-        lastCommentCheckAt: latestCommentTime,
-        importedGhCommentIds: newImportedIds,
-      },
+      metadata: liveMeta,
     });
   }
 
   // 3. Check if GitHub issue is closed → mark SeaClip issue as done
-  // Re-read current metadata in case stage advancement updated it above
   const closed = await bridge.isGitHubIssueClosed(repo, ghNumber);
-  const currentMeta = currentStage !== previousStage
-    ? { ...meta, pipelineStage: currentStage ?? previousStage }
-    : meta;
 
   if (closed && row.status !== "done") {
+    liveMeta = { ...liveMeta, pipelineStage: "completed", pipelineWaiting: null };
     await issuesService.updateIssue(companyId, issueId, {
       status: "done" as any,
-      metadata: { ...currentMeta, pipelineStage: "completed" },
+      metadata: liveMeta,
     });
 
     await insertActivity({
