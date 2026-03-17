@@ -48,7 +48,17 @@ export function createApp(): express.Express {
   );
 
   // ─── Body parsing ─────────────────────────────────────────────────────────
-  app.use(express.json({ limit: "10mb" }));
+  // The verify callback captures raw bytes before JSON parsing so that
+  // POST /api/github-bridge/webhook can run HMAC-SHA256 against the original
+  // wire bytes rather than a re-serialized object.
+  app.use(
+    express.json({
+      limit: "10mb",
+      verify: (_req, _res, buf) => {
+        (_req as unknown as { rawBody: string }).rawBody = buf.toString("utf8");
+      },
+    }),
+  );
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
   // ─── Request logging ──────────────────────────────────────────────────────

@@ -5,7 +5,7 @@
  */
 import { Router } from "express";
 import { z } from "zod";
-import { requireAuth, validate } from "../middleware/index.js";
+import { validate } from "../middleware/index.js";
 import { randomUUID } from "node:crypto";
 
 const router = Router();
@@ -22,7 +22,7 @@ const IdentifySchema = z.object({
  * Identifies a device or user. Returns a stable ID derived from the provided
  * deviceId/userId, or a new UUID if neither is provided.
  */
-router.post("/", requireAuth, validate(IdentifySchema), async (req, res, next) => {
+router.post("/", validate(IdentifySchema), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof IdentifySchema>;
 
