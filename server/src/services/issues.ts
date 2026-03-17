@@ -10,8 +10,8 @@
  *  - `checkedOutAt`     → not a DB column; always returned as undefined after reload
  *                         (checkout state is inferred from checkoutRunId presence)
  *  - `resolvedAt`       → DB `completedAt`
- *  - `labels`           → not a DB column; always returned as [] (no JSONB on issues)
- *  - `metadata`         → not a DB column; always returned as {}
+ *  - `labels`           → not a DB column; always returned as []
+ *  - `metadata`         → DB `metadata` (jsonb column, persisted)
  *  - `dueAt`            → not a DB column; always returned as undefined
  *
  * IssueComment mapping:
@@ -108,8 +108,8 @@ function rowToIssue(row: DbIssueRow, companyId: string): Issue {
     checkedOutAt: undefined,
     projectId: row.projectId ?? undefined,
     goalId: row.goalId ?? undefined,
-    labels: [],       // no JSONB column on issues table
-    metadata: {},     // no JSONB column on issues table
+    labels: [],
+    metadata: (row.metadata as Record<string, unknown>) ?? {},
     dueAt: undefined, // no column on issues table
     resolvedAt: row.completedAt?.toISOString(),
     sequenceNumber: row.issueNumber,
@@ -305,6 +305,7 @@ export async function updateIssue(
   if (input.assignedAgentId !== undefined) updateValues.assigneeAgentId = input.assignedAgentId;
   if (input.projectId !== undefined) updateValues.projectId = input.projectId;
   if (input.goalId !== undefined) updateValues.goalId = input.goalId;
+  if (input.metadata !== undefined) updateValues.metadata = input.metadata;
 
   // Transition to done: record completedAt
   if (

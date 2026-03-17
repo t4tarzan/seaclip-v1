@@ -118,6 +118,10 @@ CREATE TABLE IF NOT EXISTS issues (
   identifier          TEXT NOT NULL UNIQUE,
   request_depth       INT  NOT NULL DEFAULT 0,
   billing_code        TEXT,
+  github_issue_id     INT,
+  github_repo_id      TEXT,
+  external_id         TEXT,
+  metadata            JSONB NOT NULL DEFAULT '{}',
   started_at          TIMESTAMPTZ,
   completed_at        TIMESTAMPTZ,
   cancelled_at        TIMESTAMPTZ,
@@ -125,7 +129,20 @@ CREATE TABLE IF NOT EXISTS issues (
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- 7. issue_comments (FK → issues, agents)
+-- 7. github_repos (FK → companies)
+CREATE TABLE IF NOT EXISTS github_repos (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id       UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  repo_full_name   TEXT NOT NULL,
+  github_repo_id   INT  NOT NULL UNIQUE,
+  default_branch   TEXT NOT NULL DEFAULT 'main',
+  webhook_id       INT,
+  installed_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 8. issue_comments (FK → issues, agents)
 CREATE TABLE IF NOT EXISTS issue_comments (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   issue_id        UUID NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
