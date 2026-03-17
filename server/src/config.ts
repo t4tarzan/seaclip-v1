@@ -18,6 +18,8 @@ export interface Config {
   corsOrigins: string[];
   logLevel: string;
   nodeEnv: string;
+  githubToken: string;
+  githubWebhookSecret: string;
 }
 
 let _config: Config | null = null;
@@ -81,6 +83,8 @@ export function loadConfig(): Config {
     ),
     logLevel: process.env.LOG_LEVEL ?? "info",
     nodeEnv: process.env.NODE_ENV ?? "development",
+    githubToken: process.env.GITHUB_TOKEN ?? "",
+    githubWebhookSecret: process.env.GITHUB_WEBHOOK_SECRET ?? "",
   };
 
   return _config;
