@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS github_repos (
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- 8. issue_comments (FK → issues, agents)
+-- 9. issue_comments (FK → issues, agents)
 CREATE TABLE IF NOT EXISTS issue_comments (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   issue_id        UUID NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
@@ -336,6 +336,12 @@ CREATE TABLE IF NOT EXISTS pull_requests (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Schema evolution: add new columns to existing tables (safe for upgrades)
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS github_issue_id INT;
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS github_repo_id  TEXT;
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS external_id     TEXT;
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS metadata        JSONB NOT NULL DEFAULT '{}';
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS enhancements_status_idx ON enhancements(status);
