@@ -8,7 +8,7 @@
  */
 import { Router } from "express";
 import { z } from "zod";
-import { requireAuth, validate } from "../middleware/index.js";
+import { requireAuth, requireCompanyAccess, validate } from "../middleware/index.js";
 import {
   listConnectedRepos,
   connectRepo,
@@ -49,6 +49,7 @@ router.get("/repos", requireAuth, async (req, res, next) => {
     if (!companyId) {
       throw new AppError(400, "companyId query param is required");
     }
+    requireCompanyAccess(req, companyId);
     const repos = await listConnectedRepos(companyId);
     res.json({ data: repos, count: repos.length });
   } catch (err) {
@@ -60,6 +61,7 @@ router.get("/repos", requireAuth, async (req, res, next) => {
 router.post("/repos", requireAuth, validate(ConnectRepoSchema), async (req, res, next) => {
   try {
     const { companyId, repoFullName } = req.body as z.infer<typeof ConnectRepoSchema>;
+    requireCompanyAccess(req, companyId);
     const repo = await connectRepo(companyId, repoFullName);
     res.status(201).json(repo);
   } catch (err) {
@@ -122,6 +124,7 @@ router.post("/sync/:repoId", requireAuth, async (req, res, next) => {
     if (!companyId) {
       throw new AppError(400, "companyId query param is required");
     }
+    requireCompanyAccess(req, companyId);
 
     const repo = await getConnectedRepo(companyId, String(req.params.repoId));
     // Sync the first issue as a connectivity probe; real usage would page through all
