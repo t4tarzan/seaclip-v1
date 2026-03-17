@@ -7,6 +7,7 @@ import {
   index,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+
 import { companies } from "./companies.js";
 import { agents } from "./agents.js";
 import { projects } from "./projects.js";
@@ -40,6 +41,9 @@ export const issues = pgTable(
     identifier: text("identifier").notNull(),
     requestDepth: integer("request_depth").notNull().default(0),
     billingCode: text("billing_code"),
+    githubIssueId: integer("github_issue_id"),
+    githubRepoId: text("github_repo_id"),
+    externalId: text("external_id"),
     startedAt: timestamp("started_at", { withTimezone: true }),
     completedAt: timestamp("completed_at", { withTimezone: true }),
     cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
