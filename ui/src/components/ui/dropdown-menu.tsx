@@ -20,7 +20,7 @@ export function DropdownMenuContent({
         sideOffset={sideOffset}
         className={cn(
           "z-50 min-w-[180px] overflow-hidden",
-          "glass-surface rounded-[var(--radius-md)] shadow-xl",
+          "glass-surface rounded-none shadow-xl",
           "p-1.5",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -43,7 +43,7 @@ export function DropdownMenuItem({
     <RadixDropdown.Item
       className={cn(
         "relative flex cursor-default select-none items-center gap-2",
-        "rounded-[var(--radius-sm)] px-2.5 py-2",
+        "rounded-none px-2.5 py-2",
         "text-[13px] text-[var(--text-primary)]",
         "focus:bg-[var(--surface-raised)] focus:text-[var(--text-primary)] focus:outline-none",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -66,7 +66,7 @@ export function DropdownMenuCheckboxItem({
     <RadixDropdown.CheckboxItem
       className={cn(
         "relative flex cursor-default select-none items-center gap-2",
-        "rounded-[var(--radius-sm)] py-2 pl-7 pr-2.5",
+        "rounded-none py-2 pl-7 pr-2.5",
         "text-[13px] text-[var(--text-primary)]",
         "focus:bg-[var(--surface-raised)] focus:outline-none",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -94,7 +94,7 @@ export function DropdownMenuRadioItem({
     <RadixDropdown.RadioItem
       className={cn(
         "relative flex cursor-default select-none items-center gap-2",
-        "rounded-[var(--radius-sm)] py-2 pl-7 pr-2.5",
+        "rounded-none py-2 pl-7 pr-2.5",
         "text-[13px] text-[var(--text-primary)]",
         "focus:bg-[var(--surface-raised)] focus:outline-none",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -152,7 +152,7 @@ export function DropdownMenuSubTrigger({
     <RadixDropdown.SubTrigger
       className={cn(
         "flex cursor-default select-none items-center gap-2",
-        "rounded-[var(--radius-sm)] px-2.5 py-2",
+        "rounded-none px-2.5 py-2",
         "text-[13px] text-[var(--text-primary)]",
         "focus:bg-[var(--surface-raised)] focus:outline-none",
         "data-[state=open]:bg-[var(--surface-raised)]",
@@ -175,7 +175,7 @@ export function DropdownMenuSubContent({
     <RadixDropdown.SubContent
       className={cn(
         "z-50 min-w-[8rem] overflow-hidden",
-        "glass-surface rounded-[var(--radius-md)] shadow-xl",
+        "glass-surface rounded-none shadow-xl",
         "p-1.5",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",

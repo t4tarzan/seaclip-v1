@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Play,
+  Square,
   Edit2,
   Cpu,
   Clock,
@@ -111,6 +112,12 @@ export default function AgentDetail() {
     navigate("/agents");
   };
 
+  const handleStop = async () => {
+    if (!companyId || !id || !agent) return;
+    const meta = { ...(agent.metadata ?? {}), currentIssueId: null, activeAt: null };
+    await updateAgent.mutateAsync({ companyId, id, data: { status: "idle", metadata: meta } as Partial<Agent> });
+  };
+
   if (isLoading) {
     return (
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 16 }} className="lg:grid-cols-3">
@@ -153,7 +160,7 @@ export default function AgentDetail() {
             style={{
               width: 40,
               height: 40,
-              borderRadius: 12,
+              borderRadius: 0,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -189,6 +196,18 @@ export default function AgentDetail() {
           >
             Edit
           </Button>
+          {(agent.status === "running" || agent.status === "active") && (
+            <Button
+              variant="outline"
+              size="sm"
+              icon={<Square size={12} />}
+              onClick={handleStop}
+              loading={updateAgent.isPending}
+              className="text-[var(--error)] border-[var(--error)]/30 hover:bg-[var(--error)]/10"
+            >
+              Stop
+            </Button>
+          )}
           <Button
             variant="primary"
             size="sm"
@@ -205,7 +224,7 @@ export default function AgentDetail() {
         {/* Left: Properties */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }} className="lg:col-span-2">
           {/* Properties Panel */}
-          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 16 }}>
             <h3 className="text-[13px] font-semibold text-[var(--text-primary)]" style={{ marginBottom: 16 }}>Properties</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
               {[
@@ -228,19 +247,19 @@ export default function AgentDetail() {
           </div>
 
           {/* Budget */}
-          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 16 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
               <h3 className="text-[13px] font-semibold text-[var(--text-primary)]">Budget</h3>
               <span className="text-[11px] text-[var(--text-secondary)]">
                 {formatCents(agent.spentCents)} / {formatCents(agent.budgetCents)}
               </span>
             </div>
-            <div style={{ height: 8, backgroundColor: "var(--bg-alt)", borderRadius: 9999, overflow: "hidden" }}>
+            <div style={{ height: 8, backgroundColor: "var(--bg-alt)", borderRadius: 0, overflow: "hidden" }}>
               <div
                 className="transition-all duration-700"
                 style={{
                   height: "100%",
-                  borderRadius: 9999,
+                  borderRadius: 0,
                   width: `${agent.budgetCents > 0 ? Math.min(100, (agent.spentCents / agent.budgetCents) * 100) : 0}%`,
                   backgroundColor:
                     agent.spentCents / agent.budgetCents > 0.9
@@ -260,7 +279,7 @@ export default function AgentDetail() {
 
           {/* Config */}
           {Object.keys(agent.config).length > 0 && (
-            <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
+            <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 16 }}>
               <h3 className="text-[13px] font-semibold text-[var(--text-primary)]" style={{ marginBottom: 12 }}>Configuration</h3>
               <pre className="text-[11px] text-[var(--text-secondary)] leading-relaxed" style={{ overflowX: "auto" }}>
                 {JSON.stringify(
@@ -283,7 +302,7 @@ export default function AgentDetail() {
           {/* Live run */}
           {activeRun && (
             <div
-              style={{ borderRadius: 12, padding: 16 }}
+              style={{ borderRadius: 0, padding: 16 }}
               className="bg-[var(--primary)]/10 border border-[var(--primary)]/30"
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -297,7 +316,7 @@ export default function AgentDetail() {
           )}
 
           {/* Recent Runs */}
-          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
               <Clock size={13} className="text-[var(--text-muted)]" />
               <h3 className="text-[13px] font-semibold text-[var(--text-primary)]">
@@ -341,7 +360,7 @@ export default function AgentDetail() {
                 style={{
                   backgroundColor: "var(--bg-alt)",
                   border: "1px solid var(--border)",
-                  borderRadius: 12,
+                  borderRadius: 0,
                   padding: 12,
                   display: "flex",
                   flexDirection: "column",
@@ -390,7 +409,7 @@ export default function AgentDetail() {
                 width: "100%",
                 backgroundColor: "var(--bg-alt)",
                 border: "1px solid var(--border)",
-                borderRadius: 8,
+                borderRadius: 0,
                 padding: 12,
                 minHeight: 100,
                 resize: "vertical",

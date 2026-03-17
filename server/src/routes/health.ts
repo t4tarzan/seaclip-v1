@@ -17,9 +17,10 @@ router.get("/", (_req, res) => {
 });
 
 router.get("/spoke-agent.sh", (_req, res) => {
-  const scriptPath = path.join(__dirname, "../../scripts/spoke-agent.sh");
+  const scriptPath = path.join(__dirname, "../../../scripts/spoke-agent.sh");
+  res.setHeader("Content-Type", "application/x-shellscript");
   res.download(scriptPath, "spoke-agent.sh", (err) => {
-    if (err) {
+    if (err && !res.headersSent) {
       res.status(404).json({ error: "Spoke agent script not found" });
     }
   });

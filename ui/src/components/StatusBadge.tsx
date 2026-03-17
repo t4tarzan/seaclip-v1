@@ -21,7 +21,8 @@ const agentStatusConfig: Record<
   { label: string; variant: "success" | "primary" | "error" | "muted" | "warning" }
 > = {
   idle: { label: "Idle", variant: "muted" },
-  running: { label: "Running", variant: "primary" },
+  active: { label: "Running", variant: "success" },
+  running: { label: "Running", variant: "success" },
   error: { label: "Error", variant: "error" },
   offline: { label: "Offline", variant: "muted" },
   paused: { label: "Paused", variant: "warning" },

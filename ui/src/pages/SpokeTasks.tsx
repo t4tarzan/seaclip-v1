@@ -68,16 +68,26 @@ export default function SpokeTasks() {
       </div>
 
       {/* Status Tabs */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          backgroundColor: "var(--bg-alt)",
+          border: "1px solid var(--border)",
+          borderRadius: 0,
+          padding: "3px 4px",
+        }}
+      >
         {STATUS_TABS.map((s) => (
           <button
             key={s.key}
             onClick={() => setTab(s.key)}
             className={cn(
-              "px-2.5 py-1 text-[11px] rounded-md font-medium transition-colors",
+              "px-3 py-1.5 text-[11px] rounded-none font-medium transition-colors whitespace-nowrap",
               tab === s.key
-                ? "bg-[var(--primary)]/20 text-[var(--accent)] border border-[var(--primary)]/30"
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] border border-transparent"
+                ? "bg-[var(--primary)]/20 text-[var(--accent)] shadow-sm"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
             )}
           >
             {s.label}
@@ -86,12 +96,12 @@ export default function SpokeTasks() {
       </div>
 
       {/* Table */}
-      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
         {isLoading ? (
           <SkeletonTable rows={6} cols={5} />
         ) : tasks.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0" }} className="text-center">
-            <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 0, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
               <GitBranch size={24} className="text-[var(--text-muted)]" />
             </div>
             <p className="text-[13px] font-medium text-[var(--text-secondary)]">
@@ -130,7 +140,7 @@ export default function SpokeTasks() {
                   <tr key={task.id} className="hover:bg-[var(--surface-raised)] transition-colors">
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }} className="bg-[var(--primary)]/15 border border-[var(--primary)]/25 text-[var(--primary)]">
+                        <div style={{ width: 28, height: 28, borderRadius: 0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }} className="bg-[var(--primary)]/15 border border-[var(--primary)]/25 text-[var(--primary)]">
                           <GitBranch size={12} />
                         </div>
                         <div>
@@ -144,7 +154,7 @@ export default function SpokeTasks() {
                       </div>
                     </td>
                     <td>
-                      <span className="text-[11px] bg-[var(--border)] text-[var(--text-secondary)] rounded font-medium" style={{ padding: "2px 8px" }}>
+                      <span className="text-[11px] bg-[var(--border)] text-[var(--text-secondary)] rounded-none font-medium" style={{ padding: "2px 8px" }}>
                         {task.deviceId.slice(0, 8)}...
                       </span>
                     </td>
@@ -225,7 +235,7 @@ function NewSpokeTaskDialog({
           <div>
             <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>Description</label>
             <textarea
-              style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px" }}
+              style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 0, padding: "8px 12px" }}
               className="text-[12px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--primary)]"
               rows={3}
               placeholder="Optional description..."
@@ -244,7 +254,7 @@ function NewSpokeTaskDialog({
           <div>
             <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>Device</label>
             <select
-              style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px" }}
+              style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 0, padding: "8px 12px" }}
               className="text-[12px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
               value={deviceId}
               onChange={(e) => setDeviceId(e.target.value)}

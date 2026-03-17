@@ -87,15 +87,14 @@ validate_config() {
 
 get_system_info() {
     local cpu_cores ram_gb architecture os_version
-    
-    cpu_cores=$(nproc 2>/dev/null || echo "1")
-    ram_gb=$(free -g 2>/dev/null | awk '/^Mem:/{print $2}' || echo "1")
+
+    cpu_cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo "1")
+    ram_gb=$(free -g 2>/dev/null | awk '/^Mem:/{print $2}' || \
+             sysctl -n hw.memsize 2>/dev/null | awk '{printf "%d", $1/1073741824}' || echo "1")
     architecture=$(uname -m)
-    
-    # Get OS version and strip ANSI escape sequences and control characters
-    os_version=$(cat /etc/os-release 2>/dev/null | grep PRETTY_NAME | cut -d'"' -f2 | sed 's/\x1b\[[0-9;]*m//g' | tr -cd '[:print:]' | tr -d '\n\r\t' || uname -s)
-    
-    # Use jq to properly escape JSON strings
+    os_version=$(grep PRETTY_NAME /etc/os-release 2>/dev/null | cut -d'"' -f2 | tr -cd '[:print:]' || \
+                 sw_vers -productName 2>/dev/null && sw_vers -productVersion 2>/dev/null || uname -s)
+
     jq -n \
         --arg cpu "$cpu_cores" \
         --arg ram "$ram_gb" \
@@ -107,26 +106,37 @@ get_system_info() {
 get_telemetry() {
     local cpu_percent memory_percent disk_percent uptime_seconds
     local temperature_celsius network_bytes_in network_bytes_out
-    
-    # CPU usage
-    cpu_percent=$(top -bn1 2>/dev/null | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1 || echo "0")
-    
-    # Memory percentage
-    memory_percent=$(free 2>/dev/null | awk '/^Mem:/{printf "%.1f", ($3/$2)*100}' || echo "0")
-    
+
+    # CPU usage (Linux: top; macOS: ps)
+    cpu_percent=$(top -bn1 2>/dev/null | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1 || \
+                  ps -A -o %cpu 2>/dev/null | awk '{s+=$1} END {printf "%.1f", s}' || echo "0")
+
+    # Memory percentage (Linux: free; macOS: vm_stat)
+    memory_percent=$(free 2>/dev/null | awk '/^Mem:/{printf "%.1f", ($3/$2)*100}' || \
+                     vm_stat 2>/dev/null | awk '/Pages active|Pages wired/ {s+=$NF} END {printf "%.1f", s*4096/'"$(sysctl -n hw.memsize 2>/dev/null || echo 1)"'*100}' || echo "0")
+
     # Disk percentage
-    disk_percent=$(df / 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//' || echo "0")
-    
-    # Uptime
-    uptime_seconds=$(cat /proc/uptime 2>/dev/null | awk '{print int($1)}' || echo "0")
-    
-    # CPU temperature (if available)
-    temperature_celsius=$(cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null | awk '{print $1/1000}' || echo "0")
-    
-    # Network stats (bytes in/out)
-    network_bytes_in=$(cat /sys/class/net/eth0/statistics/rx_bytes 2>/dev/null || echo "0")
-    network_bytes_out=$(cat /sys/class/net/eth0/statistics/tx_bytes 2>/dev/null || echo "0")
-    
+    disk_percent=$(df / 2>/dev/null | awk 'NR==2 {gsub(/%/,""); print $5}' || echo "0")
+
+    # Uptime (Linux: /proc; macOS: sysctl)
+    uptime_seconds=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || \
+                     sysctl -n kern.boottime 2>/dev/null | awk -F'[= ,]' '{print systime()-$4}' || echo "0")
+
+    # CPU temperature (Linux thermal zones; not available on macOS)
+    temperature_celsius=$(awk '{print $1/1000}' /sys/class/thermal/thermal_zone0/temp 2>/dev/null || echo "0")
+
+    # Network stats — find first non-loopback interface
+    local net_iface
+    net_iface=$(ls /sys/class/net/ 2>/dev/null | grep -v lo | head -1 || echo "")
+    if [ -n "$net_iface" ] && [ -d "/sys/class/net/$net_iface/statistics" ]; then
+        network_bytes_in=$(cat "/sys/class/net/$net_iface/statistics/rx_bytes" 2>/dev/null || echo "0")
+        network_bytes_out=$(cat "/sys/class/net/$net_iface/statistics/tx_bytes" 2>/dev/null || echo "0")
+    else
+        # macOS: netstat fallback
+        network_bytes_in=$(netstat -ib 2>/dev/null | awk '/en0/{print $7; exit}' || echo "0")
+        network_bytes_out=$(netstat -ib 2>/dev/null | awk '/en0/{print $10; exit}' || echo "0")
+    fi
+
     cat <<EOF
 {
   "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
@@ -134,8 +144,8 @@ get_telemetry() {
   "memoryPercent": $memory_percent,
   "diskPercent": $disk_percent,
   "temperatureCelsius": $temperature_celsius,
-  "networkBytesIn": $network_bytes_in,
-  "networkBytesOut": $network_bytes_out,
+  "networkBytesIn": ${network_bytes_in:-0},
+  "networkBytesOut": ${network_bytes_out:-0},
   "uptimeSeconds": $uptime_seconds
 }
 EOF
@@ -147,47 +157,48 @@ EOF
 
 register_device() {
     log "Registering device with hub..."
-    
+
     local ip_address
-    ip_address=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "127.0.0.1")
-    
+    ip_address=$(hostname -I 2>/dev/null | awk '{print $1}' || \
+                 ipconfig getifaddr en0 2>/dev/null || echo "127.0.0.1")
+
+    local sys_info
+    sys_info=$(get_system_info)
+
     local payload
-    payload=$(cat <<EOF
-{
-  "name": "$DEVICE_HOSTNAME",
-  "deviceType": "$DEVICE_TYPE",
-  "ipAddress": "$ip_address",
-  "metadata": $(get_system_info)
-}
-EOF
-)
-    
-    local response
-    response=$(curl -s -w "\nHTTP_CODE:%{http_code}" -X POST "$HUB_URL/api/companies/$COMPANY_ID/edge-devices" \
+    payload=$(jq -n \
+        --arg cid "$COMPANY_ID" \
+        --arg name "$DEVICE_HOSTNAME" \
+        --arg dtype "$DEVICE_TYPE" \
+        --arg ip "$ip_address" \
+        --argjson meta "$sys_info" \
+        '{companyId: $cid, name: $name, deviceType: $dtype, ipAddress: $ip, metadata: $meta}')
+
+    local response http_code
+    response=$(curl -s -w "\nHTTP_CODE:%{http_code}" -X POST "$HUB_URL/api/spoke/register" \
         -H "Content-Type: application/json" \
         -d "$payload" 2>&1)
-    
-    local http_code
+
     http_code=$(echo "$response" | grep "HTTP_CODE:" | cut -d: -f2)
     response=$(echo "$response" | sed '/HTTP_CODE:/d')
-    
+
     if [ "$http_code" != "201" ] && [ "$http_code" != "200" ]; then
         error "Failed to register device (HTTP $http_code): $response"
-        error "Payload sent: $payload"
         return 1
     fi
-    
+
     local device_id
-    device_id=$(echo "$response" | jq -r '.id // empty')
-    
+    # Handle both { id: ... } and { data: { id: ... } } response shapes
+    device_id=$(echo "$response" | jq -r '.id // .data.id // empty')
+
     if [ -z "$device_id" ]; then
         error "Invalid registration response: $response"
         return 1
     fi
-    
+
     log "Device registered successfully"
     log "  Device ID: $device_id"
-    
+
     echo "$device_id"
 }
 

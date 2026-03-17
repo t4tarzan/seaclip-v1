@@ -33,9 +33,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              "w-full h-9 bg-[var(--bg-alt)] border border-[var(--border)] rounded-[var(--radius-sm)]",
+              "w-full h-10 bg-[var(--bg-alt)] border border-[var(--border)] rounded-none",
               "text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]",
-              "px-3 transition-all duration-150",
+              "px-3.5 transition-all duration-150",
               "focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]/30",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               icon && "pl-9",
@@ -84,7 +84,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            "w-full bg-[var(--bg-alt)] border border-[var(--border)] rounded-[var(--radius-sm)]",
+            "w-full bg-[var(--bg-alt)] border border-[var(--border)] rounded-none",
             "text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]",
             "p-3 resize-y min-h-[80px] transition-all duration-150",
             "focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]/30",

@@ -55,7 +55,7 @@ export default function ApprovalDetail() {
       </div>
 
       {/* Details card */}
-      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
         {/* Description */}
         {approval.description && (
           <p className="text-[13px] text-[var(--text-secondary)]">{approval.description}</p>
@@ -116,7 +116,7 @@ export default function ApprovalDetail() {
               style={{
                 marginTop: 8,
                 backgroundColor: "var(--bg-alt)",
-                borderRadius: 8,
+                borderRadius: 0,
                 padding: 12,
                 overflowX: "auto",
               }}

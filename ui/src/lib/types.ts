@@ -2,7 +2,7 @@
 // SeaClip Shared TypeScript Types
 // ============================================
 
-export type AgentStatus = "idle" | "running" | "error" | "offline" | "paused";
+export type AgentStatus = "idle" | "active" | "running" | "error" | "offline" | "paused";
 export type IssueStatus = "backlog" | "todo" | "in_progress" | "in_review" | "done";
 export type IssuePriority = "urgent" | "high" | "medium" | "low";
 export type DeviceStatus = "online" | "offline" | "degraded";
@@ -48,8 +48,13 @@ export interface Agent {
   status: AgentStatus;
   budgetCents: number;
   spentCents: number;
+  totalRuns?: number;
   lastHeartbeatAt: string | null;
+  lastRunAt?: string | null;
   deviceId?: string;
+  tags?: string[];
+  metadata?: Record<string, unknown>;
+  taskCounts?: { openTasks: number; doneTasks: number; totalTasks: number };
   createdAt: string;
   updatedAt: string;
 }
@@ -82,6 +87,8 @@ export interface Issue {
   assigneeAvatar?: string;
   goalId?: string;
   goalName?: string;
+  metadata?: Record<string, unknown>;
+  githubUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

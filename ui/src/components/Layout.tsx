@@ -16,6 +16,7 @@ import {
   GitPullRequest,
   ChevronsLeft,
   ChevronsRight,
+  MessageSquare,
 } from "lucide-react";
 import { useCompanyContext } from "../context/CompanyContext";
 import { useApprovals } from "../api/approvals";
@@ -91,7 +92,7 @@ function SidebarLink({ item, collapsed }: { item: NavItem; collapsed?: boolean }
         alignItems: "center",
         gap: 10,
         height: 36,
-        borderRadius: 8,
+        borderRadius: 0,
         fontSize: 13,
         fontWeight: 500,
         textDecoration: "none",
@@ -113,7 +114,7 @@ function SidebarLink({ item, collapsed }: { item: NavItem; collapsed?: boolean }
           </span>
           {item.badge != null && item.badge > 0 && (
             <span style={{
-              fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 99,
+              fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 0,
               minWidth: 16, textAlign: "center", lineHeight: "14px",
               backgroundColor: "var(--error)", color: "#fff",
             }}>
@@ -177,6 +178,7 @@ export function Layout() {
       title: "Work",
       items: [
         { to: "/issues", label: "Issues", icon: CircleDot, badge: badges?.activeIssues },
+        { to: "/identify", label: "Identify", icon: MessageSquare },
         { to: "/goals", label: "Goals", icon: Target },
         { to: "/agents", label: "Agents", icon: Bot, badge: badges?.errorAgents },
       ],
@@ -244,7 +246,7 @@ export function Layout() {
               onChange={(e) => setCompanyId(e.target.value)}
               style={{
                 width: "100%", marginBottom: 12, fontSize: 11,
-                padding: "6px 10px", borderRadius: 8,
+                padding: "6px 10px", borderRadius: 0,
                 border: "1px solid var(--border)",
                 backgroundColor: "var(--surface)",
                 color: "var(--text-secondary)",
@@ -286,7 +288,7 @@ export function Layout() {
                 <button
                   onClick={() => setCollapsed(!collapsed)}
                   style={{
-                    padding: 4, borderRadius: 4, border: "none",
+                    padding: 4, borderRadius: 0, border: "none",
                     background: "none", cursor: "pointer",
                     color: "var(--text-muted)", flexShrink: 0,
                     display: "flex", alignItems: "center",
@@ -372,7 +374,7 @@ export function Layout() {
               onClick={() => setMobileOpen(true)}
               style={{
                 display: "none", // shown via media query below
-                padding: 6, borderRadius: 8, border: "none",
+                padding: 6, borderRadius: 0, border: "none",
                 background: "none", cursor: "pointer",
                 color: "var(--text-muted)",
               }}
@@ -386,7 +388,7 @@ export function Layout() {
               <button
                 onClick={() => setCollapsed(false)}
                 style={{
-                  padding: 4, borderRadius: 4, border: "none",
+                  padding: 4, borderRadius: 0, border: "none",
                   background: "none", cursor: "pointer",
                   color: "var(--text-muted)", display: "flex", alignItems: "center",
                 }}
@@ -410,7 +412,7 @@ export function Layout() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
               style={{
-                position: "relative", padding: 6, borderRadius: 8,
+                position: "relative", padding: 6, borderRadius: 0,
                 border: "none", background: "none", cursor: "pointer",
                 color: "var(--text-muted)", display: "flex", alignItems: "center",
               }}
@@ -451,6 +453,7 @@ function getPageTitle(pathname: string): string {
     "/agents": "Agents",
     "/issues": "Issues",
     "/goals": "Goals",
+    "/identify": "Identify",
     "/spoke-tasks": "Spoke Tasks",
     "/pull-requests": "Pull Requests",
     "/edge-mesh": "Edge Mesh",

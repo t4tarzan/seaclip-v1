@@ -114,7 +114,7 @@ export default function Inbox() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 6 }}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 0 }}
             className={cn(
               "text-[11px] font-medium transition-colors",
               tab === t.key
@@ -125,7 +125,7 @@ export default function Inbox() {
             {t.label}
             {t.count > 0 && (
               <span
-                style={{ padding: "2px 6px", borderRadius: 9999, minWidth: 16, textAlign: "center" }}
+                style={{ padding: "2px 6px", borderRadius: 0, minWidth: 16, textAlign: "center" }}
                 className="bg-[var(--border)] text-[var(--text-secondary)] text-[9px]"
               >
                 {t.count}
@@ -136,7 +136,7 @@ export default function Inbox() {
       </div>
 
       {/* Items */}
-      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
         {isLoading ? (
           <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
             {[1, 2, 3].map((i) => (
@@ -145,7 +145,7 @@ export default function Inbox() {
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", textAlign: "center" }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 0, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
               <Check size={24} className="text-[var(--success)]" />
             </div>
             <p className="text-[13px] font-medium text-[var(--text-secondary)]">All caught up!</p>
@@ -164,7 +164,7 @@ export default function Inbox() {
                   style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", textAlign: "left" }}
                   className="hover:bg-[var(--surface-raised)] transition-colors group/item"
                 >
-                  <div style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 0, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <Icon size={14} className="text-[var(--text-secondary)]" />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>

@@ -14,7 +14,7 @@ import { formatCents } from "../lib/utils";
 const card: React.CSSProperties = {
   backgroundColor: "var(--surface)",
   border: "1px solid var(--border)",
-  borderRadius: 12,
+  borderRadius: 0,
   padding: 20,
   overflow: "hidden",
 };
@@ -66,11 +66,11 @@ function AgentStatusChart({
             {bar.label}
           </span>
           <div style={{
-            flex: 1, height: 6, borderRadius: 3,
+            flex: 1, height: 6, borderRadius: 0,
             backgroundColor: "var(--bg)", overflow: "hidden",
           }}>
             <div style={{
-              height: "100%", borderRadius: 3,
+              height: "100%", borderRadius: 0,
               transition: "width 700ms ease",
               width: bar.max > 0 ? `${(bar.value / bar.max) * 100}%` : "0%",
               backgroundColor: bar.color,
@@ -192,7 +192,7 @@ export default function Dashboard() {
             ].map((s) => (
               <div key={s.status} style={{
                 backgroundColor: "var(--bg-alt)",
-                borderRadius: 8, padding: "10px 12px",
+                borderRadius: 0, padding: "10px 12px",
                 display: "flex", alignItems: "center", gap: 8,
               }}>
                 <span style={{
@@ -230,7 +230,7 @@ export default function Dashboard() {
             <div style={{ display: "flex", gap: 8 }}>
               <div style={{
                 flex: 1, display: "flex", alignItems: "center", gap: 8,
-                backgroundColor: "var(--bg-alt)", borderRadius: 8, padding: "10px 12px",
+                backgroundColor: "var(--bg-alt)", borderRadius: 0, padding: "10px 12px",
               }}>
                 <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "var(--success)" }} />
                 <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>{edgeDevicesOnline}</span>
@@ -238,7 +238,7 @@ export default function Dashboard() {
               </div>
               <div style={{
                 flex: 1, display: "flex", alignItems: "center", gap: 8,
-                backgroundColor: "var(--bg-alt)", borderRadius: 8, padding: "10px 12px",
+                backgroundColor: "var(--bg-alt)", borderRadius: 0, padding: "10px 12px",
               }}>
                 <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "var(--text-muted)" }} />
                 <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>

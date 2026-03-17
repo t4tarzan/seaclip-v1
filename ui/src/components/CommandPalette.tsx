@@ -111,7 +111,7 @@ export function CommandPalette() {
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh]">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-      <div className="relative w-full max-w-[520px] bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-2xl overflow-hidden animate-fade-in">
+      <div className="relative w-full max-w-[520px] bg-[var(--surface)] border border-[var(--border)] rounded-none shadow-2xl overflow-hidden animate-fade-in">
         {/* Search input */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)]">
           <Search size={16} className="text-[var(--text-muted)] flex-shrink-0" />
@@ -124,7 +124,7 @@ export function CommandPalette() {
             onKeyDown={handleInputKeyDown}
             className="flex-1 bg-transparent text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
           />
-          <kbd className="text-[10px] text-[var(--text-muted)] bg-[var(--bg-alt)] border border-[var(--border)] rounded px-1.5 py-0.5 font-mono">
+          <kbd className="text-[10px] text-[var(--text-muted)] bg-[var(--bg-alt)] border border-[var(--border)] rounded-none px-1.5 py-0.5 font-mono">
             ESC
           </kbd>
         </div>
@@ -150,7 +150,7 @@ export function CommandPalette() {
                 >
                   <div
                     className={cn(
-                      "w-8 h-8 rounded-[var(--radius-md)] flex items-center justify-center flex-shrink-0",
+                      "w-8 h-8 rounded-none flex items-center justify-center flex-shrink-0",
                       i === selectedIndex
                         ? "bg-[var(--primary)]/20 text-[var(--accent)]"
                         : "bg-[var(--border)] text-[var(--text-secondary)]"
@@ -175,11 +175,11 @@ export function CommandPalette() {
         {/* Footer hint */}
         <div className="px-4 py-2 border-t border-[var(--border)] flex items-center gap-3">
           <div className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
-            <kbd className="bg-[var(--bg-alt)] border border-[var(--border)] rounded px-1 py-0.5 font-mono">↑↓</kbd>
+            <kbd className="bg-[var(--bg-alt)] border border-[var(--border)] rounded-none px-1 py-0.5 font-mono">↑↓</kbd>
             navigate
           </div>
           <div className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
-            <kbd className="bg-[var(--bg-alt)] border border-[var(--border)] rounded px-1 py-0.5 font-mono">↵</kbd>
+            <kbd className="bg-[var(--bg-alt)] border border-[var(--border)] rounded-none px-1 py-0.5 font-mono">↵</kbd>
             select
           </div>
           <div className="flex items-center gap-1 text-[10px] text-[var(--text-muted)] ml-auto">

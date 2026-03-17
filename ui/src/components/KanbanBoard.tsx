@@ -16,7 +16,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { StatusIcon } from "./StatusIcon";
 import { PriorityIcon } from "./PriorityIcon";
 import type { Issue, IssueStatus } from "../lib/types";
@@ -38,6 +38,7 @@ interface KanbanBoardProps {
   issues: Issue[];
   onUpdateIssue: (id: string, data: Record<string, unknown>) => void;
   onAddIssue?: (status: IssueStatus) => void;
+  onDeleteIssue?: (id: string) => void;
 }
 
 /* ── Droppable Column ── */
@@ -46,27 +47,29 @@ function KanbanColumn({
   status,
   issues,
   onAddIssue,
+  onDeleteIssue,
 }: {
   status: IssueStatus;
   issues: Issue[];
   onAddIssue?: (status: IssueStatus) => void;
+  onDeleteIssue?: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
-    <div className="flex flex-col flex-1 min-w-[180px]">
+    <div className="flex flex-col flex-1 min-w-[220px]">
       <div className="flex items-center gap-2 mb-3 px-0.5">
         <StatusIcon status={status} />
         <span className="text-[12px] font-semibold text-[var(--text-primary)]">
           {statusLabel(status)}
         </span>
-        <span className="ml-auto text-[10px] font-mono text-[var(--text-muted)] bg-[var(--surface)] px-1.5 py-0.5 rounded">
+        <span className="ml-auto text-[10px] font-mono text-[var(--text-muted)] bg-[var(--surface)] px-1.5 py-0.5 rounded-none">
           {issues.length}
         </span>
         {onAddIssue && (
           <button
             onClick={() => onAddIssue(status)}
-            className="p-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
+            className="p-1 rounded-none text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
             title={`Add to ${statusLabel(status)}`}
           >
             <Plus size={12} />
@@ -75,7 +78,7 @@ function KanbanColumn({
       </div>
       <div
         ref={setNodeRef}
-        className={`flex-1 min-h-[120px] rounded-[var(--radius-md)] p-1.5 space-y-2 transition-colors ${
+        className={`flex-1 min-h-[120px] rounded-none p-2 space-y-2 transition-colors ${
           isOver
             ? "bg-[var(--primary)]/10 border border-[var(--primary)]/30"
             : "bg-[var(--bg-alt)]/30"
@@ -91,7 +94,7 @@ function KanbanColumn({
             </p>
           ) : (
             issues.map((issue) => (
-              <KanbanCard key={issue.id} issue={issue} />
+              <KanbanCard key={issue.id} issue={issue} onDelete={onDeleteIssue ? () => onDeleteIssue(issue.id) : undefined} />
             ))
           )}
         </SortableContext>
@@ -105,9 +108,11 @@ function KanbanColumn({
 function KanbanCard({
   issue,
   isOverlay,
+  onDelete,
 }: {
   issue: Issue;
   isOverlay?: boolean;
+  onDelete?: () => void;
 }) {
   const navigate = useNavigate();
   const {
@@ -133,36 +138,63 @@ function KanbanCard({
       onClick={() => {
         if (!isDragging) navigate(`/issues/${issue.id}`);
       }}
-      className={`bg-[var(--bg-alt)] border border-[var(--border)] rounded-[var(--radius-md)] p-3 cursor-grab active:cursor-grabbing transition-all group ${
+      className={`relative bg-[var(--bg-alt)] border border-[var(--border)] rounded-none px-4 py-3.5 cursor-grab active:cursor-grabbing transition-all group ${
         isDragging && !isOverlay ? "opacity-30" : ""
       } ${
         isOverlay
-          ? "shadow-lg shadow-[var(--primary)]/10 ring-1 ring-[var(--primary)]/30"
+          ? "shadow-lg shadow-[var(--primary)]/10 ring-1 ring-[var(--primary)]/30 rounded-none"
           : "hover:border-[var(--border-hover)] hover:bg-[#1a2132]"
       }`}
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <p className="text-[12px] font-medium text-[var(--text-primary)] leading-snug group-hover:text-white line-clamp-2">
+      {onDelete && !isOverlay && (
+        <button
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(); }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-none hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+          style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--text-muted)", zIndex: 10 }}
+          title="Delete issue"
+        >
+          <Trash2 size={13} />
+        </button>
+      )}
+      <div className="flex items-start justify-between gap-1.5 mb-2 pr-3">
+        <p className="text-[12px] font-medium text-[var(--text-primary)] leading-snug group-hover:text-white line-clamp-2 min-w-0">
           {issue.title}
         </p>
-        <PriorityIcon priority={issue.priority} />
+        <span className="shrink-0"><PriorityIcon priority={issue.priority} /></span>
       </div>
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] text-[var(--text-muted)] font-mono">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-[10px] text-[var(--text-muted)] font-mono shrink-0">
           {issue.identifier}
         </span>
         {issue.projectName && (
           <>
             <span className="text-[var(--border)]">·</span>
-            <span className="text-[10px] text-[var(--text-muted)] truncate">
+            <span className="text-[10px] text-[var(--text-muted)] truncate max-w-[80px]">
               {issue.projectName}
             </span>
           </>
         )}
-        <span className="ml-auto text-[10px] text-[var(--text-muted)]">
+        <span className="ml-auto text-[10px] text-[var(--text-muted)] shrink-0">
           {timeAgo(issue.updatedAt)}
         </span>
       </div>
+      {(() => {
+        const meta = issue.metadata as Record<string, unknown> | undefined;
+        const stage = meta?.pipelineStage as string | undefined;
+        if (!stage) return null;
+        const colors: Record<string, string> = {
+          plan: "bg-gray-400", researched: "bg-blue-400", planned: "bg-purple-400",
+          coded: "bg-yellow-400", tested: "bg-cyan-400", reviewed: "bg-green-400", completed: "bg-green-400",
+        };
+        return (
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className={`inline-block w-2 h-2 rounded-full ${colors[stage] ?? "bg-gray-400"}`} />
+            <span className="text-[10px] text-[var(--text-muted)]">{stage}</span>
+          </div>
+        );
+      })()}
       {issue.assigneeName && (
         <div className="flex items-center gap-1.5 mt-2">
           <div className="w-4 h-4 rounded-full bg-[var(--primary)]/20 flex items-center justify-center text-[7px] font-bold text-[var(--primary)]">
@@ -183,6 +215,7 @@ export function KanbanBoard({
   issues,
   onUpdateIssue,
   onAddIssue,
+  onDeleteIssue,
 }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -250,6 +283,7 @@ export function KanbanBoard({
             status={status}
             issues={columnIssues[status] ?? []}
             onAddIssue={onAddIssue}
+            onDeleteIssue={onDeleteIssue}
           />
         ))}
       </div>

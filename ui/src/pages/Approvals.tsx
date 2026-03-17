@@ -25,7 +25,7 @@ function ApprovalCard({ approval, onApprove, onReject, isResolving }: ApprovalCa
       className={cn(
         isPending ? "border-[var(--border)]" : "border-[var(--border)]/50 opacity-70"
       )}
-      style={{ backgroundColor: "var(--surface)", borderWidth: 1, borderStyle: "solid", borderRadius: "var(--radius-lg)", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}
+      style={{ backgroundColor: "var(--surface)", borderWidth: 1, borderStyle: "solid", borderRadius: 0, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}
     >
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
@@ -38,7 +38,7 @@ function ApprovalCard({ approval, onApprove, onReject, isResolving }: ApprovalCa
                 ? "bg-[var(--success)]/15 border border-[var(--success)]/25"
                 : "bg-[var(--error)]/15 border border-[var(--error)]/25"
             )}
-            style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{ width: 28, height: 28, borderRadius: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
           >
             {isPending ? (
               <Clock size={13} className="text-[var(--warning)]" />
@@ -66,7 +66,7 @@ function ApprovalCard({ approval, onApprove, onReject, isResolving }: ApprovalCa
         <p className="text-[12px] text-[var(--text-secondary)]">{approval.description}</p>
       )}
       {approval.metadata && Object.keys(approval.metadata).length > 0 && (
-        <div style={{ backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 8, padding: 12 }}>
+        <div style={{ backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 0, padding: 12 }}>
           <p className="text-[9px] font-semibold text-[var(--text-muted)] uppercase tracking-wider" style={{ marginBottom: 6 }}>
             Details
           </p>
@@ -157,7 +157,7 @@ export default function Approvals() {
           </p>
         </div>
         {pending.length > 0 && (
-          <div className="bg-[var(--warning)]/10 border border-[var(--warning)]/25" style={{ display: "flex", alignItems: "center", gap: 6, borderRadius: 8, padding: "6px 12px" }}>
+          <div className="bg-[var(--warning)]/10 border border-[var(--warning)]/25" style={{ display: "flex", alignItems: "center", gap: 6, borderRadius: 0, padding: "6px 12px" }}>
             <AlertTriangle size={12} className="text-[var(--warning)]" />
             <span className="text-[11px] font-semibold text-[var(--warning)]">
               {pending.length} need{pending.length === 1 ? "s" : ""} review
@@ -171,7 +171,7 @@ export default function Approvals() {
           <TabsTrigger value="pending">
             Pending
             {pending.length > 0 && (
-              <span className="ml-1.5 bg-[var(--warning)]/20 text-[var(--warning)] text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 bg-[var(--warning)]/20 text-[var(--warning)] text-[9px] font-bold px-1.5 py-0.5 rounded-none">
                 {pending.length}
               </span>
             )}
@@ -182,7 +182,7 @@ export default function Approvals() {
         <TabsContent value="pending">
           {pending.length === 0 ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", textAlign: "center", gap: 12 }}>
-              <div className="bg-[var(--success)]/10 border border-[var(--success)]/25" style={{ width: 48, height: 48, borderRadius: "var(--radius-lg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div className="bg-[var(--success)]/10 border border-[var(--success)]/25" style={{ width: 48, height: 48, borderRadius: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <CheckSquare size={22} className="text-[var(--success)]" />
               </div>
               <div>

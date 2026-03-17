@@ -9,10 +9,10 @@ interface SkeletonProps {
 
 export function Skeleton({ className, width, height, rounded = "md" }: SkeletonProps) {
   const roundedMap = {
-    sm: "rounded",
-    md: "rounded-md",
-    lg: "rounded-lg",
-    full: "rounded-full",
+    sm: "rounded-none",
+    md: "rounded-none",
+    lg: "rounded-none",
+    full: "rounded-none",
   };
   return (
     <div
@@ -45,7 +45,7 @@ export function SkeletonCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "bg-[var(--card)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5",
+        "bg-[var(--card)] border border-[var(--border)] rounded-none p-5",
         className
       )}
     >

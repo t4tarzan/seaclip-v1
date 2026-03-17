@@ -9,8 +9,8 @@ const router = Router({ mergeParams: true });
 const CreateIssueSchema = z.object({
   title: z.string().min(1).max(500),
   description: z.string().optional(),
-  status: z.enum(["open", "in_progress", "blocked", "done", "cancelled"]).default("open"),
-  priority: z.enum(["critical", "high", "medium", "low"]).default("medium"),
+  status: z.enum(["backlog", "todo", "in_progress", "in_review", "done", "open", "blocked", "cancelled"]).default("backlog"),
+  priority: z.enum(["urgent", "critical", "high", "medium", "low"]).default("medium"),
   assignedAgentId: z.string().uuid().optional(),
   projectId: z.string().uuid().optional(),
   goalId: z.string().uuid().optional(),

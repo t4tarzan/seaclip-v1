@@ -4,6 +4,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { CompanyProvider } from "./context/CompanyContext";
 import { Layout } from "./components/Layout";
 import { CommandPalette } from "./components/CommandPalette";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 // Pages (lazy would be ideal for prod, but direct imports for clarity)
 import Dashboard from "./pages/Dashboard";
@@ -24,6 +25,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import ApprovalDetail from "./pages/ApprovalDetail";
 import Inbox from "./pages/Inbox";
 import OrgChart from "./pages/OrgChart";
+import Identify from "./pages/Identify";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +42,7 @@ const queryClient = new QueryClient({
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <ThemeProvider>
@@ -56,6 +59,7 @@ export default function App() {
                 <Route path="issues" element={<Issues />} />
                 <Route path="issues/:id" element={<IssueDetail />} />
                 <Route path="goals" element={<Goals />} />
+                <Route path="identify" element={<Identify />} />
                 <Route path="spoke-tasks" element={<SpokeTasks />} />
                 <Route path="pull-requests" element={<PullRequests />} />
                 <Route path="inbox" element={<Inbox />} />
@@ -74,5 +78,6 @@ export default function App() {
         </ThemeProvider>
       </BrowserRouter>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

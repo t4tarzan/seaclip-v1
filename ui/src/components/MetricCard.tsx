@@ -40,7 +40,7 @@ export function MetricCard({
       style={{
         backgroundColor: "var(--surface)",
         border: "1px solid var(--border)",
-        borderRadius: 12,
+        borderRadius: 0,
         padding: 20,
         overflow: "hidden",
         cursor: onClick ? "pointer" : "default",
@@ -54,7 +54,7 @@ export function MetricCard({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         {icon && (
           <div style={{
-            width: 36, height: 36, borderRadius: 10,
+            width: 36, height: 36, borderRadius: 0,
             border: `1px solid ${colors.fg}33`,
             backgroundColor: colors.bg,
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -80,8 +80,8 @@ export function MetricCard({
 
       {loading ? (
         <div>
-          <div style={{ height: 22, width: 56, borderRadius: 4, backgroundColor: "var(--surface-raised)", marginBottom: 8 }} />
-          <div style={{ height: 12, width: 80, borderRadius: 4, backgroundColor: "var(--surface-raised)" }} />
+          <div style={{ height: 22, width: 56, borderRadius: 0, backgroundColor: "var(--surface-raised)", marginBottom: 8 }} />
+          <div style={{ height: 12, width: 80, borderRadius: 0, backgroundColor: "var(--surface-raised)" }} />
         </div>
       ) : (
         <>

@@ -48,7 +48,7 @@ function FilterChip({
     <button
       onClick={active && onClear ? onClear : onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all",
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[11px] font-medium transition-all",
         "border",
         active
           ? "bg-[var(--primary)]/15 border-[var(--primary)]/40 text-[var(--text-primary)]"

@@ -18,6 +18,7 @@ import {
 } from "./ui/select";
 import { useCreateIssue } from "../api/issues";
 import { useCompanyContext } from "../context/CompanyContext";
+import { RepoSelector } from "./RepoSelector";
 import type { IssuePriority, IssueStatus } from "../lib/types";
 
 interface NewIssueDialogProps {
@@ -38,6 +39,7 @@ export function NewIssueDialog({
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<IssueStatus>(defaultStatus);
   const [priority, setPriority] = useState<IssuePriority>("medium");
+  const [githubRepo, setGithubRepo] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,13 +47,20 @@ export function NewIssueDialog({
 
     await createIssue.mutateAsync({
       companyId,
-      data: { title, description, status, priority },
+      data: {
+        title,
+        description,
+        status,
+        priority,
+        ...(githubRepo ? { metadata: { githubRepo } } : {}),
+      },
     });
 
     setTitle("");
     setDescription("");
     setStatus(defaultStatus);
     setPriority("medium");
+    setGithubRepo("");
     onOpenChange(false);
   };
 
@@ -82,6 +91,8 @@ export function NewIssueDialog({
             placeholder="Detailed description, context, acceptance criteria..."
             className="min-h-[100px]"
           />
+
+          <RepoSelector value={githubRepo} onValueChange={setGithubRepo} />
 
           <div className="grid grid-cols-2 gap-3">
             <div>

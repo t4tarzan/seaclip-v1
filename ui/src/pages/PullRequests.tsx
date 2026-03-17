@@ -70,16 +70,26 @@ export default function PullRequests() {
       </div>
 
       {/* Review Tabs */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          backgroundColor: "var(--bg-alt)",
+          border: "1px solid var(--border)",
+          borderRadius: 0,
+          padding: "3px 4px",
+        }}
+      >
         {REVIEW_TABS.map((s) => (
           <button
             key={s.key}
             onClick={() => setTab(s.key)}
             className={cn(
-              "px-2.5 py-1 text-[11px] rounded-md font-medium transition-colors",
+              "px-3 py-1.5 text-[11px] rounded-none font-medium transition-colors whitespace-nowrap",
               tab === s.key
-                ? "bg-[var(--primary)]/20 text-[var(--accent)] border border-[var(--primary)]/30"
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] border border-transparent"
+                ? "bg-[var(--primary)]/20 text-[var(--accent)] shadow-sm"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
             )}
           >
             {s.label}
@@ -88,12 +98,12 @@ export default function PullRequests() {
       </div>
 
       {/* Table */}
-      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
         {isLoading ? (
           <SkeletonTable rows={6} cols={6} />
         ) : prs.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0" }} className="text-center">
-            <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 0, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
               <GitPullRequest size={24} className="text-[var(--text-muted)]" />
             </div>
             <p className="text-[13px] font-medium text-[var(--text-secondary)]">
@@ -123,7 +133,7 @@ export default function PullRequests() {
                   <tr key={pr.id} className="hover:bg-[var(--surface-raised)] transition-colors">
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }} className="bg-[#8b5cf6]/15 border border-[#8b5cf6]/25 text-[#8b5cf6]">
+                        <div style={{ width: 28, height: 28, borderRadius: 0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }} className="bg-[#8b5cf6]/15 border border-[#8b5cf6]/25 text-[#8b5cf6]">
                           <GitPullRequest size={12} />
                         </div>
                         <div>
@@ -147,7 +157,7 @@ export default function PullRequests() {
                       </div>
                     </td>
                     <td>
-                      <span className="text-[11px] bg-[var(--border)] text-[var(--text-secondary)] rounded font-medium" style={{ padding: "2px 8px" }}>
+                      <span className="text-[11px] bg-[var(--border)] text-[var(--text-secondary)] rounded-none font-medium" style={{ padding: "2px 8px" }}>
                         {pr.deviceId.slice(0, 8)}...
                       </span>
                     </td>

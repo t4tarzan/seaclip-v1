@@ -11,7 +11,7 @@ export function TabsList({
     <RadixTabs.List
       className={cn(
         "inline-flex items-center gap-0.5",
-        "bg-[var(--bg-alt)] border border-[var(--border)] rounded-[var(--radius-md)] p-1",
+        "bg-[var(--bg-alt)] border border-[var(--border)] rounded-none p-1",
         className
       )}
       {...props}
@@ -27,7 +27,7 @@ export function TabsTrigger({
     <RadixTabs.Trigger
       className={cn(
         "inline-flex items-center justify-center gap-1.5",
-        "rounded-[var(--radius-sm)] px-3.5 h-8",
+        "rounded-none px-3.5 h-8",
         "text-[13px] font-medium text-[var(--text-muted)]",
         "transition-all duration-150",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",

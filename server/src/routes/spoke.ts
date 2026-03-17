@@ -57,6 +57,35 @@ async function resolveDevice(deviceId: string) {
 }
 
 // ---------------------------------------------------------------------------
+// POST /api/spoke/register
+// Self-registration for new spoke devices (no auth required).
+// The device provides its companyId, name, type, and optional metadata.
+// ---------------------------------------------------------------------------
+
+const RegisterSpokeSchema = z.object({
+  companyId: z.string().uuid(),
+  name: z.string().min(1).max(255),
+  deviceType: z.string().default("generic"),
+  ipAddress: z.string().optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+
+router.post("/register", validate(RegisterSpokeSchema), async (req, res, next) => {
+  try {
+    const { companyId, name, deviceType, ipAddress, metadata } = req.body;
+    const device = await edgeDevicesService.registerEdgeDevice(companyId, {
+      name,
+      deviceType,
+      ipAddress: ipAddress ?? null,
+      metadata: metadata ?? {},
+    });
+    res.status(201).json(device);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // GET /api/spoke/:deviceId/tasks
 // Returns issues assigned to agents running on this device.
 // ---------------------------------------------------------------------------

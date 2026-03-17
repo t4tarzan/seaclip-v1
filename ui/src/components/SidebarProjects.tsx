@@ -48,7 +48,7 @@ export function SidebarProjects({ collapsed }: SidebarProjectsProps) {
               to={`/issues?projectId=${project.id}`}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-2.5 px-3 py-1.5 text-[12px] font-medium transition-colors mx-1 rounded-md",
+                  "flex items-center gap-2.5 px-3 py-1.5 text-[12px] font-medium transition-colors mx-1 rounded-none",
                   isActive
                     ? "bg-[var(--primary)]/15 text-[var(--text-primary)]"
                     : "text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)]",
@@ -56,7 +56,7 @@ export function SidebarProjects({ collapsed }: SidebarProjectsProps) {
               }
             >
               <span
-                className="w-3 h-3 rounded-sm shrink-0"
+                className="w-3 h-3 rounded-none shrink-0"
                 style={{ backgroundColor: project.color || "#6366f1" }}
               />
               <span className="flex-1 truncate">{project.name}</span>

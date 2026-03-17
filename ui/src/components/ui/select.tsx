@@ -15,9 +15,9 @@ export function SelectTrigger({ className, children, ...props }: SelectTriggerPr
   return (
     <RadixSelect.Trigger
       className={cn(
-        "flex h-9 w-full items-center justify-between gap-2",
-        "bg-[var(--bg-alt)] border border-[var(--border)] rounded-[var(--radius-sm)]",
-        "px-3 text-[13px] text-[var(--text-primary)]",
+        "flex h-10 w-full items-center justify-between gap-2",
+        "bg-[var(--bg-alt)] border border-[var(--border)] rounded-none",
+        "px-3.5 text-[13px] text-[var(--text-primary)]",
         "focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]/30",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         "data-[placeholder]:text-[var(--text-muted)]",
@@ -45,7 +45,7 @@ export function SelectContent({
       <RadixSelect.Content
         className={cn(
           "z-50 min-w-[8rem] overflow-hidden",
-          "glass-surface rounded-[var(--radius-md)] shadow-xl",
+          "glass-surface rounded-none shadow-xl",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -55,7 +55,7 @@ export function SelectContent({
         position={position}
         {...props}
       >
-        <RadixSelect.Viewport className="p-1.5">{children}</RadixSelect.Viewport>
+        <RadixSelect.Viewport className="p-1.5 max-h-[280px] overflow-y-auto">{children}</RadixSelect.Viewport>
       </RadixSelect.Content>
     </RadixSelect.Portal>
   );
@@ -70,7 +70,7 @@ export function SelectItem({
     <RadixSelect.Item
       className={cn(
         "relative flex w-full cursor-default select-none items-center gap-2",
-        "rounded-[var(--radius-sm)] py-2 pl-7 pr-3",
+        "rounded-none py-2 pl-7 pr-3",
         "text-[13px] text-[var(--text-primary)]",
         "focus:bg-[var(--surface-raised)] focus:text-[var(--text-primary)] focus:outline-none",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",

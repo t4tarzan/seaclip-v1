@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Filter, LayoutGrid, List } from "lucide-react";
-import { useIssues, useUpdateIssue } from "../api/issues";
+import { Plus, Filter, LayoutGrid, List, Trash2 } from "lucide-react";
+import { useIssues, useUpdateIssue, useDeleteIssue } from "../api/issues";
 import { useCompanyContext } from "../context/CompanyContext";
 import { StatusBadge } from "../components/StatusBadge";
 import { NewIssueDialog } from "../components/NewIssueDialog";
@@ -30,21 +30,36 @@ const PRIORITY_ICONS: Record<IssuePriority, string> = {
   low: "🟢",
 };
 
-function IssueCard({ issue, onClick }: { issue: Issue; onClick: () => void }) {
+function IssueCard({ issue, onClick, onDelete }: { issue: Issue; onClick: () => void; onDelete?: () => void }) {
   return (
     <div
       onClick={onClick}
       className="cursor-pointer hover:border-[var(--border-hover)] hover:bg-[#1a2132] transition-all group"
-      style={{ backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 8, padding: 12 }}
+      style={{ backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 0, padding: 16, position: "relative" }}
     >
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
-        <p className="text-[12px] font-medium text-[var(--text-primary)] leading-snug group-hover:text-white line-clamp-2">
+      {onDelete && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{
+            position: "absolute", top: 6, right: 6,
+            padding: 4, borderRadius: 0, border: "none",
+            backgroundColor: "transparent", cursor: "pointer",
+            color: "var(--text-muted)", display: "flex", alignItems: "center",
+          }}
+          title="Delete issue"
+        >
+          <Trash2 size={12} />
+        </button>
+      )}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6, marginBottom: 8, paddingRight: 12 }}>
+        <p className="text-[12px] font-medium text-[var(--text-primary)] leading-snug group-hover:text-white line-clamp-2" style={{ minWidth: 0 }}>
           {issue.title}
         </p>
         <span className="text-[13px]" style={{ flexShrink: 0 }}>{PRIORITY_ICONS[issue.priority]}</span>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span className="text-[10px] text-[var(--text-muted)] font-mono">{issue.identifier}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        <span className="text-[10px] text-[var(--text-muted)] font-mono" style={{ flexShrink: 0 }}>{issue.identifier}</span>
         {issue.projectName && (
           <>
             <span className="text-[var(--border)]">·</span>
@@ -55,7 +70,7 @@ function IssueCard({ issue, onClick }: { issue: Issue; onClick: () => void }) {
       </div>
       {issue.assigneeName && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
-          <div className="text-[7px] font-bold text-[var(--primary)]" style={{ width: 16, height: 16, borderRadius: 9999, backgroundColor: "rgba(var(--primary-rgb), 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="text-[7px] font-bold text-[var(--primary)]" style={{ width: 16, height: 16, borderRadius: 0, backgroundColor: "rgba(var(--primary-rgb), 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             {issue.assigneeName.charAt(0).toUpperCase()}
           </div>
           <span className="text-[10px] text-[var(--text-secondary)]">{issue.assigneeName}</span>
@@ -87,6 +102,7 @@ export default function Issues() {
 
   const { data: issues = [], isLoading } = useIssues(companyId);
   const updateIssue = useUpdateIssue();
+  const deleteIssue = useDeleteIssue();
 
   const uniqueAssignees = useMemo(() => {
     const names = new Set<string>();
@@ -101,7 +117,7 @@ export default function Issues() {
       const q = search.toLowerCase();
       if (
         !issue.title.toLowerCase().includes(q) &&
-        !issue.identifier.toLowerCase().includes(q)
+        !(issue.identifier ?? "").toLowerCase().includes(q)
       ) {
         return false;
       }
@@ -148,7 +164,7 @@ export default function Issues() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {/* View Toggle */}
-          <div style={{ display: "flex", alignItems: "center", backgroundColor: "var(--surface)", borderRadius: 8, padding: 2 }}>
+          <div style={{ display: "flex", alignItems: "center", backgroundColor: "var(--surface)", borderRadius: 0, padding: 2 }}>
             <button
               onClick={() => handleViewChange("board")}
               className={cn(
@@ -157,7 +173,7 @@ export default function Issues() {
                   ? "bg-[var(--primary)] text-white"
                   : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               )}
-              style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 4 }}
+              style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 0 }}
             >
               <LayoutGrid size={12} />
               Board
@@ -170,7 +186,7 @@ export default function Issues() {
                   ? "bg-[var(--primary)] text-white"
                   : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               )}
-              style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 4 }}
+              style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 0 }}
             >
               <List size={12} />
               List
@@ -229,6 +245,9 @@ export default function Issues() {
           issues={filteredIssues}
           onUpdateIssue={handleUpdateIssue}
           onAddIssue={handleAddIssue}
+          onDeleteIssue={(id) => {
+            if (companyId) deleteIssue.mutate({ companyId, id });
+          }}
         />
       ) : (
         <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 16, flex: 1 }}>
@@ -237,23 +256,23 @@ export default function Issues() {
             return (
               <div
                 key={col.status}
-                style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 180 }}
+                style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 220 }}
               >
                 {/* Column header */}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: "0 2px" }}>
                   <div
-                    style={{ width: 10, height: 10, borderRadius: 9999, flexShrink: 0, backgroundColor: col.color }}
+                    style={{ width: 10, height: 10, borderRadius: 0, flexShrink: 0, backgroundColor: col.color }}
                   />
                   <span className="text-[12px] font-semibold text-[var(--text-primary)]">
                     {col.label}
                   </span>
-                  <span className="text-[10px] font-mono text-[var(--text-muted)] bg-[var(--surface)] px-1.5 py-0.5 rounded" style={{ marginLeft: "auto" }}>
+                  <span className="text-[10px] font-mono text-[var(--text-muted)] bg-[var(--surface)] px-1.5 py-0.5 rounded-none" style={{ marginLeft: "auto" }}>
                     {colIssues.length}
                   </span>
                   <button
                     onClick={() => { setNewIssueStatus(col.status); setShowNewDialog(true); }}
                     className="text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
-                    style={{ padding: 4, borderRadius: 4 }}
+                    style={{ padding: 4, borderRadius: 0 }}
                     title={`Add to ${col.label}`}
                   >
                     <Plus size={12} />
@@ -264,7 +283,7 @@ export default function Issues() {
                 <div className={cn(
                   "kanban-column",
                   colIssues.length === 0 &&
-                    "items-center justify-center rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--border)] min-h-[120px]"
+                    "items-center justify-center rounded-none border-2 border-dashed border-[var(--border)] min-h-[120px]"
                 )}>
                   {colIssues.length === 0 ? (
                     <p className="text-[11px] text-[var(--border-hover)] text-center">No issues</p>
@@ -274,6 +293,9 @@ export default function Issues() {
                         key={issue.id}
                         issue={issue}
                         onClick={() => navigate(`/issues/${issue.id}`)}
+                        onDelete={() => {
+                          if (companyId) deleteIssue.mutate({ companyId, id: issue.id });
+                        }}
                       />
                     ))
                   )}

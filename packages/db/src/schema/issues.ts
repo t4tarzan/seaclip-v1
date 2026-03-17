@@ -6,6 +6,7 @@ import {
   timestamp,
   index,
   uniqueIndex,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { companies } from "./companies.js";
 import { agents } from "./agents.js";
@@ -40,6 +41,8 @@ export const issues = pgTable(
     identifier: text("identifier").notNull(),
     requestDepth: integer("request_depth").notNull().default(0),
     billingCode: text("billing_code"),
+    metadata: jsonb("metadata").default({}),
+    githubUrl: text("github_url"),
     startedAt: timestamp("started_at", { withTimezone: true }),
     completedAt: timestamp("completed_at", { withTimezone: true }),
     cancelledAt: timestamp("cancelled_at", { withTimezone: true }),

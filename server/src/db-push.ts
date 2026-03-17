@@ -118,6 +118,8 @@ CREATE TABLE IF NOT EXISTS issues (
   identifier          TEXT NOT NULL UNIQUE,
   request_depth       INT  NOT NULL DEFAULT 0,
   billing_code        TEXT,
+  metadata            JSONB DEFAULT '{}',
+  github_url          TEXT,
   started_at          TIMESTAMPTZ,
   completed_at        TIMESTAMPTZ,
   cancelled_at        TIMESTAMPTZ,
@@ -321,6 +323,16 @@ CREATE TABLE IF NOT EXISTS pull_requests (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Column migrations (idempotent)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='issues' AND column_name='metadata') THEN
+    ALTER TABLE issues ADD COLUMN metadata JSONB DEFAULT '{}';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='issues' AND column_name='github_url') THEN
+    ALTER TABLE issues ADD COLUMN github_url TEXT;
+  END IF;
+END $$;
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS enhancements_status_idx ON enhancements(status);

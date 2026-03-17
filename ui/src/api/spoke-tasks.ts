@@ -61,7 +61,7 @@ export function useUpdateSpokeTaskStatus() {
       companyId: string;
       taskId: string;
       status: SpokeTaskStatus;
-    }) => api.patch<SpokeTask>(`/companies/${companyId}/spoke-tasks/${taskId}`, { status }),
+    }) => api.patch<SpokeTask>(`/companies/${companyId}/spoke-tasks/${taskId}/status`, { status }),
     onSuccess: (_data, { companyId, taskId }) => {
       void qc.invalidateQueries({ queryKey: ["spoke-tasks-list", companyId] });
       void qc.invalidateQueries({ queryKey: ["spoke-tasks-list", companyId, taskId] });

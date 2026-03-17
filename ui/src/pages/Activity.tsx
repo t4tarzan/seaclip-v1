@@ -70,7 +70,7 @@ export default function Activity() {
               key={action}
               onClick={() => { setActionFilter(action); setPage(1); }}
               className={cn(
-                "px-2 py-1 text-[10px] rounded font-medium transition-colors",
+                "px-2 py-1 text-[10px] rounded-none font-medium transition-colors",
                 actionFilter === action
                   ? "bg-[var(--border)] text-[var(--text-primary)]"
                   : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--surface)]"
@@ -83,7 +83,7 @@ export default function Activity() {
       </div>
 
       {/* Table */}
-      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}>
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
         {isLoading ? (
           <SkeletonTable rows={10} cols={5} />
         ) : filteredEvents.length === 0 ? (
@@ -149,7 +149,7 @@ export default function Activity() {
                         ? "bg-[var(--primary)] text-white"
                         : "text-[var(--text-secondary)] hover:bg-[var(--border)]"
                     )}
-                    style={{ width: 28, height: 28, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}
+                    style={{ width: 28, height: 28, borderRadius: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
                   >
                     {pageNum}
                   </button>

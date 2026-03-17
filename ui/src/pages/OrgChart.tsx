@@ -11,12 +11,12 @@ import type { Agent, EdgeDevice } from "../lib/types";
 function AgentNode({ agent }: { agent: Agent }) {
   return (
     <div
-      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, width: 192 }}
+      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 12, width: 192 }}
       className="hover:border-[var(--border-hover)] transition-colors"
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
         <div
-          style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}
+          style={{ width: 28, height: 28, borderRadius: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
           className="bg-[var(--primary)]/15 border border-[var(--primary)]/25"
         >
           <Bot size={12} className="text-[var(--primary)]" />
@@ -37,12 +37,12 @@ function AgentNode({ agent }: { agent: Agent }) {
 function DeviceNode({ device }: { device: EdgeDevice }) {
   return (
     <div
-      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 12, width: 192 }}
+      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 12, width: 192 }}
       className="hover:border-[var(--border-hover)] transition-colors"
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
         <div
-          style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}
+          style={{ width: 28, height: 28, borderRadius: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
           className="bg-[var(--accent)]/15 border border-[var(--accent)]/25"
         >
           <Cpu size={12} className="text-[var(--accent)]" />
@@ -90,7 +90,7 @@ export default function OrgChart() {
       {/* Hub node at top */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div
-          style={{ borderWidth: 2, borderRadius: 16, padding: 16, width: 224, textAlign: "center" }}
+          style={{ borderWidth: 2, borderRadius: 0, padding: 16, width: 224, textAlign: "center" }}
           className="bg-[var(--primary)]/15 border-[var(--primary)]/40"
         >
           <Network size={20} className="text-[var(--primary)] mx-auto" style={{ marginBottom: 8 }} />
@@ -133,7 +133,7 @@ export default function OrgChart() {
       )}
 
       {agents.length === 0 && devices.length === 0 && (
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 32, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 32, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
           <Network size={32} className="text-[var(--border)]" style={{ marginBottom: 12 }} />
           <p className="text-[13px] text-[var(--text-secondary)]">No agents or devices registered</p>
           <p className="text-[11px] text-[var(--text-muted)]" style={{ marginTop: 4 }}>

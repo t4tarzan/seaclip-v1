@@ -138,7 +138,7 @@ export default function SpokeView() {
       {/* Assigned Tasks */}
       <div>
         <h3 className="text-[14px] font-semibold text-[var(--text-primary)]" style={{ marginBottom: 8 }}>Assigned Tasks</h3>
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
           {tasksLoading ? (
             <SkeletonTable rows={4} cols={3} />
           ) : tasks.length === 0 ? (
@@ -186,7 +186,7 @@ export default function SpokeView() {
       {/* Heartbeat Jobs */}
       <div>
         <h3 className="text-[14px] font-semibold text-[var(--text-primary)]" style={{ marginBottom: 8 }}>Heartbeat Jobs</h3>
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
           {jobsLoading ? (
             <SkeletonTable rows={3} cols={3} />
           ) : jobs.length === 0 ? (
@@ -239,7 +239,7 @@ export default function SpokeView() {
           <GitBranch size={14} className="text-[var(--primary)]" />
           Spoke Tasks
         </h3>
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
           {gitTasksLoading ? (
             <SkeletonTable rows={3} cols={4} />
           ) : gitTasks.length === 0 ? (
@@ -306,14 +306,14 @@ export default function SpokeView() {
       {/* Feedback Form */}
       <div>
         <h3 className="text-[14px] font-semibold text-[var(--text-primary)]" style={{ marginBottom: 8 }}>Submit Feedback</h3>
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
             <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 4, display: "block" }}>
               Task
             </label>
             {tasks.length > 0 ? (
               <select
-                style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px" }}
+                style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 0, padding: "8px 12px" }}
                 className="text-[12px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
                 value={feedbackIssueId}
                 onChange={(e) => setFeedbackIssueId(e.target.value)}
@@ -338,7 +338,7 @@ export default function SpokeView() {
               Comment
             </label>
             <textarea
-              style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px", resize: "none" }}
+              style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 0, padding: "8px 12px", resize: "none" }}
               className="text-[12px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--primary)]"
               rows={3}
               placeholder="Describe the result or feedback..."

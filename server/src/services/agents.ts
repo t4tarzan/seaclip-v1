@@ -27,9 +27,12 @@ export interface Agent {
   id: string;
   companyId: string;
   name: string;
+  role: string;
+  title: string;
   adapterType: string;
   environment: AgentEnvironment;
   adapterConfig: Record<string, unknown>;
+  config: Record<string, unknown>;
   model?: string;
   systemPrompt?: string;
   heartbeatCron?: string;
@@ -39,10 +42,13 @@ export interface Agent {
   status: AgentStatus;
   tags: string[];
   metadata: Record<string, unknown>;
+  budgetCents: number;
+  spentCents: number;
+  totalCostUsd: number;
   lastHeartbeatAt?: string;
   lastRunAt?: string;
   totalRuns: number;
-  totalCostUsd: number;
+  deviceId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -114,13 +120,21 @@ function safeAdapterConfig(row: DbRow): Record<string, unknown> {
 /** Map a DB row to the public Agent interface. */
 function rowToAgent(row: DbRow): Agent {
   const rc = safeRuntimeConfig(row);
+  const meta = safeMetadata(row);
+  const adapterCfg = safeAdapterConfig(row);
+  const totalCostUsd = rc.totalCostUsd ?? 0;
+  // Budget stored in metadata or runtimeConfig; convert USD to cents for UI
+  const budgetUsd = (meta.budgetUsd as number) ?? (rc as any).budgetUsd ?? 0;
   return {
     id: row.id,
     companyId: row.companyId,
     name: row.name,
+    role: (meta.role as string) ?? (row as any).role ?? row.adapterType,
+    title: (meta.title as string) ?? (row as any).title ?? "",
     adapterType: row.adapterType,
     environment: ((row as any).environment ?? "local") as AgentEnvironment,
-    adapterConfig: safeAdapterConfig(row),
+    adapterConfig: adapterCfg,
+    config: adapterCfg,
     model: rc.model,
     systemPrompt: rc.systemPrompt,
     heartbeatCron: rc.heartbeatCron,
@@ -129,11 +143,14 @@ function rowToAgent(row: DbRow): Agent {
     timeoutMs: rc.timeoutMs ?? 60_000,
     status: (row.status ?? "idle") as AgentStatus,
     tags: Array.isArray(rc.tags) ? (rc.tags as string[]) : [],
-    metadata: safeMetadata(row),
+    metadata: meta,
+    budgetCents: Math.round(budgetUsd * 100),
+    spentCents: Math.round(totalCostUsd * 100),
+    totalCostUsd,
     lastHeartbeatAt: row.lastHeartbeatAt?.toISOString(),
     lastRunAt: rc.lastRunAt,
     totalRuns: rc.totalRuns ?? 0,
-    totalCostUsd: rc.totalCostUsd ?? 0,
+    deviceId: (meta.deviceId as string) ?? undefined,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };

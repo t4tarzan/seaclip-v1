@@ -7,6 +7,7 @@ import { getLogger } from "./middleware/index.js";
 import { initDb, closeDb } from "./db.js";
 import { pushSchema } from "./db-push.js";
 import { startHeartbeatScheduler, stopHeartbeatScheduler } from "./services/heartbeat-scheduler.js";
+import { startGitHubPoller, stopGitHubPoller } from "./services/github-poller.js";
 
 async function main(): Promise<void> {
   // 1. Load config first — all modules depend on it
@@ -44,6 +45,9 @@ async function main(): Promise<void> {
     );
   }
 
+  // 6b. Start GitHub poller for pipeline progress tracking
+  startGitHubPoller();
+
   // 7. Print startup banner
   const banner = `
 ╔══════════════════════════════════════════════════════╗
@@ -68,6 +72,7 @@ async function main(): Promise<void> {
     logger.info({ signal }, "Shutting down SeaClip server...");
 
     stopHeartbeatScheduler();
+    stopGitHubPoller();
 
     await new Promise<void>((resolve, reject) => {
       httpServer.close((err) => {

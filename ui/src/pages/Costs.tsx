@@ -27,13 +27,13 @@ function DailySpendChart({ data }: { data: { date: string; totalCents: number }[
           >
             <div
               className={cn(
-                "w-full rounded-sm transition-all duration-200 group-hover:opacity-100",
+                "w-full rounded-none transition-all duration-200 group-hover:opacity-100",
                 isToday ? "bg-[var(--accent)]" : "bg-[var(--primary)]/60"
               )}
               style={{ height: `${height}%` }}
             />
             {/* Tooltip */}
-            <div className="text-[9px] text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity" style={{ position: "absolute", top: -28, left: "50%", transform: "translateX(-50%)", backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 4, padding: "2px 6px", zIndex: 10 }}>
+            <div className="text-[9px] text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity" style={{ position: "absolute", top: -28, left: "50%", transform: "translateX(-50%)", backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "2px 6px", zIndex: 10 }}>
               {formatCents(day.totalCents)}
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function Costs() {
 
       {/* Daily spend chart */}
       {dailyData.length > 0 && (
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 16 }}>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 16 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <BarChart2 size={14} className="text-[var(--primary)]" />
@@ -127,7 +127,7 @@ export default function Costs() {
       )}
 
       {/* Per-agent breakdown */}
-      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}>
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
         <div style={{ padding: 16, borderBottom: "1px solid var(--border)" }}>
           <h3 className="text-[13px] font-semibold text-[var(--text-primary)]">Per-Agent Breakdown</h3>
         </div>
@@ -161,7 +161,7 @@ export default function Costs() {
                       <tr key={agent.agentId}>
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <div className="text-[var(--primary)] text-[9px] font-bold" style={{ width: 24, height: 24, borderRadius: 4, backgroundColor: "rgba(var(--primary-rgb), 0.15)", border: "1px solid rgba(var(--primary-rgb), 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <div className="text-[var(--primary)] text-[9px] font-bold" style={{ width: 24, height: 24, borderRadius: 0, backgroundColor: "rgba(var(--primary-rgb), 0.15)", border: "1px solid rgba(var(--primary-rgb), 0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                               {agent.agentName.charAt(0).toUpperCase()}
                             </div>
                             <span className="text-[12px] font-medium text-[var(--text-primary)]">
@@ -185,9 +185,9 @@ export default function Costs() {
                         </td>
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <div style={{ flex: 1, height: 6, backgroundColor: "var(--border)", borderRadius: 9999, overflow: "hidden" }}>
+                            <div style={{ flex: 1, height: 6, backgroundColor: "var(--border)", borderRadius: 0, overflow: "hidden" }}>
                               <div
-                                style={{ height: "100%", backgroundColor: "var(--primary)", borderRadius: 9999, width: `${pct}%` }}
+                                style={{ height: "100%", backgroundColor: "var(--primary)", borderRadius: 0, width: `${pct}%` }}
                               />
                             </div>
                             <span className="text-[10px] text-[var(--text-secondary)] font-mono" style={{ width: 40, textAlign: "right" }}>

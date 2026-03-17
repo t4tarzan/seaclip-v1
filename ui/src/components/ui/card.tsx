@@ -11,7 +11,7 @@ export function Card({ children, className, hover = false, noPadding = false, gl
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-lg)] border border-[var(--border)]",
+        "rounded-none border border-[var(--border)]",
         glass
           ? "glass-card"
           : "bg-[var(--card)]",

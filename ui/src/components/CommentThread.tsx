@@ -43,8 +43,8 @@ export function CommentThread({ issueId }: CommentThreadProps) {
             <div key={i} className="flex gap-3">
               <div className="w-7 h-7 rounded-full skeleton-shimmer flex-shrink-0" />
               <div className="flex-1 flex flex-col gap-1.5">
-                <div className="h-3 w-24 skeleton-shimmer rounded" />
-                <div className="h-12 skeleton-shimmer rounded-[var(--radius-md)]" />
+                <div className="h-3 w-24 skeleton-shimmer rounded-none" />
+                <div className="h-12 skeleton-shimmer rounded-none" />
               </div>
             </div>
           ))}
@@ -55,10 +55,10 @@ export function CommentThread({ issueId }: CommentThreadProps) {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {comments.map((comment) => (
+          {[...comments].reverse().map((comment) => (
             <div key={comment.id} className="flex gap-3">
               <div className="w-7 h-7 rounded-full bg-[var(--border)] flex items-center justify-center text-[11px] font-semibold text-[var(--text-secondary)] flex-shrink-0">
-                {comment.authorName.charAt(0).toUpperCase()}
+                {(comment.authorName ?? "?").charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-1">
@@ -69,7 +69,7 @@ export function CommentThread({ issueId }: CommentThreadProps) {
                     {timeAgo(comment.createdAt)}
                   </span>
                 </div>
-                <div className="bg-[var(--bg-alt)] border border-[var(--border)] rounded-[var(--radius-md)] p-3">
+                <div className="bg-[var(--bg-alt)] border border-[var(--border)] rounded-none p-3">
                   <p className="text-[12px] text-[var(--text-secondary)] whitespace-pre-wrap leading-relaxed">
                     {comment.body}
                   </p>

@@ -210,6 +210,14 @@ function MeshCanvas({
 }
 
 // ─── Register Device Dialog ──────────────────────────────────────────────────
+const INSTALL_METHODS = [
+  { key: "quick" as const, label: "Quick" },
+  { key: "steps" as const, label: "Step-by-step" },
+  { key: "docker" as const, label: "Docker" },
+] as const;
+
+type InstallMethod = (typeof INSTALL_METHODS)[number]["key"];
+
 function RegisterDeviceDialog({
   open,
   onOpenChange,
@@ -219,17 +227,31 @@ function RegisterDeviceDialog({
 }) {
   const { companyId } = useCompanyContext();
   const [copied, setCopied] = useState<string | null>(null);
+  const [deviceType, setDeviceType] = useState("raspberry-pi");
+  const [method, setMethod] = useState<InstallMethod>("quick");
 
   const hubUrl = window.location.origin.replace(/:\d+$/, ":3001");
+  const isLocalhost = /localhost|127\.0\.0\.1/.test(hubUrl);
   const downloadUrl = `${hubUrl}/spoke-agent.sh`;
 
-  const downloadCommand = `curl -O ${downloadUrl}
-chmod +x spoke-agent.sh`;
+  const curlCommand = `curl -fsSL -o spoke-agent.sh ${downloadUrl} && chmod +x spoke-agent.sh`;
 
-  const setupCommands = `export SEACLIP_HUB_URL="${hubUrl}"
+  const runCommand = `export SEACLIP_HUB_URL="${hubUrl}"
 export SEACLIP_COMPANY_ID="${companyId}"
-export SEACLIP_DEVICE_TYPE="raspberry-pi"
+export SEACLIP_DEVICE_TYPE="${deviceType}"
 ./spoke-agent.sh`;
+
+  const oneLineCommand = `curl -fsSL ${downloadUrl} | SEACLIP_HUB_URL="${hubUrl}" SEACLIP_COMPANY_ID="${companyId}" SEACLIP_DEVICE_TYPE="${deviceType}" bash`;
+
+  const dockerCommand = `docker run -d --name seaclip-spoke \\
+  -e SEACLIP_HUB_URL="${hubUrl}" \\
+  -e SEACLIP_COMPANY_ID="${companyId}" \\
+  -e SEACLIP_DEVICE_TYPE="${deviceType}" \\
+  --restart unless-stopped \\
+  ubuntu:22.04 bash -c "apt-get update \\
+    && apt-get install -y curl jq \\
+    && curl -fsSL -o /spoke.sh ${downloadUrl} \\
+    && chmod +x /spoke.sh && /spoke.sh"`;
 
   const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -237,114 +259,247 @@ export SEACLIP_DEVICE_TYPE="raspberry-pi"
     setTimeout(() => setCopied(null), 2000);
   };
 
+  const deviceTypes = [
+    { value: "raspberry-pi", label: "Raspberry Pi" },
+    { value: "jetson", label: "Jetson" },
+    { value: "linux", label: "Linux" },
+    { value: "mac", label: "Mac" },
+    { value: "windows", label: "Windows" },
+    { value: "generic", label: "Other" },
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="lg">
+      <DialogContent size="md">
         <DialogHeader>
-          <DialogTitle>Register Edge Device</DialogTitle>
+          <DialogTitle>Add Edge Device</DialogTitle>
           <DialogDescription>
-            Follow these steps to connect your edge device to the SeaClip hub.
+            Connect a device to the hub in under 2 minutes.
           </DialogDescription>
         </DialogHeader>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 24, marginTop: 8 }}>
-          {/* Step 1: Download */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Device Type Selector */}
           <div>
-            <h4 className="text-[12px] font-semibold text-[var(--text-primary)] mb-3">
-              Step 1: Download Spoke Agent
-            </h4>
+            <label className="text-[11px] text-[var(--text-secondary)] font-medium" style={{ marginBottom: 6, display: "block" }}>
+              Device Type
+            </label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {deviceTypes.map((dt) => (
+                <button
+                  key={dt.value}
+                  onClick={() => setDeviceType(dt.value)}
+                  className={cn(
+                    "px-2.5 py-1 text-[10px] rounded-none font-medium transition-colors border",
+                    deviceType === dt.value
+                      ? "bg-[var(--primary)]/20 text-[var(--accent)] border-[var(--primary)]/40"
+                      : "text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--surface-raised)]"
+                  )}
+                >
+                  {dt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Install Method Tabs */}
+          <div>
             <div
               style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 2,
                 backgroundColor: "var(--bg-alt)",
                 border: "1px solid var(--border)",
-                borderRadius: 8,
-                padding: 12,
+                borderRadius: 0,
+                padding: "3px 4px",
+                marginBottom: 12,
               }}
             >
-              <pre
-                className="text-[11px] font-mono text-[var(--text-secondary)] mb-3"
-                style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
+              {INSTALL_METHODS.map((m) => (
+                <button
+                  key={m.key}
+                  onClick={() => setMethod(m.key)}
+                  className={cn(
+                    "px-3 py-1.5 text-[11px] rounded-none font-medium transition-colors whitespace-nowrap",
+                    method === m.key
+                      ? "bg-[var(--primary)]/20 text-[var(--accent)] shadow-sm"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
+                  )}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+
+            {isLocalhost && (
+              <div
+                style={{
+                  backgroundColor: "rgba(245,158,11,0.08)",
+                  border: "1px solid rgba(245,158,11,0.25)",
+                  borderRadius: 0,
+                  padding: "8px 12px",
+                  marginBottom: 8,
+                }}
               >
-                {downloadCommand}
-              </pre>
-              <div style={{ display: "flex", gap: 8 }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  icon={copied === "download" ? <CheckCircle size={12} /> : <Copy size={12} />}
-                  onClick={() => copyToClipboard(downloadCommand, "download")}
-                >
-                  {copied === "download" ? "Copied!" : "Copy Command"}
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={<Download size={12} />}
-                  onClick={() => window.open(downloadUrl, "_blank")}
-                >
-                  Download Script
-                </Button>
+                <p className="text-[10px] text-[#f59e0b] font-medium">
+                  You're viewing from localhost. Remote devices need your hub's network IP or Tailscale IP instead.
+                  Replace <code className="text-[10px] bg-[var(--bg-alt)] px-1 rounded-none">localhost</code> with your hub IP (e.g. <code className="text-[10px] bg-[var(--bg-alt)] px-1 rounded-none">100.x.x.x</code>) in the commands below.
+                </p>
               </div>
-            </div>
+            )}
+
+            {/* Quick — One-liner */}
+            {method === "quick" && (
+              <div>
+                <p className="text-[10px] text-[var(--text-muted)]" style={{ marginBottom: 8 }}>
+                  SSH into your device and paste this single command.
+                </p>
+                <div
+                  style={{
+                    backgroundColor: "var(--bg-alt)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 0,
+                    padding: 12,
+                  }}
+                >
+                  <pre
+                    className="text-[11px] font-mono text-[var(--text-secondary)]"
+                    style={{ whiteSpace: "pre-wrap", wordBreak: "break-all", marginBottom: 10 }}
+                  >
+                    {oneLineCommand}
+                  </pre>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={copied === "oneliner" ? <CheckCircle size={12} /> : <Copy size={12} />}
+                    onClick={() => copyToClipboard(oneLineCommand, "oneliner")}
+                  >
+                    {copied === "oneliner" ? "Copied!" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Step-by-step */}
+            {method === "steps" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div
+                  style={{
+                    backgroundColor: "var(--bg-alt)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 0,
+                    padding: 12,
+                  }}
+                >
+                  <p className="text-[10px] text-[var(--text-muted)]" style={{ marginBottom: 6 }}>
+                    <strong className="text-[var(--text-secondary)]">1.</strong> Download
+                  </p>
+                  <pre
+                    className="text-[11px] font-mono text-[var(--text-secondary)]"
+                    style={{ whiteSpace: "pre-wrap", wordBreak: "break-all", marginBottom: 8 }}
+                  >
+                    {curlCommand}
+                  </pre>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      icon={copied === "curl" ? <CheckCircle size={12} /> : <Copy size={12} />}
+                      onClick={() => copyToClipboard(curlCommand, "curl")}
+                    >
+                      {copied === "curl" ? "Copied!" : "Copy"}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      icon={<Download size={12} />}
+                      onClick={() => {
+                        const a = document.createElement("a");
+                        a.href = downloadUrl;
+                        a.download = "spoke-agent.sh";
+                        a.click();
+                      }}
+                    >
+                      Download
+                    </Button>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    backgroundColor: "var(--bg-alt)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 0,
+                    padding: 12,
+                  }}
+                >
+                  <p className="text-[10px] text-[var(--text-muted)]" style={{ marginBottom: 6 }}>
+                    <strong className="text-[var(--text-secondary)]">2.</strong> Run
+                  </p>
+                  <pre
+                    className="text-[11px] font-mono text-[var(--text-secondary)]"
+                    style={{ whiteSpace: "pre-wrap", wordBreak: "break-all", marginBottom: 8 }}
+                  >
+                    {runCommand}
+                  </pre>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={copied === "run" ? <CheckCircle size={12} /> : <Copy size={12} />}
+                    onClick={() => copyToClipboard(runCommand, "run")}
+                  >
+                    {copied === "run" ? "Copied!" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Docker */}
+            {method === "docker" && (
+              <div>
+                <p className="text-[10px] text-[var(--text-muted)]" style={{ marginBottom: 8 }}>
+                  Run as a Docker container with auto-restart.
+                </p>
+                <div
+                  style={{
+                    backgroundColor: "var(--bg-alt)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 0,
+                    padding: 12,
+                  }}
+                >
+                  <pre
+                    className="text-[11px] font-mono text-[var(--text-secondary)]"
+                    style={{ whiteSpace: "pre-wrap", wordBreak: "break-all", marginBottom: 10 }}
+                  >
+                    {dockerCommand}
+                  </pre>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={copied === "docker" ? <CheckCircle size={12} /> : <Copy size={12} />}
+                    onClick={() => copyToClipboard(dockerCommand, "docker")}
+                  >
+                    {copied === "docker" ? "Copied!" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Step 2: Run on Device */}
-          <div>
-            <h4 className="text-[12px] font-semibold text-[var(--text-primary)] mb-3">
-              Step 2: Run on Your Device
-            </h4>
-            <div
-              style={{
-                backgroundColor: "var(--bg-alt)",
-                border: "1px solid var(--border)",
-                borderRadius: 8,
-                padding: 12,
-              }}
-            >
-              <pre
-                className="text-[11px] font-mono text-[var(--text-secondary)] mb-3"
-                style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}
-              >
-                {setupCommands}
-              </pre>
-              <Button
-                variant="outline"
-                size="sm"
-                icon={copied === "setup" ? <CheckCircle size={12} /> : <Copy size={12} />}
-                onClick={() => copyToClipboard(setupCommands, "setup")}
-              >
-                {copied === "setup" ? "Copied!" : "Copy Commands"}
-              </Button>
-            </div>
-          </div>
-
-          {/* Step 3: Verify */}
+          {/* Footer info */}
           <div
             style={{
-              backgroundColor: "var(--primary)/10",
-              border: "1px solid var(--primary)/25",
-              borderRadius: 8,
-              padding: 12,
+              backgroundColor: "var(--bg-alt)",
+              borderRadius: 0,
+              padding: "10px 14px",
+              borderTop: "1px solid var(--border)",
             }}
           >
-            <p className="text-[11px] text-[var(--text-secondary)]">
-              <strong>✓ Your device will appear automatically</strong> in the Edge Mesh view once
-              the script runs successfully. No manual registration needed!
-            </p>
-          </div>
-
-          {/* Documentation Link */}
-          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12 }}>
             <p className="text-[10px] text-[var(--text-muted)]">
-              For detailed setup instructions, see the{" "}
-              <a
-                href="https://github.com/yourusername/seaclip/blob/main/doc/SPOKE-AGENT-SETUP.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[var(--primary)] hover:underline"
-              >
-                Spoke Agent Setup Guide
-              </a>
+              Device appears automatically in the mesh within 30s. Requires{" "}
+              <code className="text-[var(--text-secondary)]">curl</code> and{" "}
+              <code className="text-[var(--text-secondary)]">jq</code>.
             </p>
           </div>
         </div>
@@ -389,7 +544,7 @@ function DeviceDetailPanel({
         </div>
         <button
           onClick={onClose}
-          style={{ padding: 4, borderRadius: 4 }}
+          style={{ padding: 4, borderRadius: 0 }}
           className="text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors"
         >
           <X size={14} />
@@ -426,12 +581,12 @@ function DeviceDetailPanel({
                   {value.toFixed(1)}{unit}
                 </span>
               </div>
-              <div style={{ height: 6, width: "100%", backgroundColor: "var(--border)", borderRadius: 9999, overflow: "hidden" }}>
+              <div style={{ height: 6, width: "100%", backgroundColor: "var(--border)", borderRadius: 0, overflow: "hidden" }}>
                 <div
                   className="transition-all duration-500"
                   style={{
                     height: "100%",
-                    borderRadius: 9999,
+                    borderRadius: 0,
                     width: `${Math.min(100, value)}%`,
                     backgroundColor:
                       value > 85 ? "var(--error)" : value > 65 ? "var(--warning)" : "var(--primary)",
@@ -442,7 +597,7 @@ function DeviceDetailPanel({
           ))}
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginTop: 4 }}>
-            <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 8, padding: 10 }}>
+            <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 0, padding: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }} className="text-[10px] text-[var(--text-muted)]">
                 <Thermometer size={10} /> Temperature
               </div>
@@ -459,7 +614,7 @@ function DeviceDetailPanel({
                 {tele.temperatureCelsius.toFixed(1)}°C
               </p>
             </div>
-            <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 8, padding: 10 }}>
+            <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 0, padding: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }} className="text-[10px] text-[var(--text-muted)]">
                 <Activity size={10} /> Tasks
               </div>
@@ -470,7 +625,7 @@ function DeviceDetailPanel({
           </div>
 
           {/* Network */}
-          <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 8, padding: 10 }}>
+          <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 0, padding: 10 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }} className="text-[10px] text-[var(--text-muted)]">
               <Wifi size={10} /> Network
             </div>
@@ -504,7 +659,7 @@ function DeviceDetailPanel({
         {/* Assigned Agent */}
         {device.assignedAgentName && (
           <div
-            style={{ borderRadius: 8, padding: 12 }}
+            style={{ borderRadius: 0, padding: 12 }}
             className="bg-[var(--primary)]/10 border border-[var(--primary)]/25"
           >
             <p className="text-[10px] text-[var(--text-muted)]" style={{ marginBottom: 4 }}>Assigned Agent</p>
@@ -563,7 +718,7 @@ export default function EdgeMesh() {
             height: 384,
             backgroundColor: "var(--surface)",
             border: "1px solid var(--border)",
-            borderRadius: 12,
+            borderRadius: 0,
           }}
           className="skeleton-shimmer"
         />
@@ -578,7 +733,7 @@ export default function EdgeMesh() {
           style={{
             width: 56,
             height: 56,
-            borderRadius: 12,
+            borderRadius: 0,
             backgroundColor: "var(--surface)",
             border: "1px solid var(--border)",
             display: "flex",
@@ -630,7 +785,7 @@ export default function EdgeMesh() {
         <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", flex: 1 }}>
           {statusSummary.map(({ label, count, color }) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 8, height: 8, borderRadius: 9999, backgroundColor: color }} />
+              <div style={{ width: 8, height: 8, borderRadius: 0, backgroundColor: color }} />
               <span className="text-[12px] text-[var(--text-secondary)]">{label}:</span>
               <span className="text-[12px] font-bold text-[var(--text-primary)]">{count}</span>
             </div>
@@ -638,7 +793,7 @@ export default function EdgeMesh() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div
-            style={{ padding: "4px 8px", borderRadius: 4 }}
+            style={{ padding: "4px 8px", borderRadius: 0 }}
             className={cn(
               "flex items-center gap-1 text-[10px] font-medium",
               isFetching
@@ -696,7 +851,7 @@ export default function EdgeMesh() {
               bottom: 16,
               left: 16,
               border: "1px solid var(--border)",
-              borderRadius: 8,
+              borderRadius: 0,
               padding: 12,
               display: "flex",
               flexDirection: "column",

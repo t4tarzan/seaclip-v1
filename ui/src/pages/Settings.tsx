@@ -51,10 +51,10 @@ function Section({
   badge?: React.ReactNode;
 }) {
   return (
-    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
       <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 12 }}>
         {Icon && (
-          <div style={{ width: 32, height: 32, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }} className="bg-[var(--primary)]/15 border border-[var(--primary)]/25">
+          <div style={{ width: 32, height: 32, borderRadius: 0, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }} className="bg-[var(--primary)]/15 border border-[var(--primary)]/25">
             <Icon size={15} className="text-[var(--primary)]" />
           </div>
         )}
@@ -87,7 +87,7 @@ function ApiKeyField({ apiKey }: { apiKey: string }) {
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ flex: 1, backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} className="font-mono text-[12px] text-[var(--text-secondary)]">
+      <div style={{ flex: 1, backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 0, padding: "10px 12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} className="font-mono text-[12px] text-[var(--text-secondary)]">
         {visible ? apiKey : apiKey.slice(0, 8) + "\u2022".repeat(24) + apiKey.slice(-4)}
       </div>
       <Button
@@ -319,7 +319,7 @@ export default function Settings() {
       </div>
 
       {/* Tab Navigation */}
-      <div style={{ display: "flex", alignItems: "center", gap: 4, backgroundColor: "var(--bg-alt)", borderRadius: 12, padding: 6, overflowX: "auto" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 4, backgroundColor: "var(--bg-alt)", borderRadius: 0, padding: 6, overflowX: "auto" }}>
         {TABS.map((t) => {
           const Icon = t.icon;
           return (
@@ -332,7 +332,7 @@ export default function Settings() {
                   ? "bg-[var(--primary)] text-white shadow-md shadow-[var(--primary)]/20"
                   : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
               )}
-              style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 6 }}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 0 }}
             >
               <Icon size={14} />
               {t.label}
@@ -387,7 +387,7 @@ export default function Settings() {
                     onChange={(e) => setBudget(e.target.value)}
                     placeholder="100.00"
                   />
-                  <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 6, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 0, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span className="text-[11px] text-[var(--text-muted)]">Current limit</span>
                     <span className="text-[13px] font-semibold text-[var(--text-primary)]">
                       {formatCents(company.monthlyBudgetCents ?? 0)}
@@ -452,7 +452,7 @@ export default function Settings() {
                   <select
                     value={claudeModel}
                     onChange={(e) => setClaudeModel(e.target.value)}
-                    style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 12px" }}
+                    style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 0, padding: "10px 12px" }}
                     className="text-[12px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
                   >
                     <option value="claude-opus-4-6">Claude Opus 4.6 (most capable)</option>
@@ -508,7 +508,7 @@ export default function Settings() {
                     <select
                       value={ollamaModel}
                       onChange={(e) => setOllamaModel(e.target.value)}
-                      style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 12px" }}
+                      style={{ width: "100%", backgroundColor: "var(--bg-alt)", border: "1px solid var(--border)", borderRadius: 0, padding: "10px 12px" }}
                       className="text-[12px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]"
                     >
                       <option value="qwen3.5:35b">qwen3.5:35b (24GB, reasoning)</option>
@@ -517,7 +517,7 @@ export default function Settings() {
                       <option value="codellama:34b">codellama:34b (20GB, code)</option>
                     </select>
                   </div>
-                  <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 6, padding: 12 }}>
+                  <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 0, padding: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between" }} className="text-[11px]">
                       <span className="text-[var(--text-muted)]">Memory available</span>
                       <span className="text-[var(--text-primary)] font-mono">~42GB headroom</span>
@@ -581,7 +581,7 @@ export default function Settings() {
                 ].map((adapter) => (
                   <div
                     key={adapter.type}
-                    style={{ display: "flex", alignItems: "center", gap: 12, backgroundColor: "var(--bg-alt)", borderRadius: 6, padding: "12px 16px" }}
+                    style={{ display: "flex", alignItems: "center", gap: 12, backgroundColor: "var(--bg-alt)", borderRadius: 0, padding: "12px 16px" }}
                   >
                     <div
                       className={cn(
@@ -642,9 +642,9 @@ export default function Settings() {
 
             <Section title="Channels" description="Where notifications are delivered" icon={Globe}>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 6, padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 0, padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 6, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 0, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <Globe size={14} className="text-[var(--text-secondary)]" />
                     </div>
                     <div>
@@ -654,9 +654,9 @@ export default function Settings() {
                   </div>
                   <Badge variant="success">Active</Badge>
                 </div>
-                <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 6, padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ backgroundColor: "var(--bg-alt)", borderRadius: 0, padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 6, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 0, backgroundColor: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--text-secondary)">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
                       </svg>
@@ -677,7 +677,7 @@ export default function Settings() {
       {/* Danger Zone — always visible at bottom */}
       {tab === "general" && (
         <Section title="Danger Zone" description="Irreversible actions">
-          <div style={{ border: "1px solid color-mix(in srgb, var(--error) 25%, transparent)", borderRadius: 6, padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <div style={{ border: "1px solid color-mix(in srgb, var(--error) 25%, transparent)", borderRadius: 0, padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
             <div>
               <p className="text-[12px] font-semibold text-[var(--text-primary)]">Delete Workspace</p>
               <p className="text-[11px] text-[var(--text-muted)]" style={{ marginTop: 2 }}>

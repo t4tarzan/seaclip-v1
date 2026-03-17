@@ -31,7 +31,8 @@ export async function getBadges(companyId: string): Promise<SidebarBadges> {
       (SELECT count(*)::int FROM agents           WHERE company_id = '${companyId}' AND status = 'error')     AS error_agents
   `));
 
-  const row = ((result as any).rows as Record<string, unknown>[])[0];
+  const rows = (result as any).rows ?? (Array.isArray(result) ? result : []);
+  const row = rows[0] as Record<string, unknown> | undefined;
 
   return {
     pendingApprovals: Number(row?.pending_approvals ?? 0),

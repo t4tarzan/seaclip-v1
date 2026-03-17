@@ -43,7 +43,7 @@ function ServiceRow({ service }: { service: ServiceDef }) {
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 10,
-      padding: "8px 10px", borderRadius: 8,
+      padding: "10px 12px", borderRadius: 0,
     }}>
       {/* Status dot */}
       <div style={{ flexShrink: 0, width: 8, display: "flex", alignItems: "center" }}>
@@ -79,7 +79,7 @@ export function ServiceStatus() {
     <div style={{
       backgroundColor: "var(--surface)",
       border: "1px solid var(--border)",
-      borderRadius: 12, padding: 20, overflow: "hidden",
+      borderRadius: 0, padding: 20, overflow: "hidden",
     }}>
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",

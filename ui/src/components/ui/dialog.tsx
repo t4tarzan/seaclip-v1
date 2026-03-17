@@ -52,7 +52,8 @@ export function DialogContent({
       <RadixDialog.Content
         className={cn(
           "fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%]",
-          "w-full border border-[var(--border)] rounded-[var(--radius-lg)] shadow-2xl",
+          "w-full max-h-[85vh] overflow-y-auto",
+          "border border-[var(--border)] rounded-none shadow-2xl",
           "glass-surface",
           "p-6 focus:outline-none",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
@@ -68,7 +69,7 @@ export function DialogContent({
         {children}
         {showClose && (
           <RadixDialog.Close
-            className="absolute right-4 top-4 rounded-[var(--radius-sm)] p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors"
+            className="absolute right-4 top-4 rounded-none p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] transition-colors"
             aria-label="Close"
           >
             <X size={14} />

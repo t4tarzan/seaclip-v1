@@ -10,7 +10,7 @@ export function useAgents(companyId: string | undefined) {
       return res.data;
     },
     enabled: !!companyId,
-    refetchInterval: 10_000,
+    refetchInterval: 5_000,
   });
 }
 

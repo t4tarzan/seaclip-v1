@@ -35,6 +35,7 @@ export type IssuePriority = "critical" | "high" | "medium" | "low";
 export interface Issue {
   id: string;
   companyId: string;
+  identifier: string;
   title: string;
   description?: string;
   status: IssueStatus;
@@ -46,6 +47,7 @@ export interface Issue {
   goalId?: string;
   labels: string[];
   metadata: Record<string, unknown>;
+  githubUrl?: string;
   dueAt?: string;
   resolvedAt?: string;
   sequenceNumber: number;
@@ -98,6 +100,7 @@ function rowToIssue(row: DbIssueRow, companyId: string): Issue {
   return {
     id: row.id,
     companyId,
+    identifier: (row as any).identifier ?? `SC-${row.issueNumber}`,
     title: row.title,
     description: row.description ?? undefined,
     status: (row.status ?? "open") as IssueStatus,
@@ -108,8 +111,9 @@ function rowToIssue(row: DbIssueRow, companyId: string): Issue {
     checkedOutAt: undefined,
     projectId: row.projectId ?? undefined,
     goalId: row.goalId ?? undefined,
-    labels: [],       // no JSONB column on issues table
-    metadata: {},     // no JSONB column on issues table
+    labels: [],
+    metadata: (row.metadata as Record<string, unknown>) ?? {},
+    githubUrl: (row as any).githubUrl ?? undefined,
     dueAt: undefined, // no column on issues table
     resolvedAt: row.completedAt?.toISOString(),
     sequenceNumber: row.issueNumber,
@@ -245,6 +249,8 @@ export async function createIssue(
       assigneeAgentId: input.assignedAgentId ?? null,
       projectId: input.projectId ?? null,
       goalId: input.goalId ?? null,
+      metadata: input.metadata ?? {},
+      githubUrl: (input.metadata as any)?.githubIssueUrl ?? null,
       issueNumber,
       identifier,
     })
@@ -305,6 +311,10 @@ export async function updateIssue(
   if (input.assignedAgentId !== undefined) updateValues.assigneeAgentId = input.assignedAgentId;
   if (input.projectId !== undefined) updateValues.projectId = input.projectId;
   if (input.goalId !== undefined) updateValues.goalId = input.goalId;
+  if (input.metadata !== undefined) updateValues.metadata = input.metadata;
+  if ((input.metadata as any)?.githubIssueUrl !== undefined) {
+    updateValues.githubUrl = (input.metadata as any).githubIssueUrl;
+  }
 
   // Transition to done: record completedAt
   if (

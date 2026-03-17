@@ -56,9 +56,9 @@ function MiniStatBar({ value, label, color = "var(--primary)" }: { value: number
         <span className="text-[8px] text-[var(--text-muted)]">{label}</span>
         <span className="text-[8px] font-mono text-[var(--text-secondary)]">{value}%</span>
       </div>
-      <div className="h-1 w-full bg-[var(--border)] rounded-full overflow-hidden">
+      <div className="h-1 w-full bg-[var(--border)] rounded-none overflow-hidden">
         <div
-          className="h-full rounded-full transition-all duration-500"
+          className="h-full rounded-none transition-all duration-500"
           style={{
             width: `${Math.min(100, value)}%`,
             backgroundColor: value > 85 ? "var(--error)" : value > 65 ? "var(--warning)" : color,
@@ -77,7 +77,7 @@ export function DeviceNode({ device, isHub = false, isSelected = false, onClick 
     <button
       onClick={onClick}
       className={cn(
-        "relative flex flex-col items-center gap-1.5 p-2.5 rounded-[var(--radius-lg)]",
+        "relative flex flex-col items-center gap-1.5 p-2.5 rounded-none",
         "border transition-all duration-200 cursor-pointer",
         "hover:scale-105 active:scale-100 focus:outline-none",
         isHub
@@ -110,7 +110,7 @@ export function DeviceNode({ device, isHub = false, isSelected = false, onClick 
       {/* Device icon */}
       <div
         className={cn(
-          "rounded-[var(--radius-md)] flex items-center justify-center",
+          "rounded-none flex items-center justify-center",
           isHub ? "w-10 h-10" : "w-8 h-8",
           isHub ? "bg-[var(--primary)]/20 border border-[var(--primary)]/30" : colors.bg
         )}
@@ -166,7 +166,7 @@ export function DeviceNode({ device, isHub = false, isSelected = false, onClick 
 
       {/* Hub badge */}
       {isHub && (
-        <span className="absolute -bottom-2 bg-[var(--primary)] text-white text-[7px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+        <span className="absolute -bottom-2 bg-[var(--primary)] text-white text-[7px] font-bold px-1.5 py-0.5 rounded-none uppercase tracking-wider">
           HUB
         </span>
       )}

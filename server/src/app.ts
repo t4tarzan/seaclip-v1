@@ -25,6 +25,7 @@ import { spokeTasksRouter } from "./routes/spoke-tasks.js";
 import { pullRequestsRouter } from "./routes/pull-requests.js";
 import { sidebarBadgesRouter } from "./routes/sidebar-badges.js";
 import { githubBridgeRouter } from "./routes/github-bridge.js";
+import { identifyRouter } from "./routes/identify.js";
 import { contactRouter } from "./routes/contact.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -84,6 +85,7 @@ export function createApp(): express.Express {
   app.use("/api/companies", activityRouter);
   app.use("/api/companies", edgeDevicesRouter);
   app.use("/api/companies", githubBridgeRouter);
+  app.use("/api/companies", identifyRouter);
 
   // Federation routes
   app.use("/api/federation", hubFederationRouter);

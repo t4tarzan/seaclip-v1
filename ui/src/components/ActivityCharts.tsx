@@ -68,7 +68,7 @@ function BarChart({ bars, label }: { bars: { label: string; value: number; color
               {bar.value > 0 ? bar.value : ""}
             </span>
             <div style={{
-              width: "100%", borderRadius: "3px 3px 0 0",
+              width: "100%", borderRadius: 0,
               transition: "height 500ms ease",
               height: Math.max((bar.value / max) * 40, 2),
               minHeight: bar.value > 0 ? 6 : 2,
@@ -162,7 +162,7 @@ export function ActivityCharts({
     <div style={{
       backgroundColor: "var(--surface)",
       border: "1px solid var(--border)",
-      borderRadius: 12, padding: 20, overflow: "hidden",
+      borderRadius: 0, padding: 20, overflow: "hidden",
     }}>
       <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 16 }}>Overview</div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", gap: 16, flexWrap: "wrap" }}>

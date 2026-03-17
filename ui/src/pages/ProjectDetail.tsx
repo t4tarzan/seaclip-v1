@@ -32,7 +32,7 @@ export default function ProjectDetail() {
         <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
           {project && (
             <div
-              style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: `${project.color}20`, borderColor: `${project.color}40`, borderWidth: 1 }}
+              style={{ width: 32, height: 32, borderRadius: 0, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: `${project.color}20`, borderColor: `${project.color}40`, borderWidth: 1 }}
             >
               <FolderKanban size={14} style={{ color: project.color }} />
             </div>
@@ -46,10 +46,10 @@ export default function ProjectDetail() {
             </p>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 4, borderRadius: 8, padding: 2, border: "1px solid var(--border)" }} className="bg-[var(--bg-alt)]">
+        <div style={{ display: "flex", alignItems: "center", gap: 4, borderRadius: 0, padding: 2, border: "1px solid var(--border)" }} className="bg-[var(--bg-alt)]">
           <button
             onClick={() => { setViewMode("list"); localStorage.setItem("projectDetail.viewMode", "list"); }}
-            style={{ padding: 6, borderRadius: 4 }}
+            style={{ padding: 6, borderRadius: 0 }}
             className={cn(
               "transition-colors",
               viewMode === "list" ? "bg-[var(--surface)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]",
@@ -60,7 +60,7 @@ export default function ProjectDetail() {
           </button>
           <button
             onClick={() => { setViewMode("board"); localStorage.setItem("projectDetail.viewMode", "board"); }}
-            style={{ padding: 6, borderRadius: 4 }}
+            style={{ padding: 6, borderRadius: 0 }}
             className={cn(
               "transition-colors",
               viewMode === "board" ? "bg-[var(--surface)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]",
@@ -74,11 +74,11 @@ export default function ProjectDetail() {
 
       {/* Issues */}
       {isLoading ? (
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
           <SkeletonTable rows={6} cols={4} />
         </div>
       ) : issues.length === 0 ? (
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", textAlign: "center" }}>
             <CircleDot size={24} className="text-[var(--border)]" style={{ marginBottom: 12 }} />
             <p className="text-[13px] text-[var(--text-secondary)]">No issues in this project</p>
@@ -93,7 +93,7 @@ export default function ProjectDetail() {
           }}
         />
       ) : (
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
           <div style={{ overflowX: "auto" }}>
             <table className="data-table">
               <thead>

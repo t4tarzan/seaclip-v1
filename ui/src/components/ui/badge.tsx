@@ -50,7 +50,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 font-medium rounded-full whitespace-nowrap font-[var(--font-mono)]",
+        "inline-flex items-center gap-1.5 font-medium rounded-none whitespace-nowrap font-[var(--font-mono)]",
         size === "sm" ? "text-[10px] px-2 py-0.5" : "text-[11px] px-2.5 py-1",
         variantStyles[variant],
         className
@@ -60,7 +60,7 @@ export function Badge({
       {dot && (
         <span
           className={cn(
-            "inline-block rounded-full flex-shrink-0",
+            "inline-block rounded-none flex-shrink-0",
             size === "sm" ? "w-1.5 h-1.5" : "w-2 h-2",
             dotColors[variant]
           )}

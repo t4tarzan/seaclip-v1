@@ -207,7 +207,7 @@ export function AgentConfigForm({
       </div>
 
       {/* Adapter-specific config fields */}
-      <div className="bg-[var(--bg-alt)] rounded-[var(--radius-md)] border border-[var(--border)] p-3 flex flex-col gap-3">
+      <div className="bg-[var(--bg-alt)] rounded-none border border-[var(--border)] p-3 flex flex-col gap-3">
         <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">
           {ADAPTER_TYPES.find((a) => a.value === adapterType)?.label} Config
         </p>

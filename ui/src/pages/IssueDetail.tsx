@@ -5,6 +5,7 @@ import { useIssue, useUpdateIssue } from "../api/issues";
 import { useCompanyContext } from "../context/CompanyContext";
 import { StatusBadge } from "../components/StatusBadge";
 import { CommentThread } from "../components/CommentThread";
+import { PipelineActions } from "../components/PipelineActions";
 import { Button } from "../components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 import { SkeletonCard } from "../components/ui/skeleton";
@@ -85,7 +86,7 @@ export default function IssueDetail() {
         {/* Main content */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }} className="lg:col-span-2">
           {/* Issue header */}
-          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 20 }}>
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 20 }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -142,19 +143,19 @@ export default function IssueDetail() {
               <TabsTrigger value="activity">Activity</TabsTrigger>
             </TabsList>
             <TabsContent value="comments">
-              <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
+              <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 16 }}>
                 <CommentThread issueId={issue.id} />
               </div>
             </TabsContent>
             <TabsContent value="activity">
-              <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }}>
+              <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 16 }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <div
                       style={{
                         width: 24,
                         height: 24,
-                        borderRadius: 9999,
+                        borderRadius: 0,
                         backgroundColor: "var(--border)",
                         display: "flex",
                         alignItems: "center",
@@ -173,7 +174,7 @@ export default function IssueDetail() {
                         style={{
                           width: 24,
                           height: 24,
-                          borderRadius: 9999,
+                          borderRadius: 0,
                           backgroundColor: "var(--border)",
                           display: "flex",
                           alignItems: "center",
@@ -195,7 +196,7 @@ export default function IssueDetail() {
 
         {/* Sidebar */}
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
             <h3 className="text-[12px] font-semibold text-[var(--text-primary)]">Details</h3>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -210,7 +211,7 @@ export default function IssueDetail() {
                         style={{
                           width: 20,
                           height: 20,
-                          borderRadius: 9999,
+                          borderRadius: 0,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -249,6 +250,8 @@ export default function IssueDetail() {
               ))}
             </div>
           </div>
+
+          <PipelineActions issue={issue} />
         </div>
       </div>
     </div>

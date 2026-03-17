@@ -7,6 +7,7 @@ import { cn } from "../lib/utils";
 import type { Agent, AgentStatus } from "../lib/types";
 
 const STATUS_COLORS: Record<AgentStatus, string> = {
+  active: "bg-[var(--success)]",
   running: "bg-[var(--success)]",
   idle: "bg-[var(--accent)]",
   error: "bg-[var(--error)]",
@@ -55,7 +56,7 @@ export function SidebarAgents({ collapsed, onNewAgent }: SidebarAgentsProps) {
               e.stopPropagation();
               onNewAgent();
             }}
-            className="flex items-center justify-center h-4 w-4 rounded text-[var(--text-muted)]/60 hover:text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
+            className="flex items-center justify-center h-4 w-4 rounded-none text-[var(--text-muted)]/60 hover:text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
             aria-label="New agent"
           >
             <Plus size={10} />
@@ -70,7 +71,7 @@ export function SidebarAgents({ collapsed, onNewAgent }: SidebarAgentsProps) {
           )}
           {visibleAgents.map((agent: Agent) => {
             const statusColor = STATUS_COLORS[agent.status] ?? "bg-[var(--text-muted)]";
-            const isRunning = agent.status === "running";
+            const isRunning = agent.status === "running" || agent.status === "active";
 
             return (
               <NavLink
@@ -78,14 +79,14 @@ export function SidebarAgents({ collapsed, onNewAgent }: SidebarAgentsProps) {
                 to={`/agents/${agent.id}`}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-2.5 px-3 py-1.5 text-[13px] font-medium transition-colors mx-1 rounded-md",
+                    "flex items-center gap-2.5 px-3 py-1.5 text-[13px] font-medium transition-colors mx-1 rounded-none",
                     isActive
                       ? "bg-[var(--primary)]/15 text-[var(--text-primary)]"
                       : "text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)]",
                   )
                 }
               >
-                <div className="w-5 h-5 rounded-md bg-[var(--primary)]/15 border border-[var(--primary)]/25 flex items-center justify-center flex-shrink-0">
+                <div className="w-5 h-5 rounded-none bg-[var(--primary)]/15 border border-[var(--primary)]/25 flex items-center justify-center flex-shrink-0">
                   <Bot size={10} className="text-[var(--primary)]" />
                 </div>
                 <span className="flex-1 truncate text-[12px]">{agent.name}</span>
