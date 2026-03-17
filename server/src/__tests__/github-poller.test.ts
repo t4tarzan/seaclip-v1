@@ -288,4 +288,113 @@ describe("github-poller — lastCommentCheckAt stamping invariant", () => {
 
     expect(mockUpdateIssue).not.toHaveBeenCalled();
   });
+
+  it("does NOT stamp when GitHub returns a non-rate-limit error (e.g. 500)", async () => {
+    issueRows = [ISSUE_ROW];
+    repoRows = [REPO];
+    mockGetCommentsSince.mockRejectedValue(new Error("GitHub API error 500: internal server error"));
+
+    vi.useFakeTimers();
+    startGithubPoller(100);
+    await vi.advanceTimersByTimeAsync(100);
+    stopGithubPoller();
+    vi.useRealTimers();
+
+    expect(mockUpdateIssue).not.toHaveBeenCalled();
+  });
+
+  it("still stamps lastCommentCheckAt even when addComment fails for a comment", async () => {
+    issueRows = [ISSUE_ROW];
+    repoRows = [REPO];
+    mockGetCommentsSince.mockResolvedValue([
+      {
+        id: 202,
+        body: "failing comment",
+        user: { login: "dev" },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ]);
+    mockAddComment.mockRejectedValue(new Error("DB write error"));
+
+    vi.useFakeTimers();
+    startGithubPoller(100);
+    await vi.advanceTimersByTimeAsync(100);
+    stopGithubPoller();
+    vi.useRealTimers();
+
+    // stamp should still happen even though addComment threw
+    expect(mockUpdateIssue).toHaveBeenCalledWith(
+      ISSUE_ROW.companyId,
+      ISSUE_ROW.id,
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          lastCommentCheckAt: expect.any(String),
+        }),
+      }),
+    );
+  });
+
+  it("skips issues that have no githubRepoId", async () => {
+    issueRows = [{ ...ISSUE_ROW, githubRepoId: null }];
+    repoRows = [REPO];
+    mockGetCommentsSince.mockResolvedValue([]);
+
+    vi.useFakeTimers();
+    startGithubPoller(100);
+    await vi.advanceTimersByTimeAsync(100);
+    stopGithubPoller();
+    vi.useRealTimers();
+
+    expect(mockGetCommentsSince).not.toHaveBeenCalled();
+    expect(mockUpdateIssue).not.toHaveBeenCalled();
+  });
+
+  it("skips issue when its githubRepoId does not match any connected repo", async () => {
+    issueRows = [{ ...ISSUE_ROW, githubRepoId: "unknown-repo-id" }];
+    repoRows = [REPO]; // REPO.id = "repo-1", not "unknown-repo-id"
+    mockGetCommentsSince.mockResolvedValue([]);
+
+    vi.useFakeTimers();
+    startGithubPoller(100);
+    await vi.advanceTimersByTimeAsync(100);
+    stopGithubPoller();
+    vi.useRealTimers();
+
+    expect(mockGetCommentsSince).not.toHaveBeenCalled();
+    expect(mockUpdateIssue).not.toHaveBeenCalled();
+  });
+
+  it("preserves existing metadata fields when stamping lastCommentCheckAt", async () => {
+    issueRows = [
+      {
+        ...ISSUE_ROW,
+        metadata: {
+          lastCommentCheckAt: "2024-01-01T00:00:00.000Z",
+          importedGhCommentIds: [1, 2, 3],
+          customField: "should-survive",
+        },
+      },
+    ];
+    repoRows = [REPO];
+    mockGetCommentsSince.mockResolvedValue([]);
+
+    vi.useFakeTimers();
+    startGithubPoller(100);
+    await vi.advanceTimersByTimeAsync(100);
+    stopGithubPoller();
+    vi.useRealTimers();
+
+    expect(mockUpdateIssue).toHaveBeenCalledWith(
+      ISSUE_ROW.companyId,
+      ISSUE_ROW.id,
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          lastCommentCheckAt: expect.any(String),
+          importedGhCommentIds: [1, 2, 3],
+          customField: "should-survive",
+        }),
+      }),
+    );
+  });
 });
