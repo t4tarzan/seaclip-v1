@@ -3,6 +3,7 @@ const githubUrl = 'https://github.com/t4tarzan/seaclip-v1';
 const currentYear = new Date().getFullYear();
 
 const products = [
+  { label: 'Mortgage Lite', href: '/mortgage-lite', external: false },
   { label: 'Velocity Training', href: 'https://virtualgpt.cloud', external: true },
   { label: 'SeaClaw Agent', href: 'https://seaclawagent.com', external: true },
   { label: 'Dkube.io', href: 'https://dkube.io', external: true },
@@ -32,7 +33,7 @@ const openSource = [
       <nav class="footer__col" aria-label="Products">
         <h4 class="footer__col-title">Products</h4>
         {products.map((link) => (
-          <a href={link.href} target="_blank" rel="noopener noreferrer" class="footer__link">{link.label}</a>
+          <a href={link.href} {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})} class="footer__link">{link.label}</a>
         ))}
       </nav>
 

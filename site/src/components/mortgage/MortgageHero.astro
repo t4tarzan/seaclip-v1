@@ -1,0 +1,128 @@
+---
+---
+
+<section id="hero" class="hero">
+  <div class="container hero__inner">
+    <div class="hero__content fade-in">
+      <span class="badge hero__badge">AI Underwriting | Privacy-First</span>
+
+      <h1 class="hero__heading">
+        Six agents. Four minutes. Zero PII in the cloud.
+      </h1>
+
+      <p class="hero__subline">
+        Process mortgage applications in minutes, not days. Shift-left detection, semantic anonymization, and six specialized AI agents — all on your premises.
+      </p>
+
+      <div class="hero__ctas">
+        <a href="https://seaclip.tech/#contact" class="btn btn--primary">Book a Demo</a>
+        <a href="#pipeline" class="btn btn--secondary">See How It Works</a>
+      </div>
+    </div>
+
+    <div class="hero__video fade-in">
+      <video
+        autoplay
+        muted
+        loop
+        playsinline
+        controls
+        class="hero__video-player"
+      >
+        <source src="/videos/mortgage-lite-hero.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 7rem 0 4rem;
+    overflow: hidden;
+  }
+
+  .hero__inner {
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    gap: var(--space-3xl);
+    align-items: center;
+  }
+
+  .hero__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .hero__badge {
+    align-self: flex-start;
+  }
+
+  .hero__heading {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 4.5vw, 3.25rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+  }
+
+  .hero__subline {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    max-width: 45ch;
+  }
+
+  .hero__ctas {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .hero__video {
+    width: 100%;
+    justify-self: center;
+  }
+
+  .hero__video-player {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow:
+      0 0 30px rgba(56, 189, 248, 0.15),
+      0 0 60px rgba(56, 189, 248, 0.08);
+    background: var(--color-bg-alt);
+  }
+
+  @media (max-width: 768px) {
+    .hero__inner {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .hero__badge {
+      align-self: center;
+    }
+
+    .hero__subline {
+      margin: 0 auto;
+    }
+
+    .hero__ctas {
+      justify-content: center;
+    }
+
+    .hero__video {
+      order: -1;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero__ctas {
+      flex-direction: column;
+    }
+  }
+</style>

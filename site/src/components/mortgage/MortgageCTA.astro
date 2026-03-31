@@ -1,0 +1,174 @@
+---
+---
+
+<section id="contact" class="cta-section">
+  <div class="container container--narrow">
+    <p class="section-label fade-in">GET STARTED</p>
+    <h2 class="section-title fade-in">See Mortgage Lite in Action</h2>
+    <p class="section-subtitle fade-in">
+      Book a demo to see the full pipeline process real mortgage documents in under 5 minutes.
+    </p>
+    <p class="cta-person fade-in">Ajay Tyagi, VP Sales — <a href="mailto:ajay@dkube.io" class="cta-email">ajay@dkube.io</a></p>
+    <p class="cta-person fade-in">US Dkube Contact: <a href="tel:+14084302503" class="cta-email">+(1) 408 430 2503</a></p>
+
+    <form class="cta-form fade-in" id="mortgage-contact-form" novalidate>
+      <div class="cta-form__row">
+        <div class="cta-form__field">
+          <label for="m-name" class="cta-form__label">Name *</label>
+          <input type="text" id="m-name" name="name" placeholder="Your name" required class="cta-form__input" />
+        </div>
+        <div class="cta-form__field">
+          <label for="m-email" class="cta-form__label">Email *</label>
+          <input type="email" id="m-email" name="email" placeholder="you@company.com" required class="cta-form__input" />
+        </div>
+      </div>
+      <div class="cta-form__field">
+        <label for="m-company" class="cta-form__label">Company</label>
+        <input type="text" id="m-company" name="company" placeholder="Company (optional)" class="cta-form__input" />
+      </div>
+      <div class="cta-form__field">
+        <label for="m-message" class="cta-form__label">Message *</label>
+        <textarea id="m-message" name="message" placeholder="Tell us about your underwriting workflow and volume..." rows="4" required class="cta-form__input cta-form__textarea"></textarea>
+      </div>
+      <button type="submit" class="btn btn--primary cta-form__submit">Book a Demo</button>
+      <p class="cta-form__status" id="mortgage-form-status"></p>
+    </form>
+  </div>
+</section>
+
+<script>
+  const form = document.getElementById('mortgage-contact-form') as HTMLFormElement;
+  const status = document.getElementById('mortgage-form-status') as HTMLParagraphElement;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+
+    if (!data.name || !data.email || !data.message) {
+      status.textContent = 'Please fill in all required fields.';
+      status.className = 'cta-form__status cta-form__status--error';
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:3001/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, source: 'mortgage-lite' }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || 'Failed to send');
+      }
+      status.textContent = 'Message sent! We\'ll be in touch soon.';
+      status.className = 'cta-form__status cta-form__status--success';
+      form.reset();
+    } catch (err: any) {
+      status.textContent = err.message || 'Something went wrong. Please try again.';
+      status.className = 'cta-form__status cta-form__status--error';
+    }
+  });
+</script>
+
+<style>
+  .cta-section {
+    background: linear-gradient(180deg, var(--color-bg-alt) 0%, var(--color-bg) 100%);
+  }
+
+  .cta-person {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin: 0;
+  }
+
+  .cta-email {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  .cta-email:hover {
+    text-decoration: underline;
+  }
+
+  .cta-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin-top: var(--space-2xl);
+  }
+
+  .cta-form__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+  }
+
+  .cta-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .cta-form__label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .cta-form__input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .cta-form__input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .cta-form__input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-glow);
+  }
+
+  .cta-form__textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .cta-form__submit {
+    align-self: flex-start;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+  }
+
+  .cta-form__status {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    margin: 0;
+    min-height: 1.25rem;
+  }
+
+  .cta-form__status--success { color: #4ade80; }
+  .cta-form__status--error { color: #f87171; }
+
+  @media (max-width: 480px) {
+    .cta-form__row {
+      grid-template-columns: 1fr;
+    }
+
+    .cta-form__submit {
+      width: 100%;
+    }
+  }
+</style>

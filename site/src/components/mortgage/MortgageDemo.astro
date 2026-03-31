@@ -1,0 +1,142 @@
+---
+const scenarios = [
+  {
+    name: 'John Smith',
+    loan: 'Purchase — $450K Conventional',
+    result: 'APPROVED',
+    resultClass: 'approved',
+    anomalies: 0,
+    time: '1m 12s',
+    cost: '$0.03',
+    detail: 'Clean application. All documents matched. DTI 28%, LTV 75%. Fast-tracked through pipeline.',
+  },
+  {
+    name: 'Catherine Vellotti',
+    loan: 'Refinance — $680K Conventional',
+    result: 'FLAGGED',
+    resultClass: 'flagged',
+    anomalies: 7,
+    time: '1m 48s',
+    cost: '$0.05',
+    detail: '2 critical anomalies: SSN conflict (one digit difference across documents) and name variants (Catherine/Kathryn/Katherine in 13 docs). Full intensive processing.',
+  },
+  {
+    name: 'Maria Garcia',
+    loan: 'FHA — $320K',
+    result: 'CONDITIONAL',
+    resultClass: 'conditional',
+    anomalies: 2,
+    time: '1m 24s',
+    cost: '$0.04',
+    detail: 'Minor anomalies: employment gap (3 months) and income documentation needs additional verification. Standard processing.',
+  },
+];
+---
+
+<section id="demo">
+  <div class="container">
+    <p class="section-label fade-in">LIVE DEMO</p>
+    <h2 class="section-title fade-in">Three Applications, Four Minutes, $0.12</h2>
+    <p class="section-subtitle fade-in">
+      Real mortgage packets processed through the full pipeline. One clean approval, one flagged with critical anomalies, one conditional.
+    </p>
+
+    <div class="grid grid--3 stagger">
+      {scenarios.map((s) => (
+        <div class="demo-card card">
+          <div class="demo-card__header">
+            <h3 class="demo-card__name">{s.name}</h3>
+            <span class={`demo-card__result demo-card__result--${s.resultClass}`}>{s.result}</span>
+          </div>
+          <p class="demo-card__loan">{s.loan}</p>
+          <p class="card__description">{s.detail}</p>
+          <div class="demo-card__stats">
+            <div class="demo-card__stat">
+              <span class="demo-card__stat-value">{s.anomalies}</span>
+              <span class="demo-card__stat-label">Anomalies</span>
+            </div>
+            <div class="demo-card__stat">
+              <span class="demo-card__stat-value">{s.time}</span>
+              <span class="demo-card__stat-label">Processing</span>
+            </div>
+            <div class="demo-card__stat">
+              <span class="demo-card__stat-value">{s.cost}</span>
+              <span class="demo-card__stat-label">AI Cost</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .demo-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-xs);
+  }
+
+  .demo-card__name {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .demo-card__result {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.625rem;
+    border-radius: 4px;
+  }
+
+  .demo-card__result--approved { color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+  .demo-card__result--flagged { color: #f87171; background: rgba(248, 113, 113, 0.1); }
+  .demo-card__result--conditional { color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
+
+  .demo-card__loan {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-sm);
+  }
+
+  .demo-card__stats {
+    display: flex;
+    gap: var(--space-lg);
+    margin-top: auto;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .demo-card__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .demo-card__stat-value {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .demo-card__stat-label {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .demo-card {
+    display: flex;
+    flex-direction: column;
+  }
+</style>

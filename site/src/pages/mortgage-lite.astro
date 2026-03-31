@@ -1,0 +1,26 @@
+---
+import Layout from '../layouts/Layout.astro';
+import MortgageNavbar from '../components/mortgage/MortgageNavbar.astro';
+import MortgageHero from '../components/mortgage/MortgageHero.astro';
+import MortgagePipeline from '../components/mortgage/MortgagePipeline.astro';
+import MortgageFeatures from '../components/mortgage/MortgageFeatures.astro';
+import MortgagePrivacy from '../components/mortgage/MortgagePrivacy.astro';
+import MortgageDemo from '../components/mortgage/MortgageDemo.astro';
+import MortgageFAQ from '../components/mortgage/MortgageFAQ.astro';
+import MortgageCTA from '../components/mortgage/MortgageCTA.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Mortgage Lite — AI-Powered Underwriting in Minutes" description="Six AI agents. Shift-left detection. Privacy-first anonymization. Process mortgage applications in 4 minutes, not 4 days.">
+  <MortgageNavbar />
+  <main>
+    <MortgageHero />
+    <MortgagePipeline />
+    <MortgageFeatures />
+    <MortgagePrivacy />
+    <MortgageDemo />
+    <MortgageFAQ />
+    <MortgageCTA />
+  </main>
+  <Footer />
+</Layout>

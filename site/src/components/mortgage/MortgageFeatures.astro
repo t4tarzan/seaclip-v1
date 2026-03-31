@@ -1,0 +1,52 @@
+---
+const features = [
+  { icon: '&#x26A1;', title: 'Shift-Left Detection', description: 'Val catches SSN conflicts, name mismatches, and math errors deterministically before any LLM runs. Zero cost, instant results.' },
+  { icon: '&#x1F512;', title: 'Semantic Anonymization', description: 'PII is stripped before cloud processing. Claude never sees real names, SSNs, or addresses. Mappings are ephemeral and purged after delivery.' },
+  { icon: '&#x1F4CA;', title: 'Multi-Engine OCR', description: 'Four-model cascade (GLM-OCR, MiniCPM, Qwen2-VL, Tesseract) extracts data from any document quality. Confidence scoring picks the best result.' },
+  { icon: '&#x1F3E2;', title: 'Tiered AI Architecture', description: 'Deterministic checks are free. Local LLM handles sensitive data. Cloud AI only sees anonymized content. Each tier optimized for cost and privacy.' },
+  { icon: '&#x1F4CB;', title: '15+ Compliance Rules', description: 'DTI/LTV ratios, employment verification, income documentation, appraisal guidelines — Fannie Mae, FHA, and VA rules built in.' },
+  { icon: '&#x1F3AE;', title: 'Pixel Office Dashboard', description: 'HTMX-powered dashboard with animated agent characters, CRT terminal with live logs, and real-time pipeline state streaming.' },
+  { icon: '&#x1F50D;', title: 'OCR Lab', description: 'Inspect extracted data field-by-field. Compare OCR engine outputs. Debug extraction accuracy with confidence scores and bounding boxes.' },
+  { icon: '&#x1F4DE;', title: 'Nancy Voice Assistant', description: 'Natural language commands for the underwriting pipeline. Ask Nancy to process an application, check status, or explain an anomaly.' },
+  { icon: '&#x1F4C8;', title: 'Anomaly Intelligence', description: 'Three detection tiers: deterministic (free), local LLM (private), cloud LLM (anonymized). Phonetic analysis, gap detection, cross-document validation.' },
+  { icon: '&#x1F504;', title: 'Adaptive Model Selection', description: 'Simple cases use Haiku. Complex cases escalate to Sonnet or Opus. Privacy-sensitive operations stay on local Qwen 35B. Up to 60% cost savings.' },
+  { icon: '&#x1F6E1;', title: 'Fault-Tolerant Pipeline', description: 'Exponential backoff with jitter. Automatic retries on transient failures. Fallback agents for critical stages. 99.5% completion rate target.' },
+  { icon: '&#x1F4E6;', title: 'LOS Integration Ready', description: 'Encompass API integration for production deployment. Deanonymized reports push directly to your loan origination system.' },
+];
+---
+
+<section id="features">
+  <div class="container">
+    <p class="section-label fade-in">FEATURES</p>
+    <h2 class="section-title fade-in">Everything You Need for Autonomous Underwriting</h2>
+    <p class="section-subtitle fade-in">
+      Built for mortgage professionals who want AI speed without sacrificing compliance, privacy, or control.
+    </p>
+
+    <div class="grid grid--4 stagger">
+      {features.map((f) => (
+        <div class="card">
+          <div class="card__icon">
+            <span set:html={f.icon} />
+          </div>
+          <h3 class="card__title">{f.title}</h3>
+          <p class="card__description">{f.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .card__icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: var(--color-accent-glow);
+    font-size: 1.25rem;
+    margin-bottom: var(--space-sm);
+  }
+</style>

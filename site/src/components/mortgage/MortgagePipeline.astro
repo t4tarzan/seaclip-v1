@@ -1,0 +1,195 @@
+---
+const agents = [
+  {
+    number: '01',
+    name: 'Iris',
+    role: 'Intake',
+    description: 'Classifies uploaded documents — W-2, 1099, bank statements, tax returns, appraisals, IDs. Routes each to the right extraction path.',
+    tier: 'Deterministic',
+    cost: '$0',
+  },
+  {
+    number: '02',
+    name: 'Rex',
+    role: 'OCR Extraction',
+    description: 'Multi-engine cascade: GLM-OCR → MiniCPM → Qwen2-VL → Tesseract. Each model tries in order until confidence threshold is met.',
+    tier: 'Local GPU',
+    cost: '$0',
+  },
+  {
+    number: '03',
+    name: 'Val',
+    role: 'Validation',
+    description: 'Shift-left deterministic checks — SSN conflicts, name variant mismatches, table math errors, missing documents. Zero AI cost.',
+    tier: 'Deterministic',
+    cost: '$0',
+  },
+  {
+    number: '04',
+    name: 'Ana',
+    role: 'Analysis',
+    description: 'Local LLM (Qwen 35B) detects anomalies — phonetic mismatches, employment gaps, income inconsistencies. Runs on your GPU with full PII access.',
+    tier: 'Local LLM',
+    cost: 'Low',
+  },
+  {
+    number: '05',
+    name: 'Claire',
+    role: 'Compliance',
+    description: 'Claude checks 15+ Fannie Mae/FHA/VA rules on anonymized data only. DTI/LTV ratios, documentation requirements, regulatory compliance.',
+    tier: 'Cloud LLM',
+    cost: '~$0.04',
+  },
+  {
+    number: '06',
+    name: 'Max',
+    role: 'Delivery',
+    description: 'Deanonymizes the compliance report, pushes to your LOS (Encompass API), triggers voice callback, purges temporary mappings.',
+    tier: 'Orchestration',
+    cost: '$0',
+  },
+];
+---
+
+<section id="pipeline">
+  <div class="container">
+    <p class="section-label fade-in">THE PIPELINE</p>
+    <h2 class="section-title fade-in">Six Agents, One Application</h2>
+    <p class="section-subtitle fade-in">
+      Each agent is specialized. Documents flow through intake, extraction, validation, analysis, compliance, and delivery — with anonymization boundaries protecting PII at every step.
+    </p>
+
+    <div class="pipeline-flow fade-in">
+      <span class="pipeline-flow__label">Upload</span>
+      <span class="pipeline-flow__arrow">&rarr;</span>
+      {agents.map((a, i) => (
+        <>
+          <span class="pipeline-flow__node">{a.name}</span>
+          {i === 3 && <span class="pipeline-flow__boundary">ANONYMIZE</span>}
+          {i === 4 && <span class="pipeline-flow__boundary">DE-ANON</span>}
+          {i < agents.length - 1 && <span class="pipeline-flow__arrow">&rarr;</span>}
+        </>
+      ))}
+      <span class="pipeline-flow__arrow">&rarr;</span>
+      <span class="pipeline-flow__label">Done</span>
+    </div>
+
+    <div class="grid grid--3 stagger">
+      {agents.map((agent) => (
+        <div class="card">
+          <div class="card__header">
+            <span class="card__number">{agent.number}</span>
+            <span class={`card__tier card__tier--${agent.tier.toLowerCase().replace(/\s/g, '-')}`}>{agent.tier}</span>
+          </div>
+          <h3 class="card__title">{agent.name}</h3>
+          <p class="card__role">{agent.role}</p>
+          <p class="card__description">{agent.description}</p>
+          <span class="card__cost">Cost: {agent.cost}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .pipeline-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: var(--space-xl) 0 var(--space-3xl);
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+
+  .pipeline-flow__node {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.375rem 0.75rem;
+    color: var(--color-text);
+  }
+
+  .pipeline-flow__boundary {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px dashed var(--color-accent);
+    border-radius: 6px;
+    padding: 0.375rem 0.75rem;
+    color: var(--color-accent);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .pipeline-flow__arrow {
+    color: var(--color-text-muted);
+  }
+
+  .pipeline-flow__label {
+    color: var(--color-text-secondary);
+    font-weight: 600;
+  }
+
+  .card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+  }
+
+  .card__number {
+    font-family: var(--font-mono);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    line-height: 1;
+  }
+
+  .card__tier {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: var(--color-surface-raised);
+    color: var(--color-text-muted);
+  }
+
+  .card__tier--deterministic { color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+  .card__tier--local-gpu { color: #a78bfa; background: rgba(167, 139, 250, 0.1); }
+  .card__tier--local-llm { color: #fb923c; background: rgba(251, 146, 60, 0.1); }
+  .card__tier--cloud-llm { color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+  .card__tier--orchestration { color: #94a3b8; background: rgba(148, 163, 184, 0.1); }
+
+  .card__title {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .card__role {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    margin: 0.25rem 0 var(--space-sm);
+  }
+
+  .card__cost {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: auto;
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+  }
+</style>

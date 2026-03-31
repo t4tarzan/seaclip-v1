@@ -1,0 +1,110 @@
+---
+const faqs = [
+  {
+    q: 'How does the anonymization work?',
+    a: 'Before any data reaches cloud AI (Claire), the Ana agent creates an ephemeral mapping that replaces all PII with tokens (e.g., "John Smith" becomes "APPLICANT_A"). Claire makes compliance decisions on anonymized data. After processing, the mapping is reversed for the final report, then permanently destroyed. The mapping never touches disk.',
+  },
+  {
+    q: 'What documents can it process?',
+    a: 'W-2s, 1099s (all types), bank statements, tax returns (1040 with schedules), pay stubs, appraisal reports, employment verification letters, gift letters, purchase agreements, title reports, and government IDs. The multi-engine OCR cascade handles varying document quality.',
+  },
+  {
+    q: 'What compliance rules are built in?',
+    a: 'DTI front-end and back-end ratio checks, LTV validation by loan type, credit score minimums, employment history continuity, income and asset documentation completeness, gift letter requirements, appraisal validation, comparable sales analysis, flood zone determination, and occupancy type verification — covering Fannie Mae, FHA, and VA guidelines.',
+  },
+  {
+    q: 'Can it integrate with our LOS (Encompass, etc.)?',
+    a: 'The Max delivery agent is designed to push deanonymized compliance reports to Encompass and other loan origination systems via their APIs. The integration module supports configurable endpoints and authentication.',
+  },
+  {
+    q: 'What happens when an anomaly is detected?',
+    a: 'Anomalies are tiered: Tier 1 (deterministic) catches SSN conflicts and math errors instantly at zero cost. Tier 2 (local LLM) finds phonetic mismatches and employment gaps using Qwen 35B on your hardware. Tier 3 (cloud) handles complex regulatory analysis on anonymized data. Each anomaly gets a severity rating and detailed explanation.',
+  },
+  {
+    q: 'How much does it cost per application?',
+    a: 'The demo shows an average of $0.04 per application in AI costs. Four of the six agents run at zero cost (deterministic or local GPU). Only Claire uses cloud AI, and only on anonymized data. The adaptive model selector can further reduce costs by routing simple cases to cheaper models.',
+  },
+  {
+    q: 'Can we run it entirely on-premises?',
+    a: 'Yes. The pipeline is designed for on-prem deployment. Iris, Rex, Val, Ana, and Max run entirely on your hardware. Claire can be configured to use a local LLM (Qwen 35B) instead of cloud Claude, making the entire pipeline air-gapped if required.',
+  },
+  {
+    q: 'What about the shift-left approach?',
+    a: 'Val (the validator agent) catches critical issues — SSN conflicts, name mismatches, missing documents, math errors — using pure deterministic logic before any LLM is involved. This means obvious problems are caught instantly at zero cost, and the more expensive AI agents only process applications that pass basic validation.',
+  },
+];
+---
+
+<section id="faq">
+  <div class="container container--narrow">
+    <p class="section-label fade-in">FAQ</p>
+    <h2 class="section-title fade-in">Frequently Asked Questions</h2>
+
+    <div class="faq-list fade-in">
+      {faqs.map((item) => (
+        <details class="faq-item">
+          <summary class="faq-question">
+            {item.q}
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </summary>
+          <p class="faq-answer">{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: var(--space-2xl);
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-lg) 0;
+  }
+
+  .faq-item:first-child {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text);
+    list-style: none;
+    gap: var(--space-md);
+  }
+
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-icon {
+    font-size: 1.25rem;
+    color: var(--color-text-muted);
+    transition: transform var(--transition-base);
+    flex-shrink: 0;
+  }
+
+  .faq-item[open] .faq-icon {
+    transform: rotate(45deg);
+  }
+
+  .faq-answer {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    margin: var(--space-md) 0 0;
+    padding-right: var(--space-2xl);
+  }
+</style>
