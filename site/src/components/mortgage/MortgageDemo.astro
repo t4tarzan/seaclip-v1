@@ -2,23 +2,21 @@
 const scenarios = [
   {
     name: 'John Smith',
-    loan: 'Purchase — $450K Conventional',
+    loan: 'Purchase — $450K',
     result: 'APPROVED',
     resultClass: 'approved',
     anomalies: 0,
     time: '1m 12s',
     cost: '$0.03',
-    detail: 'Clean application. All documents matched. DTI 28%, LTV 75%. Fast-tracked through pipeline.',
   },
   {
     name: 'Catherine Vellotti',
-    loan: 'Refinance — $680K Conventional',
+    loan: 'Refinance — $680K',
     result: 'FLAGGED',
     resultClass: 'flagged',
     anomalies: 7,
     time: '1m 48s',
     cost: '$0.05',
-    detail: '2 critical anomalies: SSN conflict (one digit difference across documents) and name variants (Catherine/Kathryn/Katherine in 13 docs). Full intensive processing.',
   },
   {
     name: 'Maria Garcia',
@@ -28,115 +26,154 @@ const scenarios = [
     anomalies: 2,
     time: '1m 24s',
     cost: '$0.04',
-    detail: 'Minor anomalies: employment gap (3 months) and income documentation needs additional verification. Standard processing.',
   },
 ];
 ---
 
 <section id="demo">
   <div class="container">
-    <p class="section-label fade-in">LIVE DEMO</p>
-    <h2 class="section-title fade-in">Three Applications, Four Minutes, $0.12</h2>
-    <p class="section-subtitle fade-in">
-      Real mortgage packets processed through the full pipeline. One clean approval, one flagged with critical anomalies, one conditional.
-    </p>
+    <p class="section-label fade-in">HOW IT WORKS</p>
+    <h2 class="section-title fade-in">Three Applications. Four Minutes. $0.12 Total.</h2>
 
-    <div class="grid grid--3 stagger">
-      {scenarios.map((s) => (
-        <div class="demo-card card">
-          <div class="demo-card__header">
-            <h3 class="demo-card__name">{s.name}</h3>
-            <span class={`demo-card__result demo-card__result--${s.resultClass}`}>{s.result}</span>
-          </div>
-          <p class="demo-card__loan">{s.loan}</p>
-          <p class="card__description">{s.detail}</p>
-          <div class="demo-card__stats">
-            <div class="demo-card__stat">
-              <span class="demo-card__stat-value">{s.anomalies}</span>
-              <span class="demo-card__stat-label">Anomalies</span>
+    <div class="demo-layout fade-in">
+      <div class="demo-cases">
+        {scenarios.map((s) => (
+          <div class="demo-case">
+            <div class="demo-case__top">
+              <div class="demo-case__info">
+                <span class="demo-case__name">{s.name}</span>
+                <span class="demo-case__loan">{s.loan}</span>
+              </div>
+              <span class={`demo-case__result demo-case__result--${s.resultClass}`}>{s.result}</span>
             </div>
-            <div class="demo-card__stat">
-              <span class="demo-card__stat-value">{s.time}</span>
-              <span class="demo-card__stat-label">Processing</span>
-            </div>
-            <div class="demo-card__stat">
-              <span class="demo-card__stat-value">{s.cost}</span>
-              <span class="demo-card__stat-label">AI Cost</span>
+            <div class="demo-case__stats">
+              <span class="demo-case__stat">{s.anomalies} anomalies</span>
+              <span class="demo-case__dot"></span>
+              <span class="demo-case__stat">{s.time}</span>
+              <span class="demo-case__dot"></span>
+              <span class="demo-case__stat">{s.cost}</span>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+
+      <div class="demo-video">
+        <video
+          autoplay
+          muted
+          loop
+          playsinline
+          controls
+          class="demo-video__player"
+        >
+          <source src="/videos/mortgage-how-it-works.mp4" type="video/mp4" />
+        </video>
+      </div>
     </div>
   </div>
 </section>
 
 <style>
-  .demo-card__header {
+  .demo-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: var(--space-2xl);
+    align-items: center;
+    margin-top: var(--space-2xl);
+  }
+
+  .demo-cases {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .demo-case {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: var(--space-md) var(--space-lg);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .demo-case:hover {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .demo-case__top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-xs);
+    margin-bottom: 0.375rem;
   }
 
-  .demo-card__name {
-    font-family: var(--font-serif);
-    font-size: 1.25rem;
-    color: var(--color-text);
-    margin: 0;
-  }
-
-  .demo-card__result {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.25rem 0.625rem;
-    border-radius: 4px;
-  }
-
-  .demo-card__result--approved { color: #4ade80; background: rgba(74, 222, 128, 0.1); }
-  .demo-card__result--flagged { color: #f87171; background: rgba(248, 113, 113, 0.1); }
-  .demo-card__result--conditional { color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
-
-  .demo-card__loan {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-sm);
-  }
-
-  .demo-card__stats {
-    display: flex;
-    gap: var(--space-lg);
-    margin-top: auto;
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-border);
-  }
-
-  .demo-card__stat {
+  .demo-case__info {
     display: flex;
     flex-direction: column;
     gap: 0.125rem;
   }
 
-  .demo-card__stat-value {
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
+  .demo-case__name {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
     font-weight: 600;
     color: var(--color-text);
   }
 
-  .demo-card__stat-label {
+  .demo-case__loan {
     font-family: var(--font-mono);
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
   }
 
-  .demo-card {
+  .demo-case__result {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .demo-case__result--approved { color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+  .demo-case__result--flagged { color: #f87171; background: rgba(248, 113, 113, 0.1); }
+  .demo-case__result--conditional { color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
+
+  .demo-case__stats {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+  }
+
+  .demo-case__dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--color-text-muted);
+  }
+
+  .demo-video__player {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow:
+      0 0 30px rgba(56, 189, 248, 0.15),
+      0 0 60px rgba(56, 189, 248, 0.08);
+    background: var(--color-bg-alt);
+  }
+
+  @media (max-width: 768px) {
+    .demo-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .demo-video {
+      order: -1;
+    }
   }
 </style>
