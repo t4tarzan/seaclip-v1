@@ -1,0 +1,192 @@
+---
+const agents = [
+  {
+    number: '01',
+    name: 'Lex',
+    role: 'Document Ingestion & Parsing',
+    description: 'Ingests corporate documents — merger agreements, securities filings, board resolutions, debt covenants. Classifies and parses each document for downstream analysis.',
+    tier: 'Tier 1 Local',
+    cost: '$0',
+  },
+  {
+    number: '02',
+    name: 'Petra',
+    role: 'PII Detection & Anonymization',
+    description: 'Scans all parsed documents for personally identifiable information — names, dates, addresses, SSNs, account numbers. Replaces PII with anonymized tokens before any AI analysis.',
+    tier: 'Tier 1 Local',
+    cost: '$0',
+  },
+  {
+    number: '03',
+    name: 'Gavel',
+    role: 'Compliance Rule Engine',
+    description: 'Runs 30 deterministic compliance rules across five practice areas. Checks regulatory requirements, filing deadlines, disclosure obligations, and governance standards.',
+    tier: 'Tier 1 Local',
+    cost: '$0',
+  },
+  {
+    number: '04',
+    name: 'Reese',
+    role: 'Risk Analysis & Scoring',
+    description: 'Multi-dimensional risk assessment using local LLM. Analyzes cap table structures, covenant compliance, regulatory exposure, and transaction risk factors.',
+    tier: 'Tier 2 Local/Cloud',
+    cost: 'Low',
+  },
+  {
+    number: '05',
+    name: 'Portia',
+    role: 'Executive Summary Generation',
+    description: 'Generates comprehensive executive summaries with risk ratings, key findings, and actionable recommendations. Works on anonymized data only.',
+    tier: 'Tier 2 Local/Cloud',
+    cost: 'Low',
+  },
+  {
+    number: '06',
+    name: 'Sterling',
+    role: 'Report Assembly & De-anonymization',
+    description: 'Assembles the final due diligence report, de-anonymizes all PII tokens back to real values, generates closing checklists, and purges temporary mappings.',
+    tier: 'Tier 1 Local',
+    cost: '$0',
+  },
+];
+---
+
+<section id="pipeline">
+  <div class="container">
+    <p class="section-label fade-in">THE PIPELINE</p>
+    <h2 class="section-title fade-in">Six Agents, One Due Diligence</h2>
+    <p class="section-subtitle fade-in">
+      Each agent is specialized. Documents flow through ingestion, anonymization, compliance, risk analysis, summary generation, and report assembly — with anonymization boundaries protecting PII at every step.
+    </p>
+
+    <div class="pipeline-flow fade-in">
+      <span class="pipeline-flow__label">Upload</span>
+      <span class="pipeline-flow__arrow">&rarr;</span>
+      {agents.map((a, i) => (
+        <>
+          <span class="pipeline-flow__node">{a.name}</span>
+          {i === 1 && <span class="pipeline-flow__boundary">ANON</span>}
+          {i === 4 && <span class="pipeline-flow__boundary">DE-ANON</span>}
+          {i < agents.length - 1 && <span class="pipeline-flow__arrow">&rarr;</span>}
+        </>
+      ))}
+      <span class="pipeline-flow__arrow">&rarr;</span>
+      <span class="pipeline-flow__label">Done</span>
+    </div>
+
+    <div class="grid grid--3 stagger">
+      {agents.map((agent) => (
+        <div class="card">
+          <div class="card__header">
+            <span class="card__number">{agent.number}</span>
+            <span class={`card__tier card__tier--${agent.tier.toLowerCase().replace(/[\s\/]/g, '-')}`}>{agent.tier}</span>
+          </div>
+          <h3 class="card__title">{agent.name}</h3>
+          <p class="card__role">{agent.role}</p>
+          <p class="card__description">{agent.description}</p>
+          <span class="card__cost">Cost: {agent.cost}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .pipeline-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: var(--space-xl) 0 var(--space-3xl);
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+
+  .pipeline-flow__node {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.375rem 0.75rem;
+    color: var(--color-text);
+  }
+
+  .pipeline-flow__boundary {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px dashed var(--color-accent);
+    border-radius: 6px;
+    padding: 0.375rem 0.75rem;
+    color: var(--color-accent);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .pipeline-flow__arrow {
+    color: var(--color-text-muted);
+  }
+
+  .pipeline-flow__label {
+    color: var(--color-text-secondary);
+    font-weight: 600;
+  }
+
+  .card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+  }
+
+  .card__number {
+    font-family: var(--font-mono);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    line-height: 1;
+  }
+
+  .card__tier {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: var(--color-surface-raised);
+    color: var(--color-text-muted);
+  }
+
+  .card__tier--tier-1-local { color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+  .card__tier--tier-2-local-cloud { color: #fb923c; background: rgba(251, 146, 60, 0.1); }
+
+  .card__title {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .card__role {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    margin: 0.25rem 0 var(--space-sm);
+  }
+
+  .card__cost {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: auto;
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+  }
+</style>

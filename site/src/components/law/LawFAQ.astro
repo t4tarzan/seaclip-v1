@@ -1,0 +1,110 @@
+---
+const faqs = [
+  {
+    q: 'What is Law Lite?',
+    a: 'Law Lite is an AI-powered due diligence platform for corporate and securities law. It uses six specialized AI agents to process legal documents, check compliance, assess risk, and generate executive summaries — all with privacy-first PII anonymization.',
+  },
+  {
+    q: 'What practice areas does it cover?',
+    a: 'Law Lite covers five practice areas: M&A (mergers and acquisitions due diligence), Securities (offering reviews and SEC compliance), Corporate Governance (board resolutions and governance audits), Debt Finance (covenant analysis and loan agreement review), and Regulatory (compliance checks and filing requirements).',
+  },
+  {
+    q: 'How does the pipeline work?',
+    a: 'Six agents process documents sequentially: Lex ingests and parses documents, Petra detects and anonymizes PII, Gavel runs 30 compliance rules, Reese performs risk analysis and scoring, Portia generates executive summaries, and Sterling assembles the final report and de-anonymizes PII back to real values.',
+  },
+  {
+    q: 'How is privacy handled?',
+    a: 'Petra detects all personally identifiable information (names, dates, addresses, account numbers) and replaces them with anonymized tokens before any AI analysis occurs. Gavel, Reese, and Portia only ever see anonymized data. Sterling de-anonymizes the final report locally, and all mappings are purged immediately after delivery.',
+  },
+  {
+    q: 'What AI models does it use?',
+    a: 'Law Lite uses Ollama local models (Qwen, Nemotron) as the primary AI engine — all processing happens on your hardware. Claude cloud AI is available as an optional fallback for complex analysis, but only ever receives anonymized data with no real PII.',
+  },
+  {
+    q: 'Can it work offline?',
+    a: 'Yes. Law Lite is fully functional with Ollama local models running on your own hardware. No internet connection is required. The entire pipeline — from document ingestion through report delivery — runs entirely on-premises in air-gapped mode.',
+  },
+  {
+    q: 'What are Smart Tools?',
+    a: 'Smart Tools are six specialized analyzers built into the pipeline: Cap Table Validator (ownership structure checks), Covenant Analyzer (debt covenant compliance), Risk Scorer (multi-dimensional risk assessment), Red Flag Detector (automatic issue identification), Checklist Generator (AI-powered task generation), and Compliance Mapper (regulatory requirement tracking).',
+  },
+  {
+    q: 'How do I deploy Law Lite?',
+    a: 'Law Lite supports two deployment modes: Helm chart for Kubernetes clusters (recommended for enterprise), and Docker for standalone deployment on a single machine. Both modes include Ollama local model support and can be configured for fully air-gapped operation.',
+  },
+];
+---
+
+<section id="faq">
+  <div class="container container--narrow">
+    <p class="section-label fade-in">FAQ</p>
+    <h2 class="section-title fade-in">Frequently Asked Questions</h2>
+
+    <div class="faq-list fade-in">
+      {faqs.map((item) => (
+        <details class="faq-item">
+          <summary class="faq-question">
+            {item.q}
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </summary>
+          <p class="faq-answer">{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: var(--space-2xl);
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-lg) 0;
+  }
+
+  .faq-item:first-child {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text);
+    list-style: none;
+    gap: var(--space-md);
+  }
+
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-icon {
+    font-size: 1.25rem;
+    color: var(--color-text-muted);
+    transition: transform var(--transition-base);
+    flex-shrink: 0;
+  }
+
+  .faq-item[open] .faq-icon {
+    transform: rotate(45deg);
+  }
+
+  .faq-answer {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    margin: var(--space-md) 0 0;
+    padding-right: var(--space-2xl);
+  }
+</style>

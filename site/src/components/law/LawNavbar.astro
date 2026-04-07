@@ -1,11 +1,9 @@
 ---
 const navLinks = [
   { label: 'Demo', href: '#hero' },
+  { label: 'Pipeline', href: '#pipeline' },
   { label: 'Features', href: '#features' },
-  { label: 'Edge Mesh', href: '#edge-mesh' },
-  { label: 'On-Prem Secure', href: '#open-source' },
-  { label: 'Mortgage Lite', href: '/mortgage-lite' },
-  { label: 'Law Lite', href: '/law-lite' },
+  { label: 'Privacy', href: '#privacy' },
   { label: 'FAQ', href: '#faq' },
   { label: 'Contact', href: '#contact' },
 ];
@@ -13,20 +11,17 @@ const navLinks = [
 
 <nav class="navbar glass">
   <div class="navbar__inner container">
-    <a href="/" class="navbar__logo">SeaClip</a>
+    <div class="navbar__brand">
+      <a href="/" class="navbar__logo">SeaClip</a>
+      <span class="navbar__logo-divider">/</span>
+      <a href="/law-lite" class="navbar__logo navbar__logo--product">Law Lite</a>
+    </div>
 
     <div class="navbar__links">
       {navLinks.map((link) => (
         <a href={link.href} class="navbar__link">{link.label}</a>
       ))}
-      <a
-        href="https://github.com/t4tarzan/seaclip-v1"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn btn--primary navbar__github"
-      >
-        GitHub
-      </a>
+      <a href="/" class="btn btn--primary navbar__github">SeaClip Home</a>
     </div>
 
     <button class="navbar__hamburger" aria-label="Toggle menu" aria-expanded="false">
@@ -40,14 +35,7 @@ const navLinks = [
     {navLinks.map((link) => (
       <a href={link.href} class="navbar__mobile-link">{link.label}</a>
     ))}
-    <a
-      href="https://github.com/t4tarzan/seaclip-v1"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="btn btn--primary navbar__github"
-    >
-      GitHub
-    </a>
+    <a href="/" class="btn btn--primary navbar__github">SeaClip Home</a>
   </div>
 </nav>
 
@@ -62,7 +50,6 @@ const navLinks = [
     mobileMenu?.classList.toggle('is-open');
   });
 
-  // Close mobile menu on link click
   document.querySelectorAll('.navbar__mobile-link').forEach((link) => {
     link.addEventListener('click', () => {
       hamburger?.classList.remove('is-active');
@@ -88,6 +75,12 @@ const navLinks = [
     justify-content: space-between;
   }
 
+  .navbar__brand {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
   .navbar__logo {
     font-family: var(--font-serif);
     font-size: 1.5rem;
@@ -99,6 +92,22 @@ const navLinks = [
 
   .navbar__logo:hover {
     color: var(--color-accent-secondary);
+  }
+
+  .navbar__logo-divider {
+    color: var(--color-text-muted);
+    font-size: 1.25rem;
+    margin: 0 0.375rem;
+    user-select: none;
+  }
+
+  .navbar__logo--product {
+    font-size: 1.25rem;
+    color: var(--color-text);
+  }
+
+  .navbar__logo--product:hover {
+    color: var(--color-accent);
   }
 
   .navbar__links {

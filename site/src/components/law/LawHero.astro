@@ -1,0 +1,154 @@
+---
+---
+
+<section id="hero" class="hero">
+  <div class="container hero__inner">
+    <div class="hero__content fade-in">
+      <span class="badge hero__badge">6-Agent Pipeline | Privacy-First | Local AI</span>
+
+      <h1 class="hero__heading">
+        Law Lite
+      </h1>
+
+      <p class="hero__tagline">
+        AI Due Diligence for Corporate & Securities Law
+      </p>
+
+      <p class="hero__subline">
+        Automated compliance analysis with privacy-first architecture. Six specialized AI agents process corporate documents, detect risks, and generate executive summaries — with PII anonymized before any AI sees it.
+      </p>
+
+      <div class="hero__ctas">
+        <a href="https://seaclip.tech/#contact" class="btn btn--primary">Book a Demo</a>
+        <a href="#demo" class="btn btn--secondary">See How It Works</a>
+      </div>
+    </div>
+
+    <div class="hero__video fade-in">
+      <div class="hero__video-placeholder">
+        <span class="hero__video-icon">&#x2696;</span>
+        <span class="hero__video-text">Video coming soon</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 7rem 0 4rem;
+    overflow: hidden;
+  }
+
+  .hero__inner {
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    gap: var(--space-3xl);
+    align-items: center;
+  }
+
+  .hero__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .hero__badge {
+    align-self: flex-start;
+  }
+
+  .hero__heading {
+    font-family: var(--font-serif);
+    font-size: clamp(2.5rem, 5vw, 3.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .hero__tagline {
+    font-family: var(--font-serif);
+    font-size: clamp(1.125rem, 2vw, 1.375rem);
+    color: var(--color-accent);
+    margin: -0.5rem 0 0;
+    line-height: 1.3;
+  }
+
+  .hero__subline {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    max-width: 45ch;
+  }
+
+  .hero__ctas {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .hero__video {
+    width: 100%;
+    justify-self: center;
+  }
+
+  .hero__video-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    box-shadow:
+      0 0 30px rgba(56, 189, 248, 0.15),
+      0 0 60px rgba(56, 189, 248, 0.08);
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+  }
+
+  .hero__video-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+  }
+
+  .hero__video-text {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 768px) {
+    .hero__inner {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .hero__badge {
+      align-self: center;
+    }
+
+    .hero__subline {
+      margin: 0 auto;
+    }
+
+    .hero__ctas {
+      justify-content: center;
+    }
+
+    .hero__video {
+      order: -1;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero__ctas {
+      flex-direction: column;
+    }
+  }
+</style>

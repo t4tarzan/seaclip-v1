@@ -1,0 +1,26 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LawNavbar from '../components/law/LawNavbar.astro';
+import LawHero from '../components/law/LawHero.astro';
+import LawPipeline from '../components/law/LawPipeline.astro';
+import LawFeatures from '../components/law/LawFeatures.astro';
+import LawPrivacy from '../components/law/LawPrivacy.astro';
+import LawDemo from '../components/law/LawDemo.astro';
+import LawFAQ from '../components/law/LawFAQ.astro';
+import LawCTA from '../components/law/LawCTA.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Law Lite — AI Due Diligence for Corporate & Securities Law" description="Six AI agents. Privacy-first anonymization. Automated compliance analysis for M&A, Securities, Corporate Governance, Debt Finance, and Regulatory practice areas.">
+  <LawNavbar />
+  <main>
+    <LawHero />
+    <LawPipeline />
+    <LawFeatures />
+    <LawPrivacy />
+    <LawDemo />
+    <LawFAQ />
+    <LawCTA />
+  </main>
+  <Footer />
+</Layout>

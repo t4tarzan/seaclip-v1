@@ -1,0 +1,52 @@
+---
+const features = [
+  { icon: '&#x1F9E0;', title: 'Smart Tools', description: '6 specialized analysis tools — cap table validator, covenant analyzer, risk scorer, red flag detector, checklist generator, and compliance mapper — each purpose-built for corporate law workflows.' },
+  { icon: '&#x1F4CA;', title: 'Cap Table Analysis', description: 'Validates ownership structures, identifies dilution risks, checks voting rights consistency, and flags discrepancies in shareholder agreements and equity plans.' },
+  { icon: '&#x1F4DC;', title: 'Covenant Analyzer', description: 'Parses debt covenants and loan agreements. Checks financial ratio compliance, identifies cross-default triggers, and monitors covenant breach thresholds.' },
+  { icon: '&#x26A0;', title: 'Risk Scoring', description: 'Multi-dimensional risk assessment across legal, financial, regulatory, and operational dimensions. Weighted scoring with configurable thresholds and severity levels.' },
+  { icon: '&#x2696;', title: '30 Compliance Rules', description: 'Comprehensive regulatory checks covering SEC filing requirements, corporate governance standards, disclosure obligations, antitrust thresholds, and securities regulations.' },
+  { icon: '&#x1F3AF;', title: '5 Practice Areas', description: 'Purpose-built rule sets for M&A, Securities, Corporate Governance, Debt Finance, and Regulatory — each with specialized compliance checks and risk factors.' },
+  { icon: '&#x1F512;', title: 'PII Anonymization', description: 'Zero-knowledge document processing. All personally identifiable information is detected and replaced with tokens before AI analysis. AI never sees real names, dates, or identifying data.' },
+  { icon: '&#x1F4BB;', title: 'Ollama Local-First', description: 'Runs fully offline with Ollama local models. Sensitive documents never leave your premises. Cloud AI is an optional fallback, and only processes anonymized content.' },
+  { icon: '&#x1F6A9;', title: 'Red Flag Reports', description: 'Automatic identification of legal red flags — undisclosed liabilities, regulatory violations, governance gaps, missing filings, and material risk factors requiring immediate attention.' },
+  { icon: '&#x2705;', title: 'Closing Checklists', description: 'AI-generated transaction readiness checklists tracking every required document, approval, filing, and condition precedent for deal closing.' },
+  { icon: '&#x1F4C2;', title: 'Demo Cases', description: '5 built-in practice scenarios covering M&A due diligence, securities offering review, governance audit, debt finance analysis, and regulatory compliance check.' },
+  { icon: '&#x1F4CB;', title: 'Checklist Generator', description: 'AI-powered task generation creates detailed checklists from document analysis. Tracks completion status, assigns priorities, and identifies blocking dependencies.' },
+];
+---
+
+<section id="features">
+  <div class="container">
+    <p class="section-label fade-in">FEATURES</p>
+    <h2 class="section-title fade-in">Everything You Need for AI Due Diligence</h2>
+    <p class="section-subtitle fade-in">
+      Built for corporate and securities law professionals who want AI speed without sacrificing compliance, privacy, or control.
+    </p>
+
+    <div class="grid grid--4 stagger">
+      {features.map((f) => (
+        <div class="card">
+          <div class="card__icon">
+            <span set:html={f.icon} />
+          </div>
+          <h3 class="card__title">{f.title}</h3>
+          <p class="card__description">{f.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .card__icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: var(--color-accent-glow);
+    font-size: 1.25rem;
+    margin-bottom: var(--space-sm);
+  }
+</style>
