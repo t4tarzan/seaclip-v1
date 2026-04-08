@@ -7,10 +7,14 @@
     <h2 class="section-title fade-in">See the Pipeline in Action</h2>
 
     <div class="demo-video fade-in">
-      <div class="demo-video__placeholder">
-        <span class="demo-video__icon">&#x2696;</span>
-        <span class="demo-video__text">Video coming soon</span>
-      </div>
+      <video
+        class="demo-video__player"
+        controls
+        playsinline
+        preload="metadata"
+      >
+        <source src="/videos/law-lite-demo.mp4" type="video/mp4" />
+      </video>
     </div>
   </div>
 </section>
@@ -23,32 +27,12 @@
     margin-right: auto;
   }
 
-  .demo-video__placeholder {
+  .demo-video__player {
     width: 100%;
-    aspect-ratio: 16 / 9;
     border-radius: 12px;
     box-shadow:
       0 0 30px rgba(56, 189, 248, 0.15),
       0 0 60px rgba(56, 189, 248, 0.08);
-    background: var(--color-bg-alt);
     border: 1px solid var(--color-border);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-md);
-  }
-
-  .demo-video__icon {
-    font-size: 3rem;
-    opacity: 0.5;
-  }
-
-  .demo-video__text {
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
   }
 </style>

@@ -25,10 +25,16 @@
     </div>
 
     <div class="hero__video fade-in">
-      <div class="hero__video-placeholder">
-        <span class="hero__video-icon">&#x2696;</span>
-        <span class="hero__video-text">Video coming soon</span>
-      </div>
+      <video
+        class="hero__video-player"
+        autoplay
+        muted
+        loop
+        playsinline
+        poster=""
+      >
+        <source src="/videos/law-lite-hero.mp4" type="video/mp4" />
+      </video>
     </div>
   </div>
 </section>
@@ -94,33 +100,13 @@
     justify-self: center;
   }
 
-  .hero__video-placeholder {
+  .hero__video-player {
     width: 100%;
-    aspect-ratio: 16 / 9;
     border-radius: 12px;
     box-shadow:
       0 0 30px rgba(56, 189, 248, 0.15),
       0 0 60px rgba(56, 189, 248, 0.08);
-    background: var(--color-bg-alt);
     border: 1px solid var(--color-border);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-md);
-  }
-
-  .hero__video-icon {
-    font-size: 3rem;
-    opacity: 0.5;
-  }
-
-  .hero__video-text {
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
   }
 
   @media (max-width: 768px) {
